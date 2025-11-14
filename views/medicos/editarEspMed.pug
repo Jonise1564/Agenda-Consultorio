@@ -79,6 +79,67 @@
 //-                 activeEditForm = null; // Ningún formulario está activo
 //-             }
 //-         }
+//- extends ../layout
+
+//- block contenido
+//-     a(href="/pacientes" class="btn btn-outline-dark") Volver
+    
+//-     .container
+//-         h1 Especialidad/es del Dr 
+        
+//-         if successMessage
+//-             .alert.alert-success= successMessage
+//-         //-a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad      
+
+//-         table.table.table-striped
+//-             thead
+//-                 tr
+//-                     th Id Medico
+//-                     th Id Especialidad
+                
+//-                     th Nombre Especialidad
+//-                     th Matrícula
+//-             tbody
+//-                 each especialidad in especialidades
+//-                     tr
+//-                         td= especialidad.idmedico                        
+//-                         td= especialidad.Id
+//-                         td= especialidad.nombreEsp
+//-                         td= especialidad.matricula
+                        
+//-                         //td= especialidad.matriculas.join(", ")
+
+//-                     // Optional buttons for editing, activating/inactivating
+//-                     td
+//-                         .button-group(style="display: flex; gap: 10px;")
+//-                             button.btn.btn-primary(type="button" onclick=`toggleEditForm(${especialidad.Id})` class="btn btn-primary btn-sm") Modificar
+
+//-                             if especialidad.estado == 1
+//-                                 form(action=`/medicos/inactivarEsp/${especialidad.Id}`, method='post' id=`inactivar-form-${especialidad.id}`)
+//-                                     input(type='hidden' name='id_medico' value='${especialidad.idmedico}')
+//-                                     input(type='hidden' name='id_especialidad' value='${especialidad.Id}')
+//-                                     button(type='submit' class='btn btn-danger btn-sm') Inactivar                       
+//-                                 //- form(action=`/medicos/inactivarEsp/${especialidad.Id},`, method='post' id=`inactivar-form-${especialidad.id}`)
+//-                                 //-     button(type='submit' class="btn btn-danger btn-sm") Inactivar
+//-                             else
+//-                                 form(action=`/medicos/activarEsp/${especialidad.Id}`, method='post' id=`activar-form-${especialidad.id}`)
+//-                                     button(type='submit' class="btn btn-success btn-sm") Activar
+
+//-         a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad  
+//-     //- Script for toggling edit form
+//-     script.
+//-         let activeEditForm = null;
+
+//-         function toggleEditForm(id) {
+//-             const editForm = document.querySelector(`form.edit-form[action='/especialidades/update/${id}']`);
+//-             if (activeEditForm && activeEditForm !== editForm) {
+//-                 activeEditForm.style.display = 'none';
+//-             }
+//-             editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+//-             activeEditForm = editForm;
+//-         }
+
+
 extends ../layout
 
 block contenido
@@ -86,19 +147,18 @@ block contenido
     
     .container
         h1 Especialidad/es del Dr 
-        
+
         if successMessage
             .alert.alert-success= successMessage
-        //-a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad      
 
         table.table.table-striped
             thead
                 tr
-                    th Id Medico
+                    th Id Médico
                     th Id Especialidad
-                
                     th Nombre Especialidad
                     th Matrícula
+                    th Acciones
             tbody
                 each especialidad in especialidades
                     tr
@@ -107,36 +167,45 @@ block contenido
                         td= especialidad.nombreEsp
                         td= especialidad.matricula
                         
-                        //td= especialidad.matriculas.join(", ")
+                        td
+                            .button-group(style="display: flex; gap: 10px;")
+                                button.btn.btn-primary.btn-sm(
+                                    type="button",
+                                    onclick=`toggleEditForm(${especialidad.Id})`
+                                ) Modificar
 
-                    // Optional buttons for editing, activating/inactivating
-                    td
-                        .button-group(style="display: flex; gap: 10px;")
-                            button.btn.btn-primary(type="button" onclick=`toggleEditForm(${especialidad.Id})` class="btn btn-primary btn-sm") Modificar
-
-                            if especialidad.estado == 1
-                                form(action=`/medicos/inactivarEsp/${especialidad.Id}`, method='post' id=`inactivar-form-${especialidad.id}`)
-                                    input(type='hidden' name='id_medico' value='${especialidad.idmedico}')
-                                    input(type='hidden' name='id_especialidad' value='${especialidad.Id}')
-                                    button(type='submit' class='btn btn-danger btn-sm') Inactivar                       
-                                //- form(action=`/medicos/inactivarEsp/${especialidad.Id},`, method='post' id=`inactivar-form-${especialidad.id}`)
-                                //-     button(type='submit' class="btn btn-danger btn-sm") Inactivar
-                            else
-                                form(action=`/medicos/activarEsp/${especialidad.Id}`, method='post' id=`activar-form-${especialidad.id}`)
-                                    button(type='submit' class="btn btn-success btn-sm") Activar
+                                if especialidad.estado == 1
+                                    form(
+                                        action=`/medicos/inactivarEsp/${especialidad.Id}`,
+                                        method='post',
+                                        id=`inactivar-form-${especialidad.Id}`
+                                    )
+                                        input(type='hidden' name='id_medico' value=especialidad.idmedico)
+                                        input(type='hidden' name='id_especialidad' value=especialidad.Id)
+                                        button.btn.btn-danger.btn-sm(type='submit') Inactivar
+                                else
+                                    form(
+                                        action=`/medicos/activarEsp/${especialidad.Id}`,
+                                        method='post',
+                                        id=`activar-form-${especialidad.Id}`
+                                    )
+                                        button.btn.btn-success.btn-sm(type='submit') Activar
 
         a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad  
-    //- Script for toggling edit form
+
+    // SCRIPT
     script.
         let activeEditForm = null;
 
         function toggleEditForm(id) {
             const editForm = document.querySelector(`form.edit-form[action='/especialidades/update/${id}']`);
+            if (!editForm) return;
+
             if (activeEditForm && activeEditForm !== editForm) {
                 activeEditForm.style.display = 'none';
             }
-            editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+            editForm.style.display = 
+                editForm.style.display === 'none' || editForm.style.display === '' ? 'block' : 'none';
+            
             activeEditForm = editForm;
         }
-
-
