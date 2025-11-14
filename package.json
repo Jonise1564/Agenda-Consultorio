@@ -12,6 +12,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.1",
+    "fullcalendar": "^6.1.19",
     "morgan": "^1.10.0",
     "mysql2": "^3.11.3",
     "nodemon": "^3.1.7",

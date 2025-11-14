@@ -8,24 +8,36 @@ class Paciente extends Usuario {
         this.telefonos = telefonos
     }
     //Mostrar todos
-    static async getAll() {
-      
-        let conn;
-        try {
-            conn = await createConnection();
-            const [pacientes] = await conn.query(`
-                SELECT pa.id_usuario, pa.dni, pa.estado, p.nombre, p.apellido, p.nacimiento, u.email, u.password, u.id_rol,
-                GROUP_CONCAT(DISTINCT os.nombre SEPARATOR ', ') AS obra_sociales,
-                GROUP_CONCAT(DISTINCT t.numero SEPARATOR ', ') AS telefonos
-                FROM pacientes pa 
-                JOIN usuarios u ON pa.id_usuario = u.id 
-                JOIN personas p ON pa.dni = p.dni 
-                LEFT JOIN obras_sociales os ON pa.id_obra_social = os.id 
-                LEFT JOIN telefonos t ON u.id = t.id_usuario 
-                GROUP BY pa.id_usuario;
+       static async getAll() {
+    let conn;
+    try {
+        conn = await createConnection();
+
+        const [pacientes] = await conn.query(`
+            SELECT 
+                pa.id_usuario,
+                pa.dni,
+                pa.estado,
+                p.nombre,
+                p.apellido,
+                p.nacimiento,
+                u.email,
+                u.password,
+                u.id_rol,
+                COALESCE(os.nombre, 'Sin obra social') AS obra_social,
+                COALESCE(GROUP_CONCAT(DISTINCT t.numero ORDER BY t.numero SEPARATOR ', '), '') AS telefonos
+            FROM pacientes pa
+            INNER JOIN usuarios u ON pa.id_usuario = u.id
+            INNER JOIN personas p ON pa.dni = p.dni
+            LEFT JOIN obras_sociales os ON pa.id_obra_social = os.id
+            LEFT JOIN telefonos t ON u.id = t.id_usuario
+            GROUP BY 
+                pa.id_usuario, pa.dni, pa.estado,
+                p.nombre, p.apellido, p.nacimiento,
+                u.email, u.password, u.id_rol, os.nombre;
             `);
-          
-            return pacientes
+
+            return pacientes;
         } catch (error) {
             console.error('Error fetching pacientes:', error);
             throw new Error('Error al traer pacientes desde el modelo');
@@ -33,6 +45,7 @@ class Paciente extends Usuario {
             if (conn) conn.end();
         }
     }
+
     //insertar paciente
     static async create({ dni, id_usuario, estado, telefonos, obra_sociales }) {
         console.log('Model: Create Paciente');
