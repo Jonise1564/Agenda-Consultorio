@@ -13,16 +13,37 @@ class Turno {
         this.id_agenda  
     }
     //Mostrar todos
+    // static async getAll(id) {
+    //     console.log('Model: Get All turnos');
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         const [turnos] = await conn.query(`
+    //            SELECT * FROM turnos WHERE id_agenda = ?;
+    //         `, [id]);
+    //         console.log('modelo ',turnos)
+    //         return turnos
+    //     } catch (error) {
+    //         console.error('Error fetching turnos:', error);
+    //         throw new Error('Error al traer turnos desde el modelo');
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
     static async getAll(id) {
-        console.log('Model: Get All turnos');
         let conn;
         try {
             conn = await createConnection();
+
             const [turnos] = await conn.query(`
-               SELECT * FROM turnos WHERE id_agenda = ?;
+                SELECT *
+                FROM turnos 
+                WHERE id_agenda = ?
+                ORDER BY fecha, hora_inicio;
             `, [id]);
-            console.log('modelo ',turnos)
-            return turnos
+
+            return turnos;
+            
         } catch (error) {
             console.error('Error fetching turnos:', error);
             throw new Error('Error al traer turnos desde el modelo');
@@ -30,6 +51,36 @@ class Turno {
             if (conn) conn.end();
         }
     }
+    //Crear nuevo turno
+    static async create(data) {
+    let conn;
+    try {
+        conn = await createConnection();
+
+        const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = data;
+
+        const sql = `
+            INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda)
+            VALUES (?, ?, ?, 'pendiente', 1, ?, ?);
+        `;
+
+        await conn.query(sql, [
+            fecha,
+            hora_inicio,
+            motivo,
+            id_paciente,
+            id_agenda
+        ]);
+
+    } catch (error) {
+        console.error("Error creando turno:", error);
+        throw new Error("Error al crear turno");
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
 }
 module.exports = Turno;
 

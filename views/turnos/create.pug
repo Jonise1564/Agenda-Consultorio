@@ -1,0 +1,27 @@
+extends ../layout
+
+block contenido
+  h1 Crear Turno
+
+  form(action="/turnos" method="POST")
+    input(type="hidden" name="id_agenda" value=id_agenda)
+
+    .mb-3
+      label Fecha:
+      input.form-control(type="date" name="fecha" required)
+
+    .mb-3
+      label Hora:
+      input.form-control(type="time" name="hora_inicio" required)
+
+    .mb-3
+      label Motivo:
+      input.form-control(type="text" name="motivo" required)
+
+    .mb-3
+      label Paciente:
+      input.form-control(type="number" name="id_paciente" required)
+
+    button.btn.btn-primary(type="submit") Guardar Turno
+
+    a.btn.btn-secondary(href=`/turnos/${id_agenda}`) Cancelar

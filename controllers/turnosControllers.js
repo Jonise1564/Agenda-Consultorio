@@ -47,6 +47,44 @@ class TurnosController {
             next(error);
         }
     }
+    // Mostrar formulario para crear un turno
+async createForm(req, res, next) {
+    try {
+        const { id } = req.params; // id_agenda
+        res.render('turnos/create', { id_agenda: id });
+    } catch (error) {
+        console.error('Error mostrando formulario de turno:', error);
+        next(error);
+    }
+}
+
+// Guardar un turno
+async store(req, res, next) {
+    try {
+        const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = req.body;
+
+        await Turno.create({
+            fecha,
+            hora_inicio,
+            motivo,
+            id_paciente,
+            id_agenda
+        });
+
+        res.redirect(`/turnos/${id_agenda}?nombreStore=1`);
+    } catch (error) {
+        console.error('Error al crear turno desde el controlador:', error);
+        next(error);
+    }
+}
+
+
+
+
+
+
+
+
 }
 
 module.exports = new TurnosController()
