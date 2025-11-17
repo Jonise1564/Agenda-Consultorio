@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 13-11-2024 a las 22:15:21
--- Versión del servidor: 10.4.24-MariaDB
--- Versión de PHP: 7.4.29
+-- Host: localhost:3306
+-- Generation Time: Nov 17, 2025 at 10:55 AM
+-- Server version: 8.4.3
+-- PHP Version: 8.3.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `agenda_consultorio`
+-- Database: `agenda_consultorio`
 --
 
 DELIMITER $$
 --
--- Procedimientos
+-- Procedures
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `crear_agenda` (IN `p_limite_sobreturnos` INT, IN `p_fecha_creacion` DATE, IN `p_fecha_fin` DATE, IN `p_hora_inicio` TIME, IN `p_hora_fin` TIME, IN `p_duracion_turnos` INT, IN `p_matricula` INT, IN `p_id_sucursal` INT, IN `p_id_clasificacion` INT)   BEGIN
     DECLARE v_id_agenda INT;
@@ -130,24 +130,24 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `agendas`
+-- Table structure for table `agendas`
 --
 
 CREATE TABLE `agendas` (
-  `id` int(11) NOT NULL,
-  `limite_sobreturnos` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `limite_sobreturnos` int NOT NULL,
   `fecha_creacion` date NOT NULL,
   `fecha_fin` date NOT NULL,
   `hora_inicio` time NOT NULL,
   `hora_fin` time NOT NULL,
-  `duracion_turnos` int(11) NOT NULL,
-  `matricula` int(11) NOT NULL,
-  `id_sucursal` int(11) NOT NULL,
-  `id_clasificacion` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `duracion_turnos` int NOT NULL,
+  `matricula` int NOT NULL,
+  `id_sucursal` int NOT NULL,
+  `id_clasificacion` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `agendas`
+-- Dumping data for table `agendas`
 --
 
 INSERT INTO `agendas` (`id`, `limite_sobreturnos`, `fecha_creacion`, `fecha_fin`, `hora_inicio`, `hora_fin`, `duracion_turnos`, `matricula`, `id_sucursal`, `id_clasificacion`) VALUES
@@ -156,21 +156,22 @@ INSERT INTO `agendas` (`id`, `limite_sobreturnos`, `fecha_creacion`, `fecha_fin`
 (9, 2, '2024-11-15', '2024-12-10', '08:00:00', '12:00:00', 30, 8100, 1, 1),
 (10, 1, '2024-11-12', '2024-11-18', '08:00:00', '09:30:00', 30, 8104, 1, 1),
 (11, 2, '2024-11-12', '2024-11-18', '08:00:00', '09:30:00', 30, 8777, 1, 1),
-(12, 1, '2024-11-12', '2024-11-18', '08:00:00', '10:00:00', 30, 8405, 1, 1);
+(12, 1, '2024-11-12', '2024-11-18', '08:00:00', '10:00:00', 30, 8405, 1, 1),
+(16, 1, '2025-11-17', '2025-11-21', '20:00:00', '12:00:00', 15, 8100, 1, 3);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `clasificaciones`
+-- Table structure for table `clasificaciones`
 --
 
 CREATE TABLE `clasificaciones` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nombre` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `clasificaciones`
+-- Dumping data for table `clasificaciones`
 --
 
 INSERT INTO `clasificaciones` (`id`, `nombre`) VALUES
@@ -181,27 +182,51 @@ INSERT INTO `clasificaciones` (`id`, `nombre`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `dias_disponibles`
+-- Table structure for table `dias`
 --
 
-CREATE TABLE `dias_disponibles` (
-  `id_agenda` int(11) NOT NULL,
-  `dia` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `dias` (
+  `id` int NOT NULL,
+  `dia` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `dias`
+--
+
+INSERT INTO `dias` (`id`, `dia`) VALUES
+(1, 'Lunes'),
+(2, 'Martes'),
+(3, 'Miércoles'),
+(4, 'Jueves'),
+(5, 'Viernes'),
+(6, 'Sábado'),
+(7, 'Domingo');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `dias_no_laborables`
+-- Table structure for table `dias_disponibles`
+--
+
+CREATE TABLE `dias_disponibles` (
+  `id_agenda` int NOT NULL,
+  `dia` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dias_no_laborables`
 --
 
 CREATE TABLE `dias_no_laborables` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `dia` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `dias_no_laborables`
+-- Dumping data for table `dias_no_laborables`
 --
 
 INSERT INTO `dias_no_laborables` (`id`, `dia`) VALUES
@@ -225,21 +250,21 @@ INSERT INTO `dias_no_laborables` (`id`, `dia`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `especialidades`
+-- Table structure for table `especialidades`
 --
 
 CREATE TABLE `especialidades` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `estado` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `especialidades`
+-- Dumping data for table `especialidades`
 --
 
 INSERT INTO `especialidades` (`id`, `nombre`, `estado`) VALUES
-(1, 'Cardiología', 0),
+(1, 'Cardiologías', 1),
 (2, 'Dermatología', 0),
 (3, 'Endocrinología', 0),
 (4, 'Gastroenterología', 0),
@@ -259,16 +284,16 @@ INSERT INTO `especialidades` (`id`, `nombre`, `estado`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `medicos`
+-- Table structure for table `medicos`
 --
 
 CREATE TABLE `medicos` (
-  `id_usuario` int(11) NOT NULL,
+  `id_usuario` int NOT NULL,
   `estado` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `medicos`
+-- Dumping data for table `medicos`
 --
 
 INSERT INTO `medicos` (`id_usuario`, `estado`) VALUES
@@ -298,18 +323,18 @@ INSERT INTO `medicos` (`id_usuario`, `estado`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `medico_especialidad`
+-- Table structure for table `medico_especialidad`
 --
 
 CREATE TABLE `medico_especialidad` (
-  `id_medico` int(11) NOT NULL,
-  `id_especialidad` int(11) NOT NULL,
-  `matricula` int(11) NOT NULL,
-  `estado` tinyint(4) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id_medico` int NOT NULL,
+  `id_especialidad` int NOT NULL,
+  `matricula` int NOT NULL,
+  `estado` tinyint NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `medico_especialidad`
+-- Dumping data for table `medico_especialidad`
 --
 
 INSERT INTO `medico_especialidad` (`id_medico`, `id_especialidad`, `matricula`, `estado`) VALUES
@@ -345,18 +370,18 @@ INSERT INTO `medico_especialidad` (`id_medico`, `id_especialidad`, `matricula`, 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `medico_obra_social`
+-- Table structure for table `medico_obra_social`
 --
 
 CREATE TABLE `medico_obra_social` (
-  `id` int(11) NOT NULL,
-  `id_medico` int(11) NOT NULL,
-  `id_obra_social` int(11) NOT NULL,
-  `estado` tinyint(4) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id` int NOT NULL,
+  `id_medico` int NOT NULL,
+  `id_obra_social` int NOT NULL,
+  `estado` tinyint NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `medico_obra_social`
+-- Dumping data for table `medico_obra_social`
 --
 
 INSERT INTO `medico_obra_social` (`id`, `id_medico`, `id_obra_social`, `estado`) VALUES
@@ -394,19 +419,19 @@ INSERT INTO `medico_obra_social` (`id`, `id_medico`, `id_obra_social`, `estado`)
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `obras_sociales`
+-- Table structure for table `obras_sociales`
 --
 
 CREATE TABLE `obras_sociales` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `descripcion` varchar(100) DEFAULT NULL,
   `direccion` varchar(100) DEFAULT NULL,
-  `estado` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `estado` int NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `obras_sociales`
+-- Dumping data for table `obras_sociales`
 --
 
 INSERT INTO `obras_sociales` (`id`, `nombre`, `descripcion`, `direccion`, `estado`) VALUES
@@ -419,25 +444,25 @@ INSERT INTO `obras_sociales` (`id`, `nombre`, `descripcion`, `direccion`, `estad
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `pacientes`
+-- Table structure for table `pacientes`
 --
 
 CREATE TABLE `pacientes` (
-  `dni` int(11) NOT NULL,
-  `id_usuario` int(11) DEFAULT NULL,
-  `id_obra_social` int(11) NOT NULL,
-  `estado` tinyint(4) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `dni` int NOT NULL,
+  `id_usuario` int DEFAULT NULL,
+  `id_obra_social` int NOT NULL,
+  `estado` tinyint NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `pacientes`
+-- Dumping data for table `pacientes`
 --
 
 INSERT INTO `pacientes` (`dni`, `id_usuario`, `id_obra_social`, `estado`) VALUES
 (1345678, 20, 3, 1),
 (1456789, 30, 2, 1),
 (7766776, 54, 1, 1),
-(11234567, 11, 2, 1),
+(11234567, 11, 2, 0),
 (11345678, 21, 4, 1),
 (11456789, 31, 2, 1),
 (21234567, 12, 1, 1),
@@ -460,18 +485,18 @@ INSERT INTO `pacientes` (`dni`, `id_usuario`, `id_obra_social`, `estado`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `personas`
+-- Table structure for table `personas`
 --
 
 CREATE TABLE `personas` (
-  `dni` int(11) NOT NULL,
+  `dni` int NOT NULL,
   `nombre` varchar(50) NOT NULL,
   `apellido` varchar(50) NOT NULL,
   `nacimiento` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `personas`
+-- Dumping data for table `personas`
 --
 
 INSERT INTO `personas` (`dni`, `nombre`, `apellido`, `nacimiento`) VALUES
@@ -524,7 +549,7 @@ INSERT INTO `personas` (`dni`, `nombre`, `apellido`, `nacimiento`) VALUES
 (66666660, 'congobongogo', 'flores', '1992-02-02'),
 (67890123, 'Elena', 'González', '1995-06-06'),
 (71234567, 'Andrés', 'Vega', '2006-05-17'),
-(71345678, 'Albert', 'Ortiza', '2016-03-27'),
+(71345678, 'Albert', 'Ortizas', '2016-03-27'),
 (78901234, 'Miguel', 'Sánchez', '1996-07-07'),
 (81234567, 'Natalia', 'Mendoza', '2007-06-18'),
 (81345678, 'Verónica', 'Iglesias', '2017-04-28'),
@@ -536,16 +561,16 @@ INSERT INTO `personas` (`dni`, `nombre`, `apellido`, `nacimiento`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `roles`
+-- Table structure for table `roles`
 --
 
 CREATE TABLE `roles` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nombre` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `roles`
+-- Dumping data for table `roles`
 --
 
 INSERT INTO `roles` (`id`, `nombre`) VALUES
@@ -557,18 +582,18 @@ INSERT INTO `roles` (`id`, `nombre`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `sucursales`
+-- Table structure for table `sucursales`
 --
 
 CREATE TABLE `sucursales` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `direccion` varchar(100) NOT NULL,
   `ciudad` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `sucursales`
+-- Dumping data for table `sucursales`
 --
 
 INSERT INTO `sucursales` (`id`, `nombre`, `direccion`, `ciudad`) VALUES
@@ -578,16 +603,16 @@ INSERT INTO `sucursales` (`id`, `nombre`, `direccion`, `ciudad`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `telefonos`
+-- Table structure for table `telefonos`
 --
 
 CREATE TABLE `telefonos` (
-  `id_usuario` int(11) NOT NULL,
-  `numero` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id_usuario` int NOT NULL,
+  `numero` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `telefonos`
+-- Dumping data for table `telefonos`
 --
 
 INSERT INTO `telefonos` (`id_usuario`, `numero`) VALUES
@@ -656,22 +681,22 @@ INSERT INTO `telefonos` (`id_usuario`, `numero`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `turnos`
+-- Table structure for table `turnos`
 --
 
 CREATE TABLE `turnos` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `fecha` date NOT NULL,
   `hora_inicio` time NOT NULL,
   `motivo` varchar(250) DEFAULT NULL,
   `estado` varchar(100) NOT NULL,
-  `orden` int(11) DEFAULT NULL,
-  `id_paciente` int(11) DEFAULT NULL,
-  `id_agenda` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `orden` int DEFAULT NULL,
+  `id_paciente` int DEFAULT NULL,
+  `id_agenda` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `turnos`
+-- Dumping data for table `turnos`
 --
 
 INSERT INTO `turnos` (`id`, `fecha`, `hora_inicio`, `motivo`, `estado`, `orden`, `id_paciente`, `id_agenda`) VALUES
@@ -1693,19 +1718,19 @@ INSERT INTO `turnos` (`id`, `fecha`, `hora_inicio`, `motivo`, `estado`, `orden`,
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `usuarios`
+-- Table structure for table `usuarios`
 --
 
 CREATE TABLE `usuarios` (
-  `id` int(11) NOT NULL,
-  `dni` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `dni` int NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(100) DEFAULT NULL,
-  `id_rol` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id_rol` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `usuarios`
+-- Dumping data for table `usuarios`
 --
 
 INSERT INTO `usuarios` (`id`, `dni`, `email`, `password`, `id_rol`) VALUES
@@ -1761,11 +1786,11 @@ INSERT INTO `usuarios` (`id`, `dni`, `email`, `password`, `id_rol`) VALUES
 (54, 7766776, 'leonel123', '12341234', 4);
 
 --
--- Índices para tablas volcadas
+-- Indexes for dumped tables
 --
 
 --
--- Indices de la tabla `agendas`
+-- Indexes for table `agendas`
 --
 ALTER TABLE `agendas`
   ADD PRIMARY KEY (`id`),
@@ -1774,39 +1799,46 @@ ALTER TABLE `agendas`
   ADD KEY `id_clasificacion` (`id_clasificacion`);
 
 --
--- Indices de la tabla `clasificaciones`
+-- Indexes for table `clasificaciones`
 --
 ALTER TABLE `clasificaciones`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nombre` (`nombre`);
 
 --
--- Indices de la tabla `dias_disponibles`
+-- Indexes for table `dias`
+--
+ALTER TABLE `dias`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `dias_disponibles`
 --
 ALTER TABLE `dias_disponibles`
   ADD KEY `id_agenda` (`id_agenda`);
 
 --
--- Indices de la tabla `dias_no_laborables`
+-- Indexes for table `dias_no_laborables`
 --
 ALTER TABLE `dias_no_laborables`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `especialidades`
+-- Indexes for table `especialidades`
 --
 ALTER TABLE `especialidades`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unico` (`nombre`);
 
 --
--- Indices de la tabla `medicos`
+-- Indexes for table `medicos`
 --
 ALTER TABLE `medicos`
+  ADD PRIMARY KEY (`id_usuario`),
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indices de la tabla `medico_especialidad`
+-- Indexes for table `medico_especialidad`
 --
 ALTER TABLE `medico_especialidad`
   ADD UNIQUE KEY `unico` (`matricula`),
@@ -1814,7 +1846,7 @@ ALTER TABLE `medico_especialidad`
   ADD KEY `id_especialidad` (`id_especialidad`);
 
 --
--- Indices de la tabla `medico_obra_social`
+-- Indexes for table `medico_obra_social`
 --
 ALTER TABLE `medico_obra_social`
   ADD PRIMARY KEY (`id`),
@@ -1822,14 +1854,14 @@ ALTER TABLE `medico_obra_social`
   ADD KEY `id_obra_social` (`id_obra_social`);
 
 --
--- Indices de la tabla `obras_sociales`
+-- Indexes for table `obras_sociales`
 --
 ALTER TABLE `obras_sociales`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unico` (`nombre`);
 
 --
--- Indices de la tabla `pacientes`
+-- Indexes for table `pacientes`
 --
 ALTER TABLE `pacientes`
   ADD PRIMARY KEY (`dni`),
@@ -1837,33 +1869,33 @@ ALTER TABLE `pacientes`
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indices de la tabla `personas`
+-- Indexes for table `personas`
 --
 ALTER TABLE `personas`
   ADD PRIMARY KEY (`dni`);
 
 --
--- Indices de la tabla `roles`
+-- Indexes for table `roles`
 --
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nombre` (`nombre`);
 
 --
--- Indices de la tabla `sucursales`
+-- Indexes for table `sucursales`
 --
 ALTER TABLE `sucursales`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `telefonos`
+-- Indexes for table `telefonos`
 --
 ALTER TABLE `telefonos`
   ADD UNIQUE KEY `unico` (`numero`),
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indices de la tabla `turnos`
+-- Indexes for table `turnos`
 --
 ALTER TABLE `turnos`
   ADD PRIMARY KEY (`id`),
@@ -1871,7 +1903,7 @@ ALTER TABLE `turnos`
   ADD KEY `id_paciente` (`id_paciente`);
 
 --
--- Indices de la tabla `usuarios`
+-- Indexes for table `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
@@ -1880,75 +1912,81 @@ ALTER TABLE `usuarios`
   ADD KEY `id_rol` (`id_rol`);
 
 --
--- AUTO_INCREMENT de las tablas volcadas
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT de la tabla `agendas`
+-- AUTO_INCREMENT for table `agendas`
 --
 ALTER TABLE `agendas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT de la tabla `clasificaciones`
+-- AUTO_INCREMENT for table `clasificaciones`
 --
 ALTER TABLE `clasificaciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de la tabla `dias_no_laborables`
+-- AUTO_INCREMENT for table `dias`
+--
+ALTER TABLE `dias`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `dias_no_laborables`
 --
 ALTER TABLE `dias_no_laborables`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT de la tabla `especialidades`
+-- AUTO_INCREMENT for table `especialidades`
 --
 ALTER TABLE `especialidades`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT de la tabla `medico_obra_social`
+-- AUTO_INCREMENT for table `medico_obra_social`
 --
 ALTER TABLE `medico_obra_social`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
--- AUTO_INCREMENT de la tabla `obras_sociales`
+-- AUTO_INCREMENT for table `obras_sociales`
 --
 ALTER TABLE `obras_sociales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de la tabla `roles`
+-- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT de la tabla `sucursales`
+-- AUTO_INCREMENT for table `sucursales`
 --
 ALTER TABLE `sucursales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de la tabla `turnos`
+-- AUTO_INCREMENT for table `turnos`
 --
 ALTER TABLE `turnos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1669;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1669;
 
 --
--- AUTO_INCREMENT de la tabla `usuarios`
+-- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
--- Restricciones para tablas volcadas
+-- Constraints for dumped tables
 --
 
 --
--- Filtros para la tabla `agendas`
+-- Constraints for table `agendas`
 --
 ALTER TABLE `agendas`
   ADD CONSTRAINT `agendas_ibfk_1` FOREIGN KEY (`matricula`) REFERENCES `medico_especialidad` (`matricula`),
@@ -1956,56 +1994,23 @@ ALTER TABLE `agendas`
   ADD CONSTRAINT `agendas_ibfk_3` FOREIGN KEY (`id_clasificacion`) REFERENCES `clasificaciones` (`id`);
 
 --
--- Filtros para la tabla `dias_disponibles`
+-- Constraints for table `dias_disponibles`
 --
 ALTER TABLE `dias_disponibles`
   ADD CONSTRAINT `dias_disponibles_ibfk_1` FOREIGN KEY (`id_agenda`) REFERENCES `agendas` (`id`);
 
 --
--- Filtros para la tabla `medicos`
+-- Constraints for table `medicos`
 --
 ALTER TABLE `medicos`
   ADD CONSTRAINT `medicos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`);
 
 --
--- Filtros para la tabla `medico_especialidad`
+-- Constraints for table `medico_especialidad`
 --
 ALTER TABLE `medico_especialidad`
   ADD CONSTRAINT `medico_especialidad_ibfk_1` FOREIGN KEY (`id_medico`) REFERENCES `medicos` (`id_usuario`),
   ADD CONSTRAINT `medico_especialidad_ibfk_2` FOREIGN KEY (`id_especialidad`) REFERENCES `especialidades` (`id`);
-
---
--- Filtros para la tabla `medico_obra_social`
---
-ALTER TABLE `medico_obra_social`
-  ADD CONSTRAINT `medico_obra_social_ibfk_1` FOREIGN KEY (`id_medico`) REFERENCES `medicos` (`id_usuario`);
-
---
--- Filtros para la tabla `pacientes`
---
-ALTER TABLE `pacientes`
-  ADD CONSTRAINT `pacientes_ibfk_3` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
-  ADD CONSTRAINT `pacientes_ibfk_4` FOREIGN KEY (`dni`) REFERENCES `personas` (`dni`);
-
---
--- Filtros para la tabla `telefonos`
---
-ALTER TABLE `telefonos`
-  ADD CONSTRAINT `telefonos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`);
-
---
--- Filtros para la tabla `turnos`
---
-ALTER TABLE `turnos`
-  ADD CONSTRAINT `turnos_ibfk_1` FOREIGN KEY (`id_agenda`) REFERENCES `agendas` (`id`),
-  ADD CONSTRAINT `turnos_ibfk_2` FOREIGN KEY (`id_paciente`) REFERENCES `pacientes` (`id_usuario`);
-
---
--- Filtros para la tabla `usuarios`
---
-ALTER TABLE `usuarios`
-  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`dni`) REFERENCES `personas` (`dni`),
-  ADD CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
