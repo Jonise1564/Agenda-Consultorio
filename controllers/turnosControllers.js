@@ -59,6 +59,26 @@ async createForm(req, res, next) {
 }
 
 // Guardar un turno
+// async store(req, res, next) {
+//     try {
+//         const { id } = req.params; // id_agenda viene por params
+//         const { fecha, hora_inicio, motivo, id_paciente } = req.body;
+
+//         await Turno.create({
+//             fecha,
+//             hora_inicio,
+//             motivo,
+//             id_paciente,
+//             id_agenda: id
+//         });
+
+//         res.redirect(`/turnos/${id}?nombreStore=1`);
+//     } catch (error) {
+//         console.error('Error al crear turno desde el controlador:', error);
+//         next(error);
+//     }
+// }
+
 async store(req, res, next) {
     try {
         const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = req.body;
@@ -76,15 +96,11 @@ async store(req, res, next) {
         console.error('Error al crear turno desde el controlador:', error);
         next(error);
     }
+
+}
+
 }
 
 
-
-
-
-
-
-
-}
 
 module.exports = new TurnosController()
