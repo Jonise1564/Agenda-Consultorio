@@ -28,18 +28,45 @@
 
 // */
 // module.exports = TurnosRouter;
+// const express = require('express');
+// const TurnosRouter = express.Router();
+// const TurnosControllers = require('../controllers/turnosControllers');
+
+// // Mostrar todos los turnos de una agenda
+// TurnosRouter.get('/:id', TurnosControllers.get);
+
+// // Mostrar formulario para crear un turno
+// TurnosRouter.get('/:id/create', TurnosControllers.createForm);
+
+// // Guardar un turno nuevo
+// TurnosRouter.post('/:id', TurnosControllers.store);
+
+// module.exports = TurnosRouter;
+
+
+
+
 const express = require('express');
 const TurnosRouter = express.Router();
 const TurnosControllers = require('../controllers/turnosControllers');
 
-// Mostrar todos los turnos de una agenda
+// -------------------------------------------
+// MOSTRAR FORMULARIO PARA RESERVAR / CREAR TURNO
+// -------------------------------------------
+//TurnosRouter.get('/reservar/:id', TurnosControllers.createForm);
+
+// -------------------------------------------
+// GUARDAR TURNO (POST)
+// -------------------------------------------
+TurnosRouter.post('/', TurnosControllers.store);
+
+// -------------------------------------------
+// LISTAR TURNOS DE UNA AGENDA
+// -------------------------------------------
 TurnosRouter.get('/:id', TurnosControllers.get);
+//RESERVAR TURNOS
+TurnosRouter.get('/reservar/:id', TurnosControllers.reservarForm);
 
-// Mostrar formulario para crear un turno
-TurnosRouter.get('/:id/create', TurnosControllers.createForm);
-
-// Guardar un turno nuevo
-TurnosRouter.post('/:id', TurnosControllers.store);
 
 module.exports = TurnosRouter;
 

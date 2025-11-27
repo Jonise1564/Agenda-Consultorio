@@ -1,0 +1,36 @@
+extends ../layout
+
+block contenido
+  h1 Reservar Turno
+
+  form(action="/turnos/reservar" method="POST")
+    input(type="hidden" name="id" value=turno.id)
+    input(type="hidden" name="id_agenda" value=turno.id_agenda)
+
+    .mb-3
+      label Fecha:
+      input.form-control(type="date" value=turno.fecha readonly)
+
+    .mb-3
+      label Hora:
+      input.form-control(type="time" value=turno.hora_inicio readonly)
+
+    .mb-3
+      label Motivo:
+      input.form-control(type="text" name="motivo" value=turno.motivo required)
+
+    .mb-3
+      label Estado:
+      select.form-select(name="estado")
+        option(value="pendiente" selected=turno.estado==="pendiente") Pendiente
+        option(value="reservado" selected=turno.estado==="reservado") Reservado
+        option(value="cancelado" selected=turno.estado==="cancelado") Cancelado
+        option(value="atendido" selected=turno.estado==="atendido") Atendido
+
+    .mb-3
+      label Paciente:
+      input.form-control(type="number" name="id_paciente" value=turno.id_paciente required)
+
+    button.btn.btn-primary(type="submit") Guardar Reserva
+
+    a.btn.btn-secondary(href=`/turnos/${turno.id_agenda}`) Cancelar
