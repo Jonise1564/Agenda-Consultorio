@@ -174,14 +174,22 @@ class Turno {
         try {
             conn = await createConnection();
             const [turnos] = await conn.query(`
-                SELECT 
+            SELECT 
                     t.*,
-                    CONCAT(per.apellido, ', ', per.nombre) AS paciente_nombre
+                    p.nombre AS paciente_nombre,
+                    p.dni AS paciente_dni,
+                    m.id_medico,
+                    mp.nombre AS nombre_medico,
+                    mp.apellido AS apellido_medico
                 FROM turnos t
-                LEFT JOIN pacientes p ON t.id_paciente = p.id
-                LEFT JOIN personas per ON p.id_persona = per.id
+                LEFT JOIN pacientes pa ON t.id_paciente = pa.id
+                LEFT JOIN personas p ON pa.id_persona = p.id
+                INNER JOIN agendas a ON t.id_agenda = a.id
+                INNER JOIN medicos m ON a.matricula = m.matricula
+                INNER JOIN personas mp ON m.id_persona = mp.id
                 WHERE t.id_agenda = ?
-                ORDER BY t.fecha, t.hora_inicio
+                ORDER BY t.fecha, t.hora_inicio;
+
             `, [id_agenda]);
 
             return turnos;

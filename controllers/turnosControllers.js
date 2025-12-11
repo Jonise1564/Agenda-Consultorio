@@ -138,53 +138,95 @@ class TurnosController {
     // ========================================
     // LISTAR TURNOS DE UNA AGENDA
     // ========================================
+    // async get(req, res) {
+    //     try {
+    //         const { id } = req.params; 
+    //         const turnos = await Turno.getAll(id);
+
+    //         const turnosFormateados = turnos.map(t => ({
+    //             ...t,
+    //             fecha_formateada: formatearFecha(t.fecha)
+    //         }));
+
+    //         res.render('turnos/index', {
+    //             turnos: turnosFormateados,
+    //             id_agenda: id
+    //         });
+
+    //     } catch (error) {
+    //         console.error("Error GET Turnos:", error);
+    //         res.status(500).send("Error al cargar los turnos");
+    //     }
+    // }
     async get(req, res) {
-        try {
-            const { id } = req.params; 
-            const turnos = await Turno.getAll(id);
+    try {
+        const { id } = req.params; 
+        const turnos = await Turno.getAll(id);
 
-            const turnosFormateados = turnos.map(t => ({
+        // Traer todos los pacientes activos para poder mapear nombres, apellidos y DNI
+        const pacientes = await Paciente.getAll();
+
+        const turnosFormateados = turnos.map(t => {
+            // Buscar paciente del turno
+            const paciente = pacientes.find(p => p.id_paciente === t.id_paciente);
+            return {
                 ...t,
-                fecha_formateada: formatearFecha(t.fecha)
-            }));
+                fecha_formateada: formatearFecha(t.fecha),
+                paciente_nombre: paciente ? `${paciente.nombre} ${paciente.apellido}` : null,
+                dni: paciente ? paciente.dni : null
+            };
+        });
 
-            res.render('turnos/index', {
-                turnos: turnosFormateados,
-                id_agenda: id
-            });
+        res.render('turnos/index', {
+            turnos: turnosFormateados,
+            id_agenda: id
+        });
 
-        } catch (error) {
-            console.error("Error GET Turnos:", error);
-            res.status(500).send("Error al cargar los turnos");
-        }
+    } catch (error) {
+        console.error("Error GET Turnos:", error);
+        res.status(500).send("Error al cargar los turnos");
     }
+}
+
 
     // ========================================
     // FORMULARIO RESERVAR TURNO
     // ========================================
     async reservarForm(req, res) {
-        try {
-            const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-            const turno = await Turno.getById(id);
-            if (!turno) return res.status(404).send("Turno no encontrado");
+        // Traer turno
+        const turno = await Turno.getById(id);
+        if (!turno) return res.status(404).send("Turno no encontrado");
 
-            turno.fecha_formateada = formatearFecha(turno.fecha);
-            turno.fecha_input = fechaParaInput(turno.fecha);
+        turno.fecha_formateada = formatearFecha(turno.fecha);
+        turno.fecha_input = fechaParaInput(turno.fecha);
 
-            // (Opcional) Podés sacarlo si ya no lo usás
-            const pacientes = await Paciente.getAll();
+        // Traer pacientes activos con DNI y nombre
+        const pacientes = await Paciente.getAll(); // ya trae nombre, apellido y dni
 
-            res.render("turnos/reservar", {
-                turno,
-                pacientes
-            });
-
-        } catch (error) {
-            console.error("Error cargar vista reservar:", error);
-            res.status(500).send("Error al cargar la vista de reserva");
+        // Si el turno ya tiene paciente asignado, buscar sus datos completos
+        if (turno.id_paciente) {
+            const pacienteCompleto = pacientes.find(p => p.id_paciente === turno.id_paciente);
+            if (pacienteCompleto) {
+                turno.paciente_nombre = pacienteCompleto.nombre;
+                turno.paciente_apellido = pacienteCompleto.apellido;
+                turno.dni = pacienteCompleto.dni;
+            }
         }
+
+        res.render("turnos/reservar", {
+            turno,
+            pacientes
+        });
+
+    } catch (error) {
+        console.error("Error cargar vista reservar:", error);
+        res.status(500).send("Error al cargar la vista de reserva");
     }
+}
+
 
     // ========================================
     // GUARDAR RESERVA
