@@ -3,34 +3,115 @@ extends ../layout
 block contenido
   h1 Reservar Turno
 
-  form(action="/turnos/reservar" method="POST")
+  form(action=`/turnos/reservar/${turno.id}` method="POST")
+
+    // =========================
+    // CAMPOS OCULTOS
+    // =========================
     input(type="hidden" name="id" value=turno.id)
     input(type="hidden" name="id_agenda" value=turno.id_agenda)
 
+    // =========================
+    // FECHA
+    // =========================
     .mb-3
       label Fecha:
-      input.form-control(type="date" value=turno.fecha readonly)
+      input.form-control(type="date" name="fecha" value=turno.fecha_input readonly)
 
+    // =========================
+    // HORA
+    // =========================
     .mb-3
       label Hora:
-      input.form-control(type="time" value=turno.hora_inicio readonly)
+      input.form-control(type="time" name="hora_inicio" value=turno.hora_inicio readonly)
 
+    // =========================
+    // MOTIVO
+    // =========================
     .mb-3
       label Motivo:
       input.form-control(type="text" name="motivo" value=turno.motivo required)
 
+    // =========================
+    // ESTADO
+    // =========================
     .mb-3
       label Estado:
       select.form-select(name="estado")
-        option(value="pendiente" selected=turno.estado==="pendiente") Pendiente
-        option(value="reservado" selected=turno.estado==="reservado") Reservado
-        option(value="cancelado" selected=turno.estado==="cancelado") Cancelado
-        option(value="atendido" selected=turno.estado==="atendido") Atendido
+        option(value="Libre" selected=turno.estado==="Libre") Libre
+        option(value="Reservado" selected=turno.estado==="Reservado") Reservado
+        option(value="Confirmado" selected=turno.estado==="Confirmado") Confirmado
+        option(value="Pendiente" selected=turno.estado==="Pendiente") Pendiente
+        option(value="Cancelado" selected=turno.estado==="Cancelado") Cancelado
+        option(value="Ausente" selected=turno.estado==="Ausente") Ausente
+        option(value="Presente" selected=turno.estado==="Presente") Presente
+        option(value="En Consulta" selected=turno.estado==="En Consulta") En Consulta
+        option(value="Atendido" selected=turno.estado==="Atendido") Atendido
+        option(value="No Disponible" selected=turno.estado==="No Disponible") No Disponible
 
+    // =========================
+    // PACIENTE (BUSCADOR + SELECT)
+    // =========================
     .mb-3
       label Paciente:
-      input.form-control(type="number" name="id_paciente" value=turno.id_paciente required)
 
+      // Buscador AJAX
+      input#buscadorPaciente.form-control(
+        type="text"
+        placeholder="Buscar paciente por nombre o DNI..."
+      )
+
+      // Select dinámico
+      select#selectPaciente.form-select(name="id_paciente" required)
+        if turno.id_paciente
+          option(value=turno.id_paciente selected)= `${turno.paciente_nombre} ${turno.paciente_apellido} (DNI ${turno.dni})`
+        else
+          option(value="" disabled selected) Seleccione un paciente...
+
+    // =========================
+    // BOTONES
+    // =========================
     button.btn.btn-primary(type="submit") Guardar Reserva
-
     a.btn.btn-secondary(href=`/turnos/${turno.id_agenda}`) Cancelar
+
+  // =========================
+  // SCRIPT BUSCADOR DE PACIENTES
+  // =========================
+  script.
+    document.addEventListener("DOMContentLoaded", () => {
+      const buscador = document.getElementById("buscadorPaciente");
+      const select = document.getElementById("selectPaciente");
+
+      buscador.addEventListener("input", async () => {
+        const texto = buscador.value.trim();
+
+        if (texto.length < 2) {
+          select.innerHTML =
+            '<option value="" disabled selected>Escribí para buscar pacientes...</option>';
+          return;
+        }
+
+        try {
+          const res = await fetch(`/pacientes/buscar?query=${texto}`);
+          const pacientes = await res.json();
+
+          select.innerHTML = "";
+
+          if (!pacientes || pacientes.length === 0) {
+            select.innerHTML =
+              '<option value="" disabled>No se encontraron pacientes</option>';
+            return;
+          }
+
+          pacientes.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id_paciente;   //  ENVÍA EL ID REAL DEL PACIENTE
+            opt.textContent = `${p.nombre} ${p.apellido} (DNI ${p.dni})`;
+            select.appendChild(opt);
+          });
+
+        } catch (error) {
+          console.error("Error buscando pacientes:", error);
+        }
+      });
+    });

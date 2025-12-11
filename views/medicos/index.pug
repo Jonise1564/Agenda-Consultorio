@@ -1,63 +1,5 @@
-//- extends ../layout
-//- block contenido
-//-     h1 Medicos
-//-     a(href="/medicos/create" class="btn btn-success") Crear Médico
-    
-//-     a(href="/especialidades" class="btn btn-primary") Gestionar Especialidades
-
-//-     if mensaje
-//-       .alert.alert-success
-//-         h1= mensaje
-        
-//-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-//-     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
-//-     table#example  
-//-         thead 
-//-             tr 
-//-                 th Foto
-//-                 th Id
-//-                 th N° Documento
-//-                 th Nombre
-//-                 th Apellido
-//-                 th Fecha Nacimiento
-//-                 th Correo
-//-                 th Contraseña
-//-                 th Rol
-//-                 th Especialidades
-//-                 th Matriculas
-//-                 th Telefonos
-//-                 th Estado
-//-                 th Acciones
-//-         tbody 
-//-             each medico in medicos 
-//-                 tr 
-//-                     th 
-//-                         img(src="/images/user_icon_004.jpg", alt="alt" class="img_dr") 
-//-                     td= medico.id
-//-                     td= medico.dni
-//-                     td= medico.nombre
-//-                     td= medico.apellido
-//-                     td= medico.nacimiento
-//-                     td= medico.email 
-//-                     td ******
-//-                     td Profesional
-//-                     td
-//-                         select
-//-                             each especialidad in medico.especialidades.split(', ')
-//-                                 option= especialidad
-//-                     td
-//-                         select
-//-                             each matricula in medico.matriculas.split(', ')
-//-                                 option= matricula
-//-                     td
-//-                         select
-//-                             each telefono in medico.telefonos.split(', ')
-//-                                 option= telefono
-
-//-                     td= (medico.estado === 1) ? 'Activo' : 'Inactivo'
-//-                     td
-//-                        a(href=`/medicos/edit/${medico.dni}` class="btn btn-info") Gestionar
 extends ../layout
+
 block contenido
     h1 Medicos
     a(href="/medicos/create" class="btn btn-success") Crear Médico
@@ -76,46 +18,75 @@ block contenido
     table#example
         thead
             tr
-                th Foto
-                th Id
                 th N° Documento
                 th Nombre
                 th Apellido
                 th Fecha Nacimiento
-                th Correo
-                th Contraseña
-                th Rol
                 th Especialidades
-                th Matriculas
+                th Matricula
                 th Telefonos
                 th Estado
                 th Acciones
+
         tbody
             each medico in medicos
+                - const especialidades = medico.especialidades ? medico.especialidades.split(', ') : []
+                - const matriculas = medico.matriculas ? medico.matriculas.split(', ') : []
+                - const telefonos = medico.telefonos ? medico.telefonos.split(', ') : []
+
                 tr
-                    th
-                        img(src="/images/user_icon_004.jpg", alt="alt", class="img_dr")
-                    td= medico.id
                     td= medico.dni
                     td= medico.nombre
                     td= medico.apellido
-                    td= medico.nacimiento
-                    td= medico.email
-                    td ****** 
-                    td Profesional
+                    td= medico.nacimiento || "Sin datos"
+
+                    // -----------------------------
+                    // ESPECIALIDADES
+                    // -----------------------------
                     td
-                        select
-                            each especialidad in medico.especialidades.split(', ')
-                                option= especialidad
+                        if especialidades.length === 0
+                            span Sin datos
+                        else if especialidades.length === 1
+                            span= especialidades[0]
+                        else
+                            select
+                                each esp in especialidades
+                                    option= esp
+
+                    // -----------------------------
+                    // MATRICULAS
+                    // -----------------------------
                     td
-                        select
-                            each matricula in medico.matriculas.split(', ')
-                                option= matricula
+                        if matriculas.length === 0
+                            span Sin datos
+                        else if matriculas.length === 1
+                            span= matriculas[0]
+                        else
+                            select
+                                each mat in matriculas
+                                    option= mat
+
+                    // -----------------------------
+                    // TELEFONOS
+                    // -----------------------------
                     td
-                        select
-                            each telefono in medico.telefonos.split(', ')
-                                option= telefono
-                    td= (medico.estado === 1) ? 'Activo' : 'Inactivo'
+                        if telefonos.length === 0
+                            span Sin datos
+                        else if telefonos.length === 1
+                            span= telefonos[0]
+                        else
+                            select
+                                each tel in telefonos
+                                    option= tel
+
+                    // -----------------------------
+                    // ESTADO
+                    // -----------------------------
+                    td= medico.estado === 1 ? "Activo" : "Inactivo"
+
+                    // -----------------------------
+                    // ACCIONES
+                    // -----------------------------
                     td
-                        a(href=`/medicos/edit/${medico.dni}` class="btn btn-info btn-sm") Gestionar
+                        a(href=`/medicos/edit/${medico.id_medico}` class="btn btn-info btn-sm") Gestionar
                         

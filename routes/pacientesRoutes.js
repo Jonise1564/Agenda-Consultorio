@@ -1,28 +1,32 @@
-
 const express = require('express');
-const PacientesRouter = express.Router()
+const PacientesRouter = express.Router();
 const PacientesControllers = require('../controllers/pacientesControllers');
 
-// Index
-PacientesRouter.get('/', PacientesControllers.get)
-// Vista crear (GET para mostrar el formulario)
-PacientesRouter.get('/create', PacientesControllers.getCreateForm)
 
-// redirigir a la vista crear
-PacientesRouter.get('/create', PacientesControllers.create)
+// Listado general
+PacientesRouter.get('/', PacientesControllers.get);
 
-// Guardar nuevo médico (POST para la ruta raíz, si es necesario)
-PacientesRouter.post('/', PacientesControllers.store)
+// Vista crear (formulario)
+PacientesRouter.get('/create', PacientesControllers.getCreateForm);
+
+// Guardar nuevo paciente
+PacientesRouter.post('/', PacientesControllers.store);
+
+// Buscador on-demand
+PacientesRouter.get('/search', PacientesControllers.search);
+PacientesRouter.get('/buscar', PacientesControllers.search);
 
 // Vista editar
-PacientesRouter.get('/edit/:dni', PacientesControllers.edit)
-/
-// Actualizar médico
-PacientesRouter.post('/update/:dni', PacientesControllers.update);
+PacientesRouter.get('/edit/:id', PacientesControllers.edit);
 
-// Eliminar médico
-PacientesRouter.post('/activar/:dni', PacientesControllers.activar)
-//inactivar
-PacientesRouter.post('/inactivar/:dni', PacientesControllers.inactivar)
+// Actualizar paciente
+PacientesRouter.post('/update/:id', PacientesControllers.update);
 
-module.exports = PacientesRouter
+// Activar
+PacientesRouter.post('/activar/:id', PacientesControllers.activar);
+
+// Inactivar
+PacientesRouter.post('/inactivar/:id', PacientesControllers.inactivar);
+
+module.exports = PacientesRouter;
+

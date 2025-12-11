@@ -30,23 +30,23 @@ block contenido
 
     .page-container
 
-        // ======================
-        // TÍTULO Y SUBTÍTULO
-        // ======================
+        // ---------------- BOTÓN VOLVER (IZQUIERDA) ----------------
+        .mb-3
+            a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+        // ----------------------------------------------------------
+
         h1.center-text Turnos
 
+        // -------------------- NOMBRE DEL MÉDICO --------------------
         if turnos && turnos.length > 0
-            h3.center-text Turnos del Dr. #{turnos[0].nombre} #{turnos[0].apellido}
+            - const medicoNombre = turnos[0].nombre || "Doctor"
+            - const medicoApellido = turnos[0].apellido || ""
+            h3.center-text Turnos del Dr. #{medicoNombre} #{medicoApellido}
         else
             h3.center-text Turnos del Doctor
 
         br
 
-        a(href="/turnos/create" class="btn btn-success mb-3") Crear Turno
-
-        // ======================
-        // MENSAJE SWEET ALERT
-        // ======================
         if mensaje
             script.
                 Swal.fire({
@@ -56,9 +56,6 @@ block contenido
                     confirmButtonText: 'OK'
                 });
 
-        // ======================
-        // FILTRO ESTADO
-        // ======================
         p Estado
         select(name="estado" id="estado" class="form-select small-width mb-3")
             option(value="") Todos
@@ -72,48 +69,34 @@ block contenido
             option(value="Atendido") Atendido
             option(value="No Disponible") No Disponible  
 
-        // ======================
-        // TABLA
-        // ======================
         table#tablaTurnos.table.table-striped.table-bordered
             thead
                 tr 
-                    th Id
-                    th Agenda
                     th Fecha
                     th Hora
                     th Motivo
                     th Estado 
                     th Orden
                     th Paciente
+                    th DNI
                     th Acciones                
             tbody 
                 each turno in turnos
                     tr(data-estado=turno.estado)
-                        td= turno.id
-                        td= turno.id_agenda
-                        td= turno.fecha
+                        td= turno.fecha_formateada
                         td= `${turno.hora_inicio} hs`
                         td= turno.motivo || "Vacío"
                         td= turno.estado
                         td= turno.orden
-                        td= turno.id_paciente || "Vacío"
-
+                        td= turno.paciente_nombre || 'Vacío'
+                        td= turno.id_paciente || 'Vacío'
                         td.actions
-                            // ====== RESERVAR TURNO ======
                             a(href=`/turnos/reservar/${turno.id}`)
                                 i.icon-reservar.fa-solid.fa-calendar-check(title="Reservar")
-
-                            // ====== EDITAR ======
                             a(href=`/turnos/edit/${turno.id}`)
                                 i.icon-edit.fa-solid.fa-pen-to-square(title="Editar")
-
-                            // ====== ELIMINAR ======
                             i.icon-delete.fa-solid.fa-trash(title="Eliminar", onclick=`confirmDelete(${turno.id})`)
 
-    // ======================
-    // SCRIPTS
-    // ======================
     script.
         function confirmDelete(id) {
             Swal.fire({
@@ -139,7 +122,6 @@ block contenido
                 .catch(() => Swal.fire('Error', 'Hubo un problema eliminando el turno.', 'error'));
         }
 
-        // Filtrar por estado
         document.getElementById("estado").addEventListener("change", function () {
             const estado = this.value;
             document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
@@ -149,4 +131,3 @@ block contenido
                     row.style.display = "none";
             });
         });
-

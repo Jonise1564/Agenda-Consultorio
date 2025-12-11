@@ -19,11 +19,11 @@ class Persona {
         }//Hacer validaciones etc
     }
 
-    static async getById(dni) {
+    static async getById(id) {
         console.log('Model: Get Id persona ')
         try {
             const conn = await createConnection()
-            const [personas] = await conn.query('SELECT * FROM personas WHERE dni = ?', [dni])
+            const [personas] = await conn.query('SELECT * FROM personas WHERE id = ?', [id])
             if (personas.length === 0) return null
             return personas
         } catch (error) {

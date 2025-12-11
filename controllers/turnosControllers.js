@@ -1,308 +1,232 @@
 // const Turno = require('../models/turnosModels');
-// const { obtenerFechaFormateada } = require('../utils/dateFormatter');
-// const { obtenerHoraFormateada } = require('../utils/timeFormatter');
+// const Paciente = require('../models/pacientesModels');
+
+// // Función para formatear fecha (DD/MM/YYYY)
+// function formatearFecha(fecha) {
+//     const f = new Date(fecha);
+//     const dia = String(f.getDate()).padStart(2, '0');
+//     const mes = String(f.getMonth() + 1).padStart(2, '0');
+//     const año = f.getFullYear();
+//     return `${dia}/${mes}/${año}`;
+// }
+
+// // Fecha en formato compatible con <input type="date">
+// function fechaParaInput(fecha) {
+//     const f = new Date(fecha);
+//     const dia = String(f.getDate()).padStart(2, "0");
+//     const mes = String(f.getMonth() + 1).padStart(2, "0");
+//     const año = f.getFullYear();
+//     return `${año}-${mes}-${dia}`;
+// }
+
 
 // class TurnosController {
 
-//     // =======================================
-//     // LISTAR TURNOS POR AGENDA
-//     // =======================================
-//     async get(req, res, next) {
+//     // Mostrar todos los turnos de una agenda
+//     async get(req, res) {
 //         try {
-//             const { id } = req.params;
+//             const { id } = req.params; // id agenda
 //             const turnos = await Turno.getAll(id);
 
-//             const turnosFormateado = turnos.map(turno => ({
-//                 ...turno,
-//                 hora_inicio: obtenerHoraFormateada(turno.hora_inicio),
-//                 fecha: obtenerFechaFormateada(new Date(turno.fecha))
+//             // Añadir fecha formateada para mostrar en la tabla
+//             const turnosFormateados = turnos.map(t => ({
+//                 ...t,
+//                 fecha_formateada: formatearFecha(t.fecha)
 //             }));
 
-//             res.render('turnos/index', { 
-//                 turnos: turnosFormateado, 
-//                 mensaje: req.query.mensaje,
+//             res.render('turnos/index', {
+//                 turnos: turnosFormateados,
 //                 id_agenda: id
 //             });
 
 //         } catch (error) {
-//             console.error('Error al obtener turnos:', error);
-//             next(error);
+//             console.error("Error GET Turnos:", error);
+//             res.status(500).send("Error al cargar los turnos");
 //         }
 //     }
 
-//     // =======================================
-//     // FORMULARIO CREAR
-//     // =======================================
-//     async createForm(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             res.render('turnos/create', { id_agenda: id });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
+//     // Mostrar formulario para reservar un turno
+// async reservarForm(req, res) {
+//     try {
+//         const { id } = req.params;
 
-//     // =======================================
-//     // GUARDAR NUEVO TURNO
-//     // =======================================
-//     async store(req, res, next) {
-//         try {
-//             const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = req.body;
+//         const turno = await Turno.getById(id);
+//         if (!turno) return res.status(404).send("Turno no encontrado");
 
-//             await Turno.create({
-//                 fecha,
-//                 hora_inicio,
-//                 motivo,
-//                 id_paciente,
-//                 id_agenda
-//             });
+//         turno.fecha_formateada = formatearFecha(turno.fecha);
+//         turno.fecha_input = fechaParaInput(turno.fecha);   // ← OK AHORA SÍ
 
-//             res.redirect(`/turnos/${id_agenda}?mensaje=Turno creado correctamente`);
-//         } catch (error) {
-//             console.error('Error creando turno:', error);
-//             next(error);
-//         }
-//     }
+//         const pacientes = await Paciente.getAll();
 
-//     // =======================================
-//     // FORM EDITAR
-//     // =======================================
-//     async editForm(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             const turno = await Turno.getById(id);
+//         res.render("turnos/reservar", {
+//             turno,
+//             pacientes
+//         });
 
-//             res.render('turnos/edit', { turno });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // =======================================
-//     // ACTUALIZAR
-//     // =======================================
-//     async update(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             const { fecha, hora_inicio, motivo, id_paciente, estado, id_agenda } = req.body;
-
-//             await Turno.update(id, {
-//                 fecha,
-//                 hora_inicio,
-//                 motivo,
-//                 id_paciente,
-//                 estado
-//             });
-
-//             res.redirect(`/turnos/${id_agenda}?mensaje=Turno actualizado`);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // =======================================
-//     // ELIMINAR
-//     // =======================================
-//     async delete(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             await Turno.delete(id);
-
-//             res.json({ success: true });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // =======================================
-//     // RESERVAR (CAMBIAR ESTADO)
-//     // =======================================
-//     async reservar(req, res, next) {
-//         try {
-//             const { id } = req.params;
-
-//             await Turno.updateEstado(id, "Reservado");
-
-//             res.redirect("back");
-//         } catch (error) {
-//             next(error);
-//         }
+//     } catch (error) {
+//         console.error("Error cargar vista reservar:", error);
+//         res.status(500).send("Error al cargar la vista de reserva");
 //     }
 // }
 
 
+//     // Procesar reserva
+//     async reservar(req, res) {
+//         try {
+//             const { id } = req.params;
+//             const { motivo, estado, id_paciente } = req.body;
 
+//             await Turno.update(id, {
+//                 fecha: req.body.fecha,
+//                 hora_inicio: req.body.hora_inicio,
+//                 motivo,
+//                 estado,
+//                 id_paciente
+//             });
 
+//             res.redirect('/turnos/' + req.body.id_agenda);
+
+//         } catch (error) {
+//             console.error("Error al reservar turno:", error);
+//             res.status(500).send("Error al reservar turno");
+//         }
+//     }
+
+//     // Eliminar turno
+//     async delete(req, res) {
+//         try {
+//             const { id } = req.params;
+//             const { id_agenda } = req.query;
+
+//             await Turno.delete(id);
+
+//             res.redirect("/turnos/" + id_agenda);
+
+//         } catch (error) {
+//             console.error("Error eliminando turno:", error);
+//             res.status(500).send("Error al eliminar el turno");
+//         }
+//     }
+
+// }
 
 // module.exports = new TurnosController();
-
 const Turno = require('../models/turnosModels');
-const { obtenerFechaFormateada } = require('../utils/dateFormatter');
-const { obtenerHoraFormateada } = require('../utils/timeFormatter');
+const Paciente = require('../models/pacientesModels');
+
+// ------------------------------
+// FORMATOS DE FECHA
+// ------------------------------
+function formatearFecha(fecha) {
+    const f = new Date(fecha);
+    const dia = String(f.getDate()).padStart(2, '0');
+    const mes = String(f.getMonth() + 1).padStart(2, '0');
+    const año = f.getFullYear();
+    return `${dia}/${mes}/${año}`;
+}
+
+function fechaParaInput(fecha) {
+    const f = new Date(fecha);
+    const dia = String(f.getDate()).padStart(2, "0");
+    const mes = String(f.getMonth() + 1).padStart(2, "0");
+    const año = f.getFullYear();
+    return `${año}-${mes}-${dia}`;
+}
 
 class TurnosController {
 
-    // =======================================
-    // LISTAR TURNOS POR AGENDA
-    // =======================================
-    async get(req, res, next) {
+    // ========================================
+    // LISTAR TURNOS DE UNA AGENDA
+    // ========================================
+    async get(req, res) {
         try {
-            const { id } = req.params;
+            const { id } = req.params; 
             const turnos = await Turno.getAll(id);
 
-            const turnosFormateado = turnos.map(turno => ({
-                ...turno,
-                hora_inicio: obtenerHoraFormateada(turno.hora_inicio),
-                fecha: obtenerFechaFormateada(new Date(turno.fecha))
+            const turnosFormateados = turnos.map(t => ({
+                ...t,
+                fecha_formateada: formatearFecha(t.fecha)
             }));
 
-            res.render('turnos/index', { 
-                turnos: turnosFormateado, 
-                mensaje: req.query.mensaje,
+            res.render('turnos/index', {
+                turnos: turnosFormateados,
                 id_agenda: id
             });
 
         } catch (error) {
-            console.error('Error al obtener turnos:', error);
-            next(error);
+            console.error("Error GET Turnos:", error);
+            res.status(500).send("Error al cargar los turnos");
         }
     }
 
-    // =======================================
-    // FORMULARIO CREAR
-    // =======================================
-    async createForm(req, res, next) {
+    // ========================================
+    // FORMULARIO RESERVAR TURNO
+    // ========================================
+    async reservarForm(req, res) {
         try {
             const { id } = req.params;
-            res.render('turnos/create', { id_agenda: id });
-        } catch (error) {
-            next(error);
-        }
-    }
 
-    // =======================================
-    // GUARDAR NUEVO TURNO
-    // =======================================
-    async store(req, res, next) {
-        try {
-            const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = req.body;
+            const turno = await Turno.getById(id);
+            if (!turno) return res.status(404).send("Turno no encontrado");
 
-            await Turno.create({
-                fecha,
-                hora_inicio,
-                motivo,
-                id_paciente,
-                id_agenda
+            turno.fecha_formateada = formatearFecha(turno.fecha);
+            turno.fecha_input = fechaParaInput(turno.fecha);
+
+            // (Opcional) Podés sacarlo si ya no lo usás
+            const pacientes = await Paciente.getAll();
+
+            res.render("turnos/reservar", {
+                turno,
+                pacientes
             });
 
-            res.redirect(`/turnos/${id_agenda}?mensaje=Turno creado correctamente`);
         } catch (error) {
-            console.error('Error creando turno:', error);
-            next(error);
+            console.error("Error cargar vista reservar:", error);
+            res.status(500).send("Error al cargar la vista de reserva");
         }
     }
 
-    // =======================================
-    // FORM EDITAR
-    // =======================================
-    async editForm(req, res, next) {
+    // ========================================
+    // GUARDAR RESERVA
+    // ========================================
+    async reservar(req, res) {
         try {
             const { id } = req.params;
-            const turno = await Turno.getById(id);
-
-            res.render('turnos/edit', { turno });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    // =======================================
-    // ACTUALIZAR
-    // =======================================
-    async update(req, res, next) {
-        try {
-            const { id } = req.params;
-            const { fecha, hora_inicio, motivo, id_paciente, estado, id_agenda } = req.body;
+            const { motivo, estado, id_paciente } = req.body;
 
             await Turno.update(id, {
-                fecha,
-                hora_inicio,
-                motivo,
-                id_paciente,
-                estado
-            });
-
-            res.redirect(`/turnos/${id_agenda}?mensaje=Turno actualizado`);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    // =======================================
-    // ELIMINAR
-    // =======================================
-    async delete(req, res, next) {
-        try {
-            const { id } = req.params;
-            await Turno.delete(id);
-
-            res.json({ success: true });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    // =======================================
-    // RESERVAR (CAMBIAR ESTADO SIMPLE)
-    // =======================================
-    async reservar(req, res, next) {
-        try {
-            const { id } = req.params;
-
-            await Turno.updateEstado(id, "Reservado");
-
-            res.redirect("back");
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    // =======================================
-    // RESERVAR FORMULARIO (VER DATOS)
-    // =======================================
-    async reservarForm(req, res, next) {
-        try {
-            const { id } = req.params;
-            const turno = await Turno.getById(id);
-
-            res.render("turnos/reservar", { turno });
-
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    // =======================================
-    // RESERVAR → GUARDAR CAMBIOS
-    // =======================================
-    async reservarStore(req, res, next) {
-        try {
-            const { id, motivo, estado, id_paciente, id_agenda } = req.body;
-
-            await Turno.update(id, {
+                fecha: req.body.fecha,
+                hora_inicio: req.body.hora_inicio,
                 motivo,
                 estado,
-                id_paciente,
-                fecha: null,        // NO modificar fecha
-                hora_inicio: null   // NO modificar hora
+                id_paciente
             });
 
-            res.redirect(`/turnos/${id_agenda}?nombreUpdate=1`);
+            res.redirect('/turnos/' + req.body.id_agenda);
+
         } catch (error) {
             console.error("Error al reservar turno:", error);
-            next(error);
+            res.status(500).send("Error al reservar turno");
         }
     }
+
+    // ========================================
+    // ELIMINAR TURNO
+    // ========================================
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const { id_agenda } = req.query;
+
+            await Turno.delete(id);
+            res.redirect("/turnos/" + id_agenda);
+
+        } catch (error) {
+            console.error("Error eliminando turno:", error);
+            res.status(500).send("Error al eliminar el turno");
+        }
+    }
+
 }
 
 module.exports = new TurnosController();

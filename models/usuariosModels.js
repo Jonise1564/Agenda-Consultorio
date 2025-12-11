@@ -46,39 +46,151 @@ class Usuario extends Persona {
         }
     }
     //mostrar por dni y los telefonos del usuario
-    static async getByDni(dni) {
-        console.log(`Model: getByDni Usuario dni: ${dni}`);
-        try {
-            const conn = await createConnection();
-            console.log('Conexión a la base de datos establecida');
+    // static async getByDni(dni) {
+    //     console.log(`Model: getByDni Usuario dni: ${dni}`);
+    //     try {
+    //         const conn = await createConnection();
+    //         console.log('Conexión a la base de datos establecida');
     
-            // Obtener el usuario por DNI
-            const [usuario] = await conn.query('SELECT * FROM usuarios WHERE dni = ?', [dni]);
+    //         // Obtener el usuario por DNI
+    //         const [usuario] = await conn.query('SELECT * FROM usuarios WHERE dni = ?', [dni]);
             
-            if (!usuario || usuario.length === 0) {
-                console.log('Model USUARIO: No se encontró ningún usuario');
-                return { usuario: null, telefonos: null };
-            }
+    //         if (!usuario || usuario.length === 0) {
+    //             console.log('Model USUARIO: No se encontró ningún usuario');
+    //             return { usuario: null, telefonos: null };
+    //         }
     
-            const { id } = usuario[0];
+    //         const { id } = usuario[0];
     
-            // Obtener los teléfonos asociados al usuario
-            const [telefonos] = await conn.query(`
-                SELECT GROUP_CONCAT(DISTINCT t.numero SEPARATOR ', ') AS numeros
-                FROM telefonos t
-                WHERE t.id_usuario = ?;
-            `, [id]);
+    //         // Obtener los teléfonos asociados al usuario
+    //         const [telefonos] = await conn.query(`
+    //             SELECT GROUP_CONCAT(DISTINCT t.numero SEPARATOR ', ') AS numeros
+    //             FROM telefonos t
+    //             WHERE t.id_usuario = ?;
+    //         `, [id]);
     
-            console.log('Model USUARIO: Resultado de la consulta:', usuario);
-            console.log('Model: Resultado de la consulta:', telefonos);
+    //         console.log('Model USUARIO: Resultado de la consulta:', usuario);
+    //         console.log('Model: Resultado de la consulta:', telefonos);
     
-            return { usuario: usuario[0], telefonos: telefonos[0] };
-        } catch (error) {
-            console.error('Error al obtener usuario por DNI:', error);
-            throw error;
+    //         return { usuario: usuario[0], telefonos: telefonos[0] };
+    //     } catch (error) {
+    //         console.error('Error al obtener usuario por DNI:', error);
+    //         throw error;
+    //     }
+    // }
+    
+    // static async getByDni(dni) {
+    // console.log(`Model: getByDni Usuario dni: ${dni}`);
+
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         console.log('Conexión a la base de datos establecida');
+
+    //         // 1) Buscar PERSONA para obtener id_persona
+    //         const [personaRows] = await conn.query(
+    //             `SELECT id FROM personas WHERE dni = ?`, 
+    //             [dni]
+    //         );
+
+    //         if (personaRows.length === 0) {
+    //             console.log('No existe persona con ese DNI');
+    //             return { usuario: null, telefonos: null };
+    //         }
+
+    //         const id_persona = personaRows[0].id;
+
+    //         // 2) Buscar USUARIO con id_persona
+    //         const [usuarioRows] = await conn.query(
+    //             `SELECT * FROM usuarios WHERE id_persona = ?`,
+    //             [id_persona]
+    //         );
+
+    //         if (usuarioRows.length === 0) {
+    //             console.log('No existe usuario asociado');
+    //             return { usuario: null, telefonos: null };
+    //         }
+
+    //         const usuario = usuarioRows[0];
+
+    //         // 3) Buscar teléfonos asociados
+    //         const [telefonosRows] = await conn.query(
+    //             `SELECT GROUP_CONCAT(numero SEPARATOR ', ') AS numeros
+    //             FROM telefonos 
+    //             WHERE id_usuario = ?`,
+    //             [usuario.id]
+    //         );
+
+    //         return {
+    //             usuario,
+    //             telefonos: telefonosRows[0].numeros || ''
+    //         };
+
+    //     } catch (error) {
+    //         console.error('Error al obtener usuario por DNI:', error);
+    //         throw error;
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+// }
+static async getByDni(dni) {
+    console.log(`Model Usuario: getByDni DNI: ${dni}`);
+
+    let conn;
+    try {
+        conn = await createConnection();
+        console.log("Conexión establecida");
+
+        // 1️⃣ Buscar persona por DNI
+        const [personaRows] = await conn.query(`
+            SELECT id, nombre, apellido, nacimiento 
+            FROM personas 
+            WHERE dni = ?;
+        `, [dni]);
+
+        if (personaRows.length === 0) {
+            console.log("Model USUARIO: No existe persona con ese DNI");
+            return { usuario: null, telefonos: null };
         }
+
+        const persona = personaRows[0];
+
+        // 2️⃣ Buscar usuario usando id_persona
+        const [usuarioRows] = await conn.query(`
+            SELECT *
+            FROM usuarios
+            WHERE id_persona = ?;
+        `, [persona.id]);
+
+        if (usuarioRows.length === 0) {
+            console.log("Model USUARIO: No existe usuario para esa persona");
+            return { usuario: null, telefonos: null };
+        }
+
+        const usuario = usuarioRows[0];
+
+        // 3️⃣ Traer teléfonos
+        const [telefonos] = await conn.query(`
+            SELECT GROUP_CONCAT(numero SEPARATOR ', ') AS numeros
+            FROM telefonos
+            WHERE id_usuario = ?;
+        `, [usuario.id]);
+
+        return {
+            usuario,
+            telefonos: telefonos[0],
+            persona
+        };
+
+    } catch (error) {
+        console.error("Error en getByDni:", error);
+        throw error;
+    } finally {
+        if (conn) conn.end();
     }
-    
+}
+
+
     //REVISAR NO FUNCIONA
     static async addTelefonoAlternativo(id, telefono) {
         try {
@@ -127,62 +239,9 @@ class Usuario extends Persona {
             throw new Error('Error al modificar usuarios desde el modelo');
         }
     }
+      
     
-    
-    
-/*
-    static async update(persona) {
-        console.log('Model: update persona')
-        try {
-            const conn = await createConnection()
-            const { dni, nombre, apellido, nacimiento } = persona;
-            //busca a la persona con ese dni para verificar que existe en la bd
-            const [personaDni] = await conn.query('SELECT dni FROM personas WHERE dni = ?;', [dni])
-            if (personaDni.length === 0) {
-                console.log('Persona no encontrada')
-                return false
-            }
-            console.log('Model: persona encontrada',personaDni[0])
-            
-            const [result] = await conn.query(
-                'UPDATE personas SET dni = ?, nombre = ?, apellido = ?, nacimiento = ? WHERE dni = ?;',
-                 [dni,nombre,apellido,nacimiento, dni])
-            console.log('Model: Persona actualizada exitosamente')
-            return result.affectedRows === 1
-        } catch (error) {
-            console.error('Error al modificar personas desde el modelo:', error);
-            throw new Error('Error al modificar personas desde el modelo');
-        }
-    }
 
-    static async delete( dni ) {
-        console.log('Model: Delete persona')
-        try {
-            const conn = await createConnection()
-            const [personaId] = await conn.query(
-                'SELECT dni FROM personas WHERE dni = ?;',
-                [dni]
-            )
-            const idDelete = personaId[personaId.length - 1]
-
-            if (personaId.length === 0) {
-                console.log('Persona no encontrada')
-                return false
-            }
-
-            await conn.query(
-                'DELETE FROM personas WHERE dni = ?;',
-                [idDelete.dni]
-            )
-            console.log('Ha sido borrado con éxito')
-        } catch (error) {
-            //no se deberia mostrar el error al usuario por seguridad
-            console.log(error)
-            throw new Error('Error al borrar persona desde el modelo');
-
-        }
-        return true
-    }*/
 }
 
 module.exports = Usuario
