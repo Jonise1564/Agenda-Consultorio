@@ -198,6 +198,61 @@ class Paciente {
     }
 }
 
+// ======================================================
+// GET OBRA SOCIAL POR PACIENTE
+// ======================================================
+static async getOSByPaciente(id_paciente) {
+    let conn;
+    try {
+        conn = await createConnection();
+
+        const [rows] = await conn.query(`
+            SELECT 
+                os.id,
+                os.nombre
+            FROM pacientes pa
+            LEFT JOIN obras_sociales os ON pa.id_obra_social = os.id
+            WHERE pa.id = ?
+        `, [id_paciente]);
+
+        return rows.length ? rows[0] : null;
+
+    } catch (error) {
+        console.error("Error getOSByPaciente:", error);
+        throw error;
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
+// ======================================================
+// GET TODAS LAS OBRAS SOCIALES
+// ======================================================
+static async getAllOS() {
+    let conn;
+    try {
+        conn = await createConnection();
+
+        const [rows] = await conn.query(`
+            SELECT id, nombre
+            FROM obras_sociales
+            ORDER BY nombre
+        `);
+
+        return rows;
+
+    } catch (error) {
+        console.error("Error getAllOS:", error);
+        throw error;
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
+
+
 }
 
 module.exports = Paciente;

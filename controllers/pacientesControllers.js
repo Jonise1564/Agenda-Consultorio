@@ -124,33 +124,122 @@ class PacientesController {
     // ===========================================
     // FORM EDITAR PACIENTE
     // ===========================================
+    // async edit(req, res, next) {
+    //     try {
+    //         const { id } = req.params;
+
+    //         // ================================
+    //         // PACIENTE (incluye datos de persona)
+    //         // ================================
+    //         const paciente = await Paciente.getPacienteById(id);
+    //         if (paciente.nacimiento) {
+    //             const fecha = new Date(paciente.nacimiento);
+    //             paciente.nacimiento = fecha.toISOString().split('T')[0];
+    //         }
+
+    //         if (!paciente) {
+    //             return res.status(404).send('Paciente no encontrado');
+    //         }
+
+    //         // ================================
+    //         // USUARIO
+    //         // ================================
+    //         const usuario = await Usuario.getById(paciente.id_usuario);
+
+    //         // const usuario = await Usuario.getById({ id: paciente.id_usuario });
+
+    //         // ================================
+    //         // TELÉFONOS
+    //         // ================================
+    //         // const telefonos = await Usuario.getTelefonos(paciente.id_usuario);
+    //         const telefonos = await Persona.getTelefonos(paciente.id_persona);
+
+
+    //         // ================================
+    //         // OBRA SOCIAL ACTUAL
+    //         // ================================
+    //         const obra_social = await Paciente.getOSByPaciente(id);
+
+    //         // ================================
+    //         // TODAS LAS OBRAS SOCIALES
+    //         // ================================
+    //         const obrasSociales = await Paciente.getAllOS();
+
+    //         // ================================
+    //         // RENDER
+    //         // ================================
+    //         res.render('pacientes/editar', {
+    //             paciente,
+    //             usuario,
+    //             telefonos,
+    //             obra_social,
+    //             obrasSociales
+    //         });
+
+    //     } catch (error) {
+    //         console.error('Controller edit paciente:', error);
+    //         next(error);
+    //     }
+    // }
+
     async edit(req, res, next) {
-        try {
-            const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-            const paciente = await Paciente.getPacienteById(id);
-            if (!paciente) return res.status(404).send('Paciente no encontrado');
-
-            const persona = await Persona.getById({ id: paciente.id_persona });
-            const usuario = await Usuario.getById({ id: paciente.id_usuario });
-
-            const telefonos = await Usuario.getTelefonos(paciente.id_usuario);
-            const obra_social = await Paciente.getOSByPaciente(id);
-            const obrasSociales = await Paciente.getAllOS();
-
-            res.render('pacientes/editar', {
-                persona,
-                usuario,
-                paciente,
-                obra_social,
-                obrasSociales,
-                telefonos
-            });
-
-        } catch (error) {
-            next(error);
+        // ================================
+        // PACIENTE
+        // ================================
+        const paciente = await Paciente.getPacienteById(id);
+        if (!paciente) {
+            return res.status(404).send('Paciente no encontrado');
         }
+
+        // ================================
+        // FECHA (para input type="date")
+        // ================================
+        if (paciente.nacimiento) {
+            const f = new Date(paciente.nacimiento);
+            paciente.nacimiento =
+                f.getFullYear() + '-' +
+                String(f.getMonth() + 1).padStart(2, '0') + '-' +
+                String(f.getDate()).padStart(2, '0');
+        }
+
+        // ================================
+        // USUARIO
+        // ================================
+        const usuario = await Usuario.getById(paciente.id_usuario);
+
+        // ================================
+        // TELÉFONOS → SOLO STRINGS
+        // ================================
+        const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+        const telefonos = telefonosDB.map(t => t.numero);
+
+        // ================================
+        // OBRA SOCIAL
+        // ================================
+        const obra_social = await Paciente.getOSByPaciente(id);
+        const obrasSociales = await Paciente.getAllOS();
+
+        // ================================
+        // RENDER
+        // ================================
+        res.render('pacientes/editar', {
+            paciente,
+            usuario,
+            telefonos,
+            obra_social,
+            obrasSociales
+        });
+
+    } catch (error) {
+        console.error('Controller edit paciente:', error);
+        next(error);
     }
+}
+
+
 
     // ===========================================
     // ACTUALIZAR PACIENTE
@@ -222,20 +311,20 @@ class PacientesController {
     // ===========================================
     // BUSCAR PACIENTES (AJAX)
     // ===========================================
-    
+
     async search(req, res, next) {
-    try {
-        const query = req.query.query?.trim();
-        if (!query || query.length < 2) return res.json([]);
+        try {
+            const query = req.query.query?.trim();
+            if (!query || query.length < 2) return res.json([]);
 
-        const resultados = await Paciente.buscarPorNombreODni(query);
-        res.json(resultados);
+            const resultados = await Paciente.buscarPorNombreODni(query);
+            res.json(resultados);
 
-    } catch (error) {
-        console.error("Error en search:", error);
-        res.status(500).json({ error: "Error buscando pacientes" });
+        } catch (error) {
+            console.error("Error en search:", error);
+            res.status(500).json({ error: "Error buscando pacientes" });
+        }
     }
-}
 }
 
 module.exports = new PacientesController();
