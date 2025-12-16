@@ -4,6 +4,7 @@ const Usuario = require('../models/usuariosModels');
 
 const { validatePacientes, validatePartialPacientes } = require('../schemas/validation');
 const { obtenerFechaFormateada } = require('../utils/dateFormatter');
+const bcrypt = require('bcryptjs');
 
 class PacientesController {
 
@@ -124,21 +125,28 @@ class PacientesController {
     // ===========================================
     // FORM EDITAR PACIENTE
     // ===========================================
+
     // async edit(req, res, next) {
     //     try {
     //         const { id } = req.params;
 
     //         // ================================
-    //         // PACIENTE (incluye datos de persona)
+    //         // PACIENTE
     //         // ================================
     //         const paciente = await Paciente.getPacienteById(id);
-    //         if (paciente.nacimiento) {
-    //             const fecha = new Date(paciente.nacimiento);
-    //             paciente.nacimiento = fecha.toISOString().split('T')[0];
-    //         }
-
     //         if (!paciente) {
     //             return res.status(404).send('Paciente no encontrado');
+    //         }
+
+    //         // ================================
+    //         // FECHA (para input type="date")
+    //         // ================================
+    //         if (paciente.nacimiento) {
+    //             const f = new Date(paciente.nacimiento);
+    //             paciente.nacimiento =
+    //                 f.getFullYear() + '-' +
+    //                 String(f.getMonth() + 1).padStart(2, '0') + '-' +
+    //                 String(f.getDate()).padStart(2, '0');
     //         }
 
     //         // ================================
@@ -146,23 +154,16 @@ class PacientesController {
     //         // ================================
     //         const usuario = await Usuario.getById(paciente.id_usuario);
 
-    //         // const usuario = await Usuario.getById({ id: paciente.id_usuario });
+    //         // ================================
+    //         // TELÉFONOS → SOLO STRINGS
+    //         // ================================
+    //         const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+    //         const telefonos = telefonosDB.map(t => t.numero);
 
     //         // ================================
-    //         // TELÉFONOS
-    //         // ================================
-    //         // const telefonos = await Usuario.getTelefonos(paciente.id_usuario);
-    //         const telefonos = await Persona.getTelefonos(paciente.id_persona);
-
-
-    //         // ================================
-    //         // OBRA SOCIAL ACTUAL
+    //         // OBRA SOCIAL
     //         // ================================
     //         const obra_social = await Paciente.getOSByPaciente(id);
-
-    //         // ================================
-    //         // TODAS LAS OBRAS SOCIALES
-    //         // ================================
     //         const obrasSociales = await Paciente.getAllOS();
 
     //         // ================================
@@ -181,6 +182,7 @@ class PacientesController {
     //         next(error);
     //     }
     // }
+
 
     async edit(req, res, next) {
     try {
@@ -241,49 +243,117 @@ class PacientesController {
 
 
 
+
+
     // ===========================================
     // ACTUALIZAR PACIENTE
     // ===========================================
-    async update(req, res, next) {
-        try {
-            const { id } = req.params;
-            const { nombre, apellido, nacimiento, email, password, telefonoAlternativo, obras_sociales } = req.body;
+    // async update(req, res, next) {
+    //     try {
+    //         const { id } = req.params;
+    //         const { nombre, apellido, nacimiento, email, password, telefonoAlternativo, obras_sociales } = req.body;
 
-            const result = validatePartialPacientes({
-                nombre,
-                apellido,
-                fechaNacimiento: new Date(nacimiento),
-                email,
-                password,
-                telefonoAlternativo: telefonoAlternativo ? parseInt(telefonoAlternativo) : null,
-                obras_sociales
-            });
+    //         const result = validatePartialPacientes({
+    //             nombre,
+    //             apellido,
+    //             fechaNacimiento: new Date(nacimiento),
+    //             email,
+    //             password,
+    //             telefonoAlternativo: telefonoAlternativo ? parseInt(telefonoAlternativo) : null,
+    //             obras_sociales
+    //         });
 
-            if (!result.success)
-                return res.status(400).json({ error: JSON.parse(result.error.message) });
+    //         if (!result.success)
+    //             return res.status(400).json({ error: JSON.parse(result.error.message) });
 
-            const data = result.data;
+    //         const data = result.data;
 
-            await Paciente.updatePaciente(id, {
-                nombre,
-                apellido,
-                nacimiento: data.fechaNacimiento.toISOString().split('T')[0],
-                email,
-                password,
-                id_obra_social: data.obras_sociales
-            });
+    //         await Paciente.updatePaciente(id, {
+    //             nombre,
+    //             apellido,
+    //             nacimiento: data.fechaNacimiento.toISOString().split('T')[0],
+    //             email,
+    //             password,
+    //             id_obra_social: data.obras_sociales
+    //         });
 
-            if (telefonoAlternativo) {
-                const paciente = await Paciente.getPacienteById(id);
-                await Usuario.addTelefonoAlternativo(paciente.id_usuario, parseInt(telefonoAlternativo));
-            }
+    //         if (telefonoAlternativo) {
+    //             const paciente = await Paciente.getPacienteById(id);
+    //             await Usuario.addTelefonoAlternativo(paciente.id_usuario, parseInt(telefonoAlternativo));
+    //         }
 
-            res.redirect(`/pacientes?nombreUpdate=${nombre}`);
+    //         res.redirect(`/pacientes?nombreUpdate=${nombre}`);
 
-        } catch (error) {
-            next(error);
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
+    
+
+async update(req, res, next) {
+    try {
+        const { id } = req.params;
+
+        const {
+            nombre,
+            apellido,
+            nacimiento,
+            email,
+            password,
+            id_obra_social,
+            telefonos
+        } = req.body;
+
+        // ================================
+        // ARMAR OBJETO DE UPDATES
+        // ================================
+        const updates = {
+            nombre,
+            apellido,
+            nacimiento,
+            id_obra_social: id_obra_social || null
+        };
+
+        // ================================
+        // DATOS DE USUARIO (OPCIONAL)
+        // ================================
+        if (email && email.trim() !== '') {
+            updates.email = email;
         }
+
+        if (password && password.trim() !== '') {
+            const saltRounds = 10;
+            updates.password = await bcrypt.hash(password, saltRounds);
+        }
+
+        // ================================
+        // UPDATE PACIENTE / PERSONA / USUARIO
+        // ================================
+        await Paciente.updatePaciente(id, updates);
+
+        // ================================
+        // TELÉFONOS (PERSONA)
+        // ================================
+        if (telefonos) {
+            const lista = Array.isArray(telefonos)
+                ? telefonos
+                : [telefonos];
+
+            const telefonosLimpios = lista.filter(
+                t => t && t.trim() !== ''
+            );
+
+            await Persona.updateTelefonos(id, telefonosLimpios);
+        }
+
+        res.redirect('/pacientes');
+
+    } catch (error) {
+        console.error('Error update paciente:', error);
+        next(error);
     }
+}
+
 
     // ===========================================
     // INACTIVAR / ACTIVAR

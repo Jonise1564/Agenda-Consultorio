@@ -27,14 +27,19 @@ class Paciente {
                     u.id_rol,
 
                     COALESCE(os.nombre, 'Sin obra social') AS obra_social,
-                    COALESCE(GROUP_CONCAT(DISTINCT t.numero ORDER BY t.numero SEPARATOR ', '), '') AS telefonos
-                    
+                    COALESCE(
+                        GROUP_CONCAT(DISTINCT t.numero ORDER BY t.numero SEPARATOR ', '),
+                        ''
+                    ) AS telefonos
+                                    
                 FROM pacientes pa
                 INNER JOIN usuarios u ON pa.id_usuario = u.id
                 INNER JOIN personas p ON pa.id_persona = p.id
-                LEFT JOIN obras_sociales os ON pa.id_obra_social = os.id
-                LEFT JOIN telefonos t ON u.id = t.id_persona
+                LEFT JOIN obras_sociales os ON pa.id_obra_social = os.id                
+                LEFT JOIN telefonos t ON p.id = t.id_persona
+
                 GROUP BY pa.id;
+
             `);
 
             return pacientes;
@@ -90,60 +95,143 @@ class Paciente {
     // ======================================================
     // UPDATE PACIENTE POR ID
     // ======================================================
+    // static async updatePaciente(id_paciente, updates) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         await conn.beginTransaction();
+
+    //         // --- UPDATE PERSONA ---
+    //         await conn.query(`
+    //             UPDATE personas
+    //             SET nombre = ?, apellido = ?, nacimiento = ?
+    //             WHERE id = (
+    //                 SELECT id_persona FROM pacientes WHERE id = ?
+    //             )
+    //         `, [
+    //             updates.nombre,
+    //             updates.apellido,
+    //             updates.nacimiento,
+    //             id_paciente
+    //         ]);
+
+    //         // --- UPDATE USUARIO ---
+    //         await conn.query(`
+    //             UPDATE usuarios
+    //             SET email = ?, password = ?
+    //             WHERE id = (
+    //                 SELECT id_usuario FROM pacientes WHERE id = ?
+    //             )
+    //         `, [
+    //             updates.email,
+    //             updates.password,
+    //             id_paciente
+    //         ]);
+
+    //         // --- UPDATE PACIENTE ---
+    //         await conn.query(`
+    //             UPDATE pacientes
+    //             SET id_obra_social = ?
+    //             WHERE id = ?
+    //         `, [
+    //             updates.id_obra_social,
+    //             id_paciente
+    //         ]);
+
+    //         await conn.commit();
+    //         return true;
+
+    //     } catch (error) {
+    //         if (conn) await conn.rollback();
+    //         console.error("Error al modificar paciente:", error);
+    //         throw new Error("Error al modificar paciente");
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
     static async updatePaciente(id_paciente, updates) {
-        let conn;
-        try {
-            conn = await createConnection();
-            await conn.beginTransaction();
+    let conn;
 
-            // --- UPDATE PERSONA ---
-            await conn.query(`
-                UPDATE personas
-                SET nombre = ?, apellido = ?, nacimiento = ?
-                WHERE id = (
-                    SELECT id_persona FROM pacientes WHERE id = ?
-                )
-            `, [
-                updates.nombre,
-                updates.apellido,
-                updates.nacimiento,
-                id_paciente
-            ]);
+    try {
+        conn = await createConnection();
+        await conn.beginTransaction();
 
-            // --- UPDATE USUARIO ---
-            await conn.query(`
-                UPDATE usuarios
-                SET email = ?, password = ?
-                WHERE id = (
-                    SELECT id_usuario FROM pacientes WHERE id = ?
-                )
-            `, [
-                updates.email,
-                updates.password,
-                id_paciente
-            ]);
-
-            // --- UPDATE PACIENTE ---
-            await conn.query(`
-                UPDATE pacientes
-                SET id_obra_social = ?
+        // ================================
+        // UPDATE PERSONA
+        // ================================
+        await conn.query(`
+            UPDATE personas
+            SET nombre = ?, apellido = ?, nacimiento = ?
+            WHERE id = (
+                SELECT id_persona
+                FROM pacientes
                 WHERE id = ?
-            `, [
-                updates.id_obra_social,
-                id_paciente
-            ]);
+            )
+        `, [
+            updates.nombre,
+            updates.apellido,
+            updates.nacimiento,
+            id_paciente
+        ]);
 
-            await conn.commit();
-            return true;
+        // ================================
+        // UPDATE USUARIO (CONDICIONAL)
+        // ================================
+        if (updates.email || updates.password) {
+            const campos = [];
+            const valores = [];
 
-        } catch (error) {
-            if (conn) await conn.rollback();
-            console.error("Error al modificar paciente:", error);
-            throw new Error("Error al modificar paciente");
-        } finally {
-            if (conn) conn.end();
+            if (updates.email) {
+                campos.push('email = ?');
+                valores.push(updates.email);
+            }
+
+            if (updates.password) {
+                campos.push('password = ?');
+                valores.push(updates.password);
+            }
+
+            // 🔒 SEGURIDAD: nunca ejecutar SET vacío
+            if (campos.length > 0) {
+                await conn.query(`
+                    UPDATE usuarios
+                    SET ${campos.join(', ')}
+                    WHERE id = (
+                        SELECT id_usuario
+                        FROM pacientes
+                        WHERE id = ?
+                    )
+                `, [...valores, id_paciente]);
+            }
         }
+
+        // ================================
+        // UPDATE PACIENTE
+        // ================================
+        await conn.query(`
+            UPDATE pacientes
+            SET id_obra_social = ?
+            WHERE id = ?
+        `, [
+            updates.id_obra_social,
+            id_paciente
+        ]);
+
+        await conn.commit();
+        return true;
+
+    } catch (error) {
+        if (conn) await conn.rollback();
+
+        console.error('Model Paciente.updatePaciente:', error);
+        throw new Error('Error al modificar paciente');
+
+    } finally {
+        if (conn) conn.end();
     }
+}
+
 
     // ======================================================
     // ACTIVAR / INACTIVAR PACIENTE POR ID
@@ -169,10 +257,10 @@ class Paciente {
     }
 
     static async buscarPorNombreODni(query) {
-    let conn;
-    try {
-        conn = await createConnection();
-        const [rows] = await conn.query(`
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
             SELECT 
                 pa.id AS id_paciente,
                 p.nombre,
@@ -189,24 +277,24 @@ class Paciente {
             ORDER BY p.apellido, p.nombre
             LIMIT 20
         `, [`%${query}%`, `%${query}%`, `%${query}%`]);
-        return rows;
-    } catch (error) {
-        console.error("Error buscarPorNombreODni:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+            return rows;
+        } catch (error) {
+            console.error("Error buscarPorNombreODni:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
-// ======================================================
-// GET OBRA SOCIAL POR PACIENTE
-// ======================================================
-static async getOSByPaciente(id_paciente) {
-    let conn;
-    try {
-        conn = await createConnection();
+    // ======================================================
+    // GET OBRA SOCIAL POR PACIENTE
+    // ======================================================
+    static async getOSByPaciente(id_paciente) {
+        let conn;
+        try {
+            conn = await createConnection();
 
-        const [rows] = await conn.query(`
+            const [rows] = await conn.query(`
             SELECT 
                 os.id,
                 os.nombre
@@ -215,40 +303,40 @@ static async getOSByPaciente(id_paciente) {
             WHERE pa.id = ?
         `, [id_paciente]);
 
-        return rows.length ? rows[0] : null;
+            return rows.length ? rows[0] : null;
 
-    } catch (error) {
-        console.error("Error getOSByPaciente:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+        } catch (error) {
+            console.error("Error getOSByPaciente:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
-// ======================================================
-// GET TODAS LAS OBRAS SOCIALES
-// ======================================================
-static async getAllOS() {
-    let conn;
-    try {
-        conn = await createConnection();
+    // ======================================================
+    // GET TODAS LAS OBRAS SOCIALES
+    // ======================================================
+    static async getAllOS() {
+        let conn;
+        try {
+            conn = await createConnection();
 
-        const [rows] = await conn.query(`
+            const [rows] = await conn.query(`
             SELECT id, nombre
             FROM obras_sociales
             ORDER BY nombre
         `);
 
-        return rows;
+            return rows;
 
-    } catch (error) {
-        console.error("Error getAllOS:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+        } catch (error) {
+            console.error("Error getAllOS:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
 

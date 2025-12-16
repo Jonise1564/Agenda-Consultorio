@@ -1,5 +1,172 @@
 
 
+//- extends ../layout
+
+//- block contenido
+//-     .container.mt-4.mb-5
+//-         h2.text-center.mb-4 Editar Paciente
+
+//-         form(action=`/pacientes/update/${paciente.id_paciente}` method="POST")
+
+//-             // =========================
+//-             // CARD: DATOS DEL PACIENTE
+//-             // =========================
+//-             .card.mb-4.shadow-sm
+//-                 .card-header.bg-primary.text-white
+//-                     strong Datos Personales
+
+//-                 .card-body
+//-                     .row.mb-3
+//-                         .col-md-3
+//-                             label.form-label ID Paciente
+//-                             input.form-control(
+//-                                 type="number"
+//-                                 value=paciente.id_paciente
+//-                                 readonly
+//-                             )
+
+//-                         .col-md-3
+//-                             label.form-label DNI
+//-                             input.form-control(
+//-                                 type="number"
+//-                                 value=paciente.dni
+//-                                 readonly
+//-                             )
+
+//-                         .col-md-3
+//-                             label.form-label Nombre
+//-                             input.form-control(
+//-                                 type="text"
+//-                                 name="nombre"
+//-                                 value=paciente.nombre
+//-                                 required
+//-                             )
+
+//-                         .col-md-3
+//-                             label.form-label Apellido
+//-                             input.form-control(
+//-                                 type="text"
+//-                                 name="apellido"
+//-                                 value=paciente.apellido
+//-                                 required
+//-                             )
+
+//-                     .row
+//-                         .col-md-4
+//-                             label.form-label Fecha de nacimiento
+//-                             input.form-control(
+//-                                 type="date"
+//-                                 name="nacimiento"
+//-                                 value=paciente.nacimiento
+//-                                 required
+//-                             )
+
+//-             // =========================
+//-             // CARD: USUARIO
+//-             // =========================
+//-             .card.mb-4.shadow-sm
+//-                 .card-header.bg-secondary.text-white
+//-                     strong Datos de Usuario
+
+//-                 .card-body
+//-                     .row
+//-                         .col-md-6
+//-                             label.form-label Email
+//-                             input.form-control(
+//-                                 type="email"
+//-                                 name="email"
+//-                                 value=(usuario ? usuario.email : '')
+//-                                 required
+//-                             )
+
+//-                         .col-md-6
+//-                             label.form-label Nueva contraseña
+//-                             input.form-control(
+//-                                 type="password"
+//-                                 name="password"
+//-                                 placeholder="Dejar en blanco para no modificar"
+//-                             )
+
+//-             // =========================
+//-             // CARD: OBRA SOCIAL
+//-             // =========================
+//-             .card.mb-4.shadow-sm
+//-                 .card-header.bg-info.text-white
+//-                     strong Obra Social
+
+//-                 .card-body
+//-                     .row
+//-                         .col-md-6
+//-                             label.form-label Actual
+//-                             input.form-control(
+//-                                 type="text"
+//-                                 value=(obra_social ? obra_social.nombre : 'Sin obra social')
+//-                                 readonly
+//-                             )
+
+//-                         .col-md-6
+//-                             label.form-label Cambiar obra social
+//-                             select.form-select(name="id_obra_social")
+//-                                 option(value="") Seleccione una obra social...
+//-                                 each os in obrasSociales
+//-                                     option(
+//-                                         value=os.id
+//-                                         selected=(Number(os.id) === Number(paciente.id_obra_social))
+//-                                     ) #{os.nombre}
+
+//-             // =========================
+//-             // CARD: TELÉFONOS
+//-             // =========================
+//-             .card.mb-4.shadow-sm
+//-                 .card-header.bg-dark.text-white
+//-                     strong Teléfonos
+
+//-                 .card-body
+//-                     if telefonos && telefonos.length
+//-                         each numero, i in telefonos
+//-                             .row.mb-2
+//-                                 .col-md-6
+//-                                     input.form-control(
+//-                                         type="text"
+//-                                         name="telefonos[]"
+//-                                         value=numero
+//-                                         placeholder=`Teléfono ${i + 1}`
+//-                                     )
+//-                     else
+//-                         input.form-control(
+//-                             type="text"
+//-                             name="telefonos[]"
+//-                             placeholder="Agregar teléfono"
+//-                         )
+
+//-             // =========================
+//-             // BOTONES
+//-             // =========================
+//-             .d-flex.justify-content-between.mt-4
+//-                 a.btn.btn-outline-secondary(href="/pacientes")
+//-                     i.bi.bi-arrow-left
+//-                     |  Volver
+
+//-                 button.btn.btn-success(type="submit")
+//-                     i.bi.bi-save
+//-                     |  Guardar cambios
+
+//-         // =========================
+//-         // ESTADO DEL PACIENTE
+//-         // =========================
+//-         .mt-4.text-center
+//-             if paciente.estado === 1
+//-                 form(action=`/pacientes/inactivar/${paciente.id_paciente}` method="POST")
+//-                     button.btn.btn-danger
+//-                         i.bi.bi-x-circle
+//-                         |  Inactivar paciente
+//-             else
+//-                 form(action=`/pacientes/activar/${paciente.id_paciente}` method="POST")
+//-                     button.btn.btn-success
+//-                         i.bi.bi-check-circle
+//-                         |  Activar paciente
+
+
 extends ../layout
 
 block contenido
@@ -9,7 +176,7 @@ block contenido
         form(action=`/pacientes/update/${paciente.id_paciente}` method="POST")
 
             // =========================
-            // CARD: DATOS DEL PACIENTE
+            // CARD: DATOS PERSONALES
             // =========================
             .card.mb-4.shadow-sm
                 .card-header.bg-primary.text-white
@@ -19,47 +186,24 @@ block contenido
                     .row.mb-3
                         .col-md-3
                             label.form-label ID Paciente
-                            input.form-control(
-                                type="number"
-                                value=paciente.id_paciente
-                                readonly
-                            )
+                            input.form-control(type="number" value=paciente.id_paciente readonly)
 
                         .col-md-3
                             label.form-label DNI
-                            input.form-control(
-                                type="number"
-                                value=paciente.dni
-                                readonly
-                            )
+                            input.form-control(type="number" value=paciente.dni readonly)
 
                         .col-md-3
                             label.form-label Nombre
-                            input.form-control(
-                                type="text"
-                                name="nombre"
-                                value=paciente.nombre
-                                required
-                            )
+                            input.form-control(type="text" name="nombre" value=paciente.nombre required)
 
                         .col-md-3
                             label.form-label Apellido
-                            input.form-control(
-                                type="text"
-                                name="apellido"
-                                value=paciente.apellido
-                                required
-                            )
+                            input.form-control(type="text" name="apellido" value=paciente.apellido required)
 
                     .row
                         .col-md-4
                             label.form-label Fecha de nacimiento
-                            input.form-control(
-                                type="date"
-                                name="nacimiento"
-                                value=paciente.nacimiento
-                                required
-                            )
+                            input.form-control(type="date" name="nacimiento" value=paciente.nacimiento required)
 
             // =========================
             // CARD: USUARIO
@@ -69,14 +213,23 @@ block contenido
                     strong Datos de Usuario
 
                 .card-body
+                    .form-check.mb-3
+                        input.form-check-input(
+                            type="checkbox"
+                            id="editar_usuario"
+                        )
+                        label.form-check-label(for="editar_usuario")
+                            | Editar correo y contraseña
+
                     .row
                         .col-md-6
                             label.form-label Email
                             input.form-control(
                                 type="email"
                                 name="email"
+                                id="email"
                                 value=(usuario ? usuario.email : '')
-                                required
+                                disabled
                             )
 
                         .col-md-6
@@ -84,7 +237,9 @@ block contenido
                             input.form-control(
                                 type="password"
                                 name="password"
+                                id="password"
                                 placeholder="Dejar en blanco para no modificar"
+                                disabled
                             )
 
             // =========================
@@ -165,3 +320,20 @@ block contenido
                     button.btn.btn-success
                         i.bi.bi-check-circle
                         |  Activar paciente
+
+    // =========================
+    // SCRIPT
+    // =========================
+    script.
+        const check = document.getElementById('editar_usuario');
+        const email = document.getElementById('email');
+        const pass = document.getElementById('password');
+
+        check.addEventListener('change', () => {
+            email.disabled = !check.checked;
+            pass.disabled = !check.checked;
+
+            if (!check.checked) {
+                pass.value = '';
+            }
+        });
