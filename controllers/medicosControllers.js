@@ -1,376 +1,194 @@
-// const Medico = require('../models/medicosModels')// Modelo de médicos
-// const Persona = require('../models/personasModels')// Modelo de Personas
-// const Usuario = require('../models/usuariosModels')// Modelo de Usuarios
-// const Especialidad = require('../models/especialidadesModels') // Modelo de especialidades
-
-// const { validateMedicos, validatePartialMedicos } = require('../schemas/validation')
-// const { obtenerFechaFormateada } = require('../utils/dateFormatter');
-
-// class MedicosController {
-//     //Mostrar todas los medicos
-//     async get(req, res, next) {
-//         console.log('Controller: Get All medicos');
-//         try {
-//             const medicos = await Medico.getAll();
-//             const medicosConFechaFormateada = medicos.map(medico => {
-//                 const fechaFormateada = obtenerFechaFormateada(new Date(medico.nacimiento));
-//                 return { ...medico, nacimiento: fechaFormateada };
-//             });
-
-//             //console.log(medicosConFechaFormateada); // Verificar los datos aquí
-
-//             const { nombreUpdate, nombreStore, nombreInactivo, nombreActivo } = req.query;
-
-//             let mensaje = null;
-//             if (nombreInactivo) {
-//                 mensaje = 'Se ha dado de Baja a un Medico';
-//             } else if (nombreActivo) {
-//                 mensaje = 'Medico ha dado de Alta a un Medico';
-//             } else if (nombreUpdate) {
-//                 mensaje = 'Medico Actualizado correctamente';
-//             } else if (nombreStore) {
-//                 mensaje = 'Medico Creado correctamente';
-//             }
-
-//             res.render('medicos/index', { medicos: medicosConFechaFormateada, mensaje });
-//         } catch (error) {
-//             console.error('Error al obtener medicos desde el controlador:', error);
-//             next(error);
-//         }
-//     }
-//      //Mostrar especialidades
-//      async getCreateForm(req, res, next) {
-//         console.log('Controller: Especialidad get');
-//         try {
-//             const especialidades = await Especialidad.getAll();
-//             if (especialidades) {
-//                 console.log('Especialidades enviadas al formulario');
-//                 res.render('medicos/crear', { especialidades });
-//             } else {
-//                 res.status(404).json({ message: 'Error al cargar las especialidades al formulario crear' });
-//             }
-//         } catch (error) {
-//             console.error('Error al obtener especialidades:', error);
-//             next(error);
-//         }
-//     }
-//     //Muestra la vista vista crear
-//     create(req, res) {
-//         res.render('medicos/crear')
-//     }
-//     //Inserta en la tabla Medico
-//     async store(req, res, next) {
-//         console.log('Controller: Create medico');
-//         try {
-//             // Extraer datos del formulario
-//             const { dni, nombre, apellido, nacimiento: fechaNacimiento, email, password, repeatPassword, id_rol, estado, especialidades, telefonos, matricula } = req.body;
-//             const { nombreStore } = req.query;
-
-//             // Validar datos
-//             const dateNacimiento = new Date(fechaNacimiento)
-//             const result = validateMedicos({ dni, nombre, apellido, fechaNacimiento: dateNacimiento, email, password, repeatPassword, id_rol, estado, especialidades, telefonos, matricula });
-//             if (!result.success) {
-//                 console.log('Error al validar datos');
-//                 return res.status(422).json({ error: result.error.issues });
-//             } else { console.log('Datos Validados...'); }
-//             //le paso datos validados y parseados
-//             const { dni: dniNumero, fechaNacimiento: nacimientoDate, id_rol: rolId, estado: estadoId, especialidades: especialidadId, telefonos: telefonoNumero, matricula: matriculaNumero } = result.data;
-//             // Validar que las contraseñas coincidan
-//             if (password !== repeatPassword) {
-//                 return res.status(400).json({ error: 'Las contraseñas no coinciden' });
-//             }
-//             // Eliminar el dominio del email
-//             const emailSinDominio = email.split('@')[0];
-//             // Convertir la fecha de nacimiento al formato YYYY-MM-DD
-//             const nacimientoFinal = nacimientoDate.toISOString().split('T')[0];
 
 
-//             // Verificar si el DNI ya existe en la tabla personas
-//             const existingPersona = await Persona.getById({ dni: dniNumero });
-//             if (existingPersona) {
-//                 return res.status(409).json({ message: 'Ya existe una persona con ese dni' });
-//             }
-//             // Crear Persona
-//             const personaCreada = await Persona.create({
-//                 //datos ya validados.
-//                 dni: dniNumero,
-//                 nombre,
-//                 apellido,
-//                 nacimiento: nacimientoFinal,
-//             });
+// // const Medico = require('../models/medicosModels');
+// // const Persona = require('../models/personasModels');
+// // const Usuario = require('../models/usuariosModels');
+// // const Especialidad = require('../models/especialidadesModels');
 
-//             if (!personaCreada) {
-//                 return res.status(500).json({ message: 'Error al crear la persona' });
-//             }
+// // const { validateMedicos } = require('../schemas/validation');
+// // const { obtenerFechaFormateada } = require('../utils/dateFormatter');
 
-//             // Crear Usuario
-//             console.log('Controller: Crear usuario')
-//             const usuarioCreado = await Usuario.create({
-//                 dni: dniNumero, // Usar el dni heredado de Persona
-//                 email: emailSinDominio,
-//                 password,
-//                 id_rol: rolId
-//             });
-//             console.log('Controller: insertado usuario', usuarioCreado)
-//             //if (!usuarioCreado) {
-//             //  return res.status(500).json({ message: 'Error al crear el usuario' });
-//             //}
+// // class MedicosController {
 
-//             //traigo el id del usuario creado
-//             const { id } = usuarioCreado;
+// //     // ================================================================
+// //     // LISTAR MÉDICOS
+// //     // ================================================================
+// //     async get(req, res, next) {
+// //         try {
+// //             const medicos = await Medico.listar();
+// //             const medicosConFecha = medicos.map(m => ({
+// //                 ...m,
+// //                 nacimiento: m.nacimiento
+// //                     ? obtenerFechaFormateada(new Date(m.nacimiento))
+// //                     : null
+// //             }));
 
-//             // Crear Medico
-//             const medicoCreado = await Medico.create({
-//                 id_usuario: id,
-//                 estado: estadoId,
-//                 especialidades: especialidadId,
-//                 telefonos: telefonoNumero,
-//                 matricula: matriculaNumero
-//             });
+// //             const { nombreUpdate, nombreStore, nombreInactivo, nombreActivo } = req.query;
+// //             let mensaje = null;
+// //             if (nombreInactivo) mensaje = 'Se ha dado de Baja a un Médico';
+// //             if (nombreActivo) mensaje = 'Se ha dado de Alta a un Médico';
+// //             if (nombreUpdate) mensaje = 'Médico actualizado correctamente';
+// //             if (nombreStore) mensaje = 'Médico creado correctamente';
 
-//             if (medicoCreado) {
-//                 console.log('Controller: Medico insertado con éxito');
-//                 res.redirect(`/medicos?nombreStore=${nombreStore}`);
-//             } else {
-//                 res.status(404).json({ message: 'Error al crear el medico' });
-//             }
-//         } catch (error) {
-//             console.error('Error al crear medico desde el controlador:', error);
-//             next(error);
-//         }
-//     }
-//     //editar (vista)
-//     async edit(req, res, next) {
-//         try {
-//             const { dni } = req.params;
+// //             res.render('medicos/index', { medicos: medicosConFecha, mensaje });
+// //         } catch (error) {
+// //             console.error('Error listando médicos:', error);
+// //             next(error);
+// //         }
+// //     }
 
-//             console.log(`Controller: edit, Buscando medico por DNI: ${dni}`);
+// //     // ================================================================
+// //     // FORMULARIO CREACIÓN
+// //     // ================================================================
+// //     async getCreateForm(req, res, next) {
+// //         try {
+// //             const especialidades = await Especialidad.getAll();
+// //             res.render('medicos/crear', { especialidades });
+// //         } catch (error) {
+// //             next(error);
+// //         }
+// //     }
 
-//             // Obtengo las especialidades del medico
-//             const medicoData = await Medico.getEspecialidadesById(dni);
-//             if (!medicoData || medicoData.length === 0) {
-//                 console.log('Controller Medico: Especialidad no encontrada');
-//                 return res.status(404).json({ message: 'Medico no encontrado' });
-//             }
-//             console.log('Controller Medicos: Especialidad encontrada:', medicoData);
+// //     // ================================================================
+// //     // CREAR MÉDICO
+// //     // ================================================================
+// //     async store(req, res, next) {
+// //         try {
+// //             const { dni, nombre, apellido, nacimiento, email, password, repeatPassword, especialidades, telefonos } = req.body;
 
-//             // Dividir las especialidades y matrículas en arrays
-//             const especialidades = medicoData[0].especialidades.split(', ');
-//             const matriculas = medicoData[0].matriculas.split(', ');
+// //             if (password !== repeatPassword) {
+// //                 return res.status(400).json({ error: "Las contraseñas no coinciden" });
+// //             }
 
-//             // Obtengo los datos Persona
-//             const persona = await Persona.getByDni(dni);
-//             if (!persona) {
-//                 console.log('Controller Medico: Persona no encontrada');
-//                 return res.status(404).send('Persona no encontrada');
-//             }
-//             console.log('Controller Medico: Persona encontrada:', persona);
+// //             const parsed = validateMedicos({ dni, nombre, apellido, fechaNacimiento: new Date(nacimiento), email, password, especialidades, telefonos });
+// //             if (!parsed.success) return res.status(422).json({ error: parsed.error.issues });
 
-//             // Obtengo los datos de usuario y telefonos
-//             const { usuario, telefonos } = await Usuario.getByDni(dni);
-//             if (!usuario) {
-//                 console.log('Controller Medico: Usuario no encontrado');
-//                 return res.status(404).send('Usuario no encontrado');
-//             }
-//             console.log('Controller Medico: USUARIO encontrado:', usuario);
-//             console.log('Controller Medico: Teléfonos encontrados:', telefonos);
+// //             const nacimientoFinal = parsed.data.fechaNacimiento.toISOString().split('T')[0];
 
-//             // Obtengo los datos del Medico
-//             const medico = await Medico.getMedicoById(usuario.id);
-//             if (!medico) {
-//                 console.log('Controller Medico: Medico no encontrado');
-//                 return res.status(404).send('Medico no encontrado');
-//             }
-//             console.log('Controller Medico: Medico encontrado:', medico);
+// //             const personaExistente = await Persona.getByDni(dni);
+// //             if (personaExistente) return res.status(409).json({ message: "Ya existe una persona con ese DNI" });
 
-//             console.log('Enviando a la vista editar...');
+// //             const persona = await Persona.create({ dni, nombre, apellido, nacimiento: nacimientoFinal });
+// //             const usuario = await Usuario.create({ email: email.split("@")[0], password, id_persona: persona.id, id_rol: 2 });
+// //             const medicoId = await Medico.crear({ id_persona: persona.id, estado: 1 });
 
-//             res.render('medicos/editar', { persona, usuario, idEspecialidad: medicoData[0].idEspecialidad, especialidades, matriculas, medico, telefonos });
-//         } catch (error) {
-//             console.error('Error los datos', error);
-//             next(error);
-//         }
-//     }
-//     // editar
-//     async update(req, res, next) {
-//         console.log('Controller: Update Medico');
-//         try {
-//             const { dni } = req.params;
-//             const { nombre, apellido, nacimiento: fechaNacimiento, email, password, telefonoAlternativo } = req.body;
-//             const nombreUpdate = nombre;
-//             // Validar datos
-//             const dateNacimiento = new Date(fechaNacimiento);
-//             const segundotelefono = parseInt(telefonoAlternativo)
-//             const result = validatePartialMedicos({ nombre, apellido, fechaNacimiento: dateNacimiento, email, password, telefono_alternativo: segundotelefono });
-//             if (!result.success) {
-//                 console.log('Error al validar datos');
-//                 return res.status(400).json({ error: JSON.parse(result.error.message) });
-//             } else {
-//                 console.log('Datos Validados...');
-//             }
-    
-//             // Extraer datos validados y parseados
-//             const { fechaNacimiento: nacimientoDate, telefonoAlternativo: telefonosegundo } = result.data;
-    
-//             // Eliminar el dominio del email
-//             const emailSinDominio = email.split('@')[0];
-    
-//             // Convertir la fecha de nacimiento al formato YYYY-MM-DD
-//             const nacimientoFinal = nacimientoDate.toISOString().split('T')[0];
-    
-//             // Actualizar persona
-//             console.log('Controller Medico: Update persona');
-//             const updateP = { nombre, apellido, nacimiento: nacimientoFinal };
-//             const updatedPersona = await Persona.updatePersona(dni, updateP);
-//             if (!updatedPersona) {
-//                 return res.status(404).json({ message: 'Error al modificar la persona desde MedicoController' });
-//             }
-    
-//             // Actualizar usuario
-//             console.log('Controller Medico: Update usuario');
-//             const updateU = { email: emailSinDominio, password };
-//             const updatedUsuario = await Usuario.updateUsuario(dni, updateU);
-//             console.log('Resultado de updateUsuario:', updatedUsuario);
-//             if (!updatedUsuario) {
-//                 return res.status(404).json({ message: 'Error al modificar el usuario desde MedicoController' });
-//             }
-            
-//             // Obtengo los datos de usuario y telefonos
-//             const { usuario } = await Usuario.getByDni(dni);
-//             if (!usuario) {
-//                 console.log('Controller Paciente: Usuario no encontrado');
-//                 return res.status(404).send('Usuario no encontrado');
-//             }
-//             console.log('Controller Paciente: USUARIO encontrado:', usuario);
-//             const { id } = usuario
-//             // Guardar el teléfono alternativo si se proporciona
-//             if (telefonoAlternativo) {
-//                 const addTA = await Usuario.addTelefonoAlternativo(id, segundotelefono);
-//                 if (!addTA) { return res.status(404).send('Error al tratar de guardar telefono alternativo') }
-//                 console.log('Teléfono alternativo guardado:', segundotelefono);
-//             } else { console.log('No hay Teléfono alternativo') }
-    
-//             // Verificar y redirigir
-//             console.log('Nombre Update:', nombreUpdate);
-//             if (!nombreUpdate) {
-//                 return res.redirect('/medicos');
-//             }
-//             res.redirect(`/medicos?nombreUpdate=${nombreUpdate}`);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-//     // Delete logico (activar/inactivar), si pide un delete, se debe borrar atravez de las tablas de forma permanente
-//     // Inactivate
-//     async inactivar(req, res, next) {
-//         console.log('Controller: Inactivar Medico');
-//         try {
-//             let flag = false
-//             const { dni } = req.params; // Asegúrate de que req.params.dni esté definido correctamente
-            
-//             //buscar id de usuario atravez del dni
-//             const idUser = await Usuario.getByDni(dni)
-//             if(!idUser) {
-//                 return res.status(404).json({ message: 'Error al bucar id usuario a inactivar en MedicoController' });
-//             }
-//             const { id } = idUser.usuario
+// //             if (especialidades && especialidades.length > 0) {
+// //                 for (let esp of especialidades) await Especialidad.asignarAMedico(medicoId, esp);
+// //             }
+// //             if (telefonos && telefonos.length > 0) {
+// //                 for (let tel of telefonos) await Persona.addTelefono(persona.id, tel);
+// //             }
 
-//             //Inactivar el médico
-//             const result = await Medico.inactivarMedico(id);
-//             if (!result) {
-//                 return res.status(404).json({ message: 'Error al inactivar el médico desde MedicoController' });
-//             }
-//             flag = true
-//             res.redirect(`/medicos?nombreInactivo=${flag}`);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-//     // Activate
-//     async activar(req, res, next) {
-//         console.log('Controller: activar Medico');
-//         try {
-//             let flag = false
-//             const { dni } = req.params; // Asegúrate de que req.params.dni esté definido correctamente
-//             console.log('dni', dni);
-    
-            
-//             //buscar id de usuario atravez del dni
-//             const idUser = await Usuario.getByDni(dni)
-//             if(!idUser) {
-//                 return res.status(404).json({ message: 'Error al bucar id usuario a inactivar en MedicoController' });
-//             }
-//             const { id } = idUser.usuario
-            
-//             //Activar el médico
-//             const result = await Medico.activarMedico(id);
-//             if (!result) {
-//                 return res.status(404).json({ message: 'Error al activar el médico desde MedicoController' });
-//             }
-//             flag = true
-//             res.redirect(`/medicos?nombreActivo=${flag}`);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-//     async especialidadesxmedico(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             const especialidades = await Medico.getEspecialidadesById(id);
-//             if (!especialidades) {
-//                 return res.status(404).json({ message: 'Error al obtener las especialidades desde MedicoController' });
-//             }
-//             res.json(especialidades);
-//         } catch (error) {    
-//             next(error);
-//         }
-//     }
+// //             res.redirect('/medicos?nombreStore=1');
+// //         } catch (error) {
+// //             console.error(error);
+// //             next(error);
+// //         }
+// //     }
 
-//     async editarEspecialidades(req, res, next) {
-//         try {
-//             const { dni } = req.params;
-//             const especialidades = await Medico.getEspecialidadesByDni(dni);
-//             if (!especialidades) {
-//                 return res.status(404).json({ message: 'Error al obtener las especialidades desde MedicoController' });
+// //     // ================================================================
+// //     // EDITAR MÉDICO
+// //     // ================================================================
 
-//             }
-//             res.render('medicos/editarEspMed', { especialidades });
-//            // res.json(especialidades);
-//         } catch (error) {    
-//             next(error);
-//         }
-//     }
+// // async edit(req, res, next) {
+// //     try {
+// //         const { id_medico } = req.params;
 
-//     async activarEspecialidad(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             const especialidad = await Medico.activarEspecialidad(id);
-//             if (!especialidad) {
-//                 return res.status(404).json({ message: 'Error al activar la especialidad desde MedicoController' });
-//             }
-//             res.redirect(`medicos/editarEspMed`);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
+// //         // Obtener médico
+// //         const medico = await Medico.obtenerPorId(id_medico);
+// //         if (!medico) return res.status(404).send("Médico no encontrado");
 
-//     async inactivarEspecialidad(req, res, next) {
-//         try {
-//             const { id } = req.params;
-//             console.log('id especialidad', id);
-//             const especialidad = await Medico.inactivarEspecialidad(id);
-//             if (!especialidad) {
-//                 return res.status(404).json({ message: 'Error al inactivar la especialidad desde MedicoController' });
-//             }
-//             res.redirect(`medicos/editarEspMed`);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-   
-// }
+// //         // Obtener datos de persona y usuario
+// //         const persona = await Persona.getById(medico.id_persona);
+// //         const usuario = await Usuario.getById(medico.id_usuario);
 
-// module.exports = new MedicosController()
+// //         // Especialidades
+// //         const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
+// //         const especialidades = await Especialidad.getAll();
+
+// //         // Teléfonos
+// //         const telefonos = await Persona.getTelefonos(persona.id) || [];
+// //         const telefonosString = telefonos.length
+// //             ? telefonos.map(t => t.numero).join(', ')
+// //             : "";
+
+// //         // Normalizar fecha
+// //         persona.nacimiento = persona.nacimiento
+// //             ? new Date(persona.nacimiento)
+// //             : null;
+
+// //         // Render
+// //         res.render('medicos/editar', {
+// //             persona,
+// //             usuario,
+// //             medico,
+// //             especialidades,
+// //             especialidadesAsignadas,
+// //             telefonos: { numeros: telefonosString },
+// //             matricula: medico.matricula
+// //         });
+
+// //     } catch (error) {
+// //         next(error);
+// //     }
+// // }
+
+
+
+// //     // ================================================================
+// //     // GUARDAR EDICIÓN
+// //     // ================================================================
+// //     async update(req, res, next) {
+// //         try {
+// //             const { id_medico } = req.params;
+// //             const { nombre, apellido, nacimiento, email, password } = req.body;
+
+// //             const medico = await Medico.obtenerPorId(id_medico);
+// //             if (!medico) return res.status(404).send("Médico no encontrado");
+
+// //             const persona = await Persona.getById(medico.id_persona);
+// //             const usuario = await Usuario.getById(medico.id_usuario);
+
+// //             await Persona.updatePersona(persona.id, { nombre, apellido, nacimiento });
+// //             await Usuario.updateUsuario(usuario.id, { email: email.split("@")[0], password });
+
+// //             res.redirect('/medicos?nombreUpdate=1');
+// //         } catch (error) {
+// //             next(error);
+// //         }
+// //     }
+
+// //     // ================================================================
+// //     // ACTIVAR / INACTIVAR MÉDICO
+// //     // ================================================================
+// //     async inactivar(req, res, next) {
+// //         try {
+// //             const { id_medico } = req.params;
+// //             const medico = await Medico.obtenerPorId(id_medico);
+// //             if (!medico) return res.status(404).send("Médico no encontrado");
+
+// //             await Medico.actualizar({ id: medico.id_medico, estado: 0, id_usuario: medico.id_usuario, id_persona: medico.id_persona });
+// //             res.redirect('/medicos?nombreInactivo=1');
+// //         } catch (error) {
+// //             next(error);
+// //         }
+// //     }
+
+// //     async activar(req, res, next) {
+// //         try {
+// //             const { id_medico } = req.params;
+// //             const medico = await Medico.obtenerPorId(id_medico);
+// //             if (!medico) return res.status(404).send("Médico no encontrado");
+
+// //             await Medico.actualizar({ id: medico.id_medico, estado: 1, id_usuario: medico.id_usuario, id_persona: medico.id_persona });
+// //             res.redirect('/medicos?nombreActivo=1');
+// //         } catch (error) {
+// //             next(error);
+// //         }
+// //     }
+// // }
+
+// // module.exports = new MedicosController();
 
 
 // const Medico = require('../models/medicosModels');
@@ -378,244 +196,7 @@
 // const Usuario = require('../models/usuariosModels');
 // const Especialidad = require('../models/especialidadesModels');
 
-// const { validateMedicos, validatePartialMedicos } = require('../schemas/validation');
-// const { obtenerFechaFormateada } = require('../utils/dateFormatter');
-
-// class MedicosController {
-
-//     // ================================================================
-//     // LISTAR MÉDICOS
-//     // ================================================================
-//     async get(req, res, next) {
-//         try {
-//             const medicos = await Medico.getAll();
-
-//             const medicosConFecha = medicos.map(m => ({
-//                 ...m,
-//                 nacimiento: obtenerFechaFormateada(new Date(m.nacimiento))
-//             }));
-
-//             const { nombreUpdate, nombreStore, nombreInactivo, nombreActivo } = req.query;
-
-//             let mensaje = null;
-//             if (nombreInactivo) mensaje = 'Se ha dado de Baja a un Médico';
-//             if (nombreActivo) mensaje = 'Se ha dado de Alta a un Médico';
-//             if (nombreUpdate) mensaje = 'Médico actualizado correctamente';
-//             if (nombreStore) mensaje = 'Médico creado correctamente';
-
-//             res.render('medicos/index', { medicos: medicosConFecha, mensaje });
-
-//         } catch (error) {
-//             console.error('Error listando médicos:', error);
-//             next(error);
-//         }
-//     }
-
-//     // ================================================================
-//     // FORMULARIO CREACIÓN
-//     // ================================================================
-//     async getCreateForm(req, res, next) {
-//         try {
-//             const especialidades = await Especialidad.getAll();
-//             res.render('medicos/crear', { especialidades });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // ================================================================
-//     // CREAR MÉDICO
-//     // ================================================================
-//     async store(req, res, next) {
-//         try {
-//             const { dni, nombre, apellido, nacimiento, email, password, repeatPassword, especialidades, matricula, telefonos } = req.body;
-
-//             if (password !== repeatPassword) {
-//                 return res.status(400).json({ error: "Las contraseñas no coinciden" });
-//             }
-
-//             // Validación
-//             const parsed = validateMedicos({
-//                 dni, nombre, apellido,
-//                 fechaNacimiento: new Date(nacimiento),
-//                 email, password,
-//                 especialidades, matricula, telefonos
-//             });
-
-//             if (!parsed.success) {
-//                 return res.status(422).json({ error: parsed.error.issues });
-//             }
-
-//             const nacimientoFinal = parsed.data.fechaNacimiento.toISOString().split('T')[0];
-
-//             // Verificar persona existente
-//             const personaExistente = await Persona.getByDni(dni);
-//             if (personaExistente) {
-//                 return res.status(409).json({ message: "Ya existe una persona con ese DNI" });
-//             }
-
-//             // Crear persona
-//             const persona = await Persona.create({
-//                 dni,
-//                 nombre,
-//                 apellido,
-//                 nacimiento: nacimientoFinal
-//             });
-
-//             const id_persona = persona.id;
-
-//             // Crear usuario
-//             const usuario = await Usuario.create({
-//                 email: email.split("@")[0],
-//                 password,
-//                 id_persona,
-//                 id_rol: 2 // médico
-//             });
-
-//             // Crear médico
-//             const medico = await Medico.create({
-//                 id_persona,
-//                 estado: 1
-//             });
-
-//             // Registrar especialidades + matrículas
-//             for (let i = 0; i < especialidades.length; i++) {
-//                 await Medico.agregarEspecialidad(
-//                     medico.id_medico,
-//                     especialidades[i],
-//                     matricula[i]
-//                 );
-//             }
-
-//             // Registrar teléfonos
-//             if (telefonos && telefonos.length > 0) {
-//                 for (let tel of telefonos) {
-//                     await Persona.addTelefono(id_persona, tel);
-//                 }
-//             }
-
-//             res.redirect('/medicos?nombreStore=1');
-
-//         } catch (error) {
-//             console.error(error);
-//             next(error);
-//         }
-//     }
-
-//     // ================================================================
-//     // EDITAR MÉDICO
-//     // ================================================================
-//     async edit(req, res, next) {
-//         try {
-//             const { dni } = req.params;
-
-//             const persona = await Persona.getByDni(dni);
-//             if (!persona) return res.status(404).send("Persona no encontrada");
-
-//             const usuario = await Usuario.getByPersonaId(persona.id);
-
-//             const medico = await Medico.getByPersonaId(persona.id);
-
-//             const especialidades = await Medico.getEspecialidades(medico.id_medico);
-
-//             const telefonos = await Persona.getTelefonos(persona.id);
-
-//             res.render('medicos/editar', {
-//                 persona,
-//                 usuario,
-//                 medico,
-//                 especialidades,
-//                 telefonos
-//             });
-
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // ================================================================
-//     // GUARDAR EDICIÓN
-//     // ================================================================
-//     async update(req, res, next) {
-//         try {
-//             const { dni } = req.params;
-//             const { nombre, apellido, nacimiento, email, password } = req.body;
-
-//             const persona = await Persona.getByDni(dni);
-//             if (!persona) return res.status(404).send("Persona no encontrada");
-
-//             const usuario = await Usuario.getByPersonaId(persona.id);
-
-//             // Actualizar persona
-//             await Persona.updatePersona(persona.id, {
-//                 nombre,
-//                 apellido,
-//                 nacimiento
-//             });
-
-//             // Actualizar usuario
-//             await Usuario.updateUsuario(usuario.id, {
-//                 email: email.split("@")[0],
-//                 password
-//             });
-
-//             res.redirect('/medicos?nombreUpdate=1');
-
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // ================================================================
-//     // INACTIVAR
-//     // ================================================================
-//     async inactivar(req, res, next) {
-//         try {
-//             const { dni } = req.params;
-
-//             const persona = await Persona.getByDni(dni);
-//             const medico = await Medico.getByPersonaId(persona.id);
-
-//             await Medico.setEstado(medico.id_medico, 0);
-
-//             res.redirect('/medicos?nombreInactivo=1');
-
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     // ================================================================
-//     // ACTIVAR
-//     // ================================================================
-//     async activar(req, res, next) {
-//         try {
-//             const { dni } = req.params;
-
-//             const persona = await Persona.getByDni(dni);
-//             const medico = await Medico.getByPersonaId(persona.id);
-
-//             await Medico.setEstado(medico.id_medico, 1);
-
-//             res.redirect('/medicos?nombreActivo=1');
-
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-// }
-
-// module.exports = new MedicosController();
-
-
-
-// const Medico = require('../models/medicosModels');
-// const Persona = require('../models/personasModels');
-// const Usuario = require('../models/usuariosModels');
-// const Especialidad = require('../models/especialidadesModels');
-
-// const { validateMedicos, validatePartialMedicos } = require('../schemas/validation');
+// const { validateMedicos } = require('../schemas/validation');
 // const { obtenerFechaFormateada } = require('../utils/dateFormatter');
 
 // class MedicosController {
@@ -635,17 +216,16 @@
 //             }));
 
 //             const { nombreUpdate, nombreStore, nombreInactivo, nombreActivo } = req.query;
-
 //             let mensaje = null;
-//             if (nombreInactivo) mensaje = 'Se ha dado de Baja a un Médico';
-//             if (nombreActivo) mensaje = 'Se ha dado de Alta a un Médico';
+
+//             if (nombreInactivo) mensaje = 'Se ha dado de baja al médico';
+//             if (nombreActivo) mensaje = 'Se ha dado de alta al médico';
 //             if (nombreUpdate) mensaje = 'Médico actualizado correctamente';
 //             if (nombreStore) mensaje = 'Médico creado correctamente';
 
 //             res.render('medicos/index', { medicos: medicosConFecha, mensaje });
 
 //         } catch (error) {
-//             console.error('Error listando médicos:', error);
 //             next(error);
 //         }
 //     }
@@ -667,300 +247,213 @@
 //     // ================================================================
 //     async store(req, res, next) {
 //         try {
-//             const { dni, nombre, apellido, nacimiento, email, password, repeatPassword, especialidades, telefonos } = req.body;
+//             const {
+//                 dni,
+//                 nombre,
+//                 apellido,
+//                 nacimiento,
+//                 email,
+//                 password,
+//                 repeatPassword,
+//                 especialidades,
+//                 telefonos
+//             } = req.body;
 
 //             if (password !== repeatPassword) {
-//                 return res.status(400).json({ error: "Las contraseñas no coinciden" });
+//                 return res.status(400).json({ error: 'Las contraseñas no coinciden' });
 //             }
 
-//             // Validación
 //             const parsed = validateMedicos({
-//                 dni, nombre, apellido,
+//                 dni,
+//                 nombre,
+//                 apellido,
 //                 fechaNacimiento: new Date(nacimiento),
-//                 email, password,
-//                 especialidades, telefonos
+//                 email,
+//                 password,
+//                 especialidades,
+//                 telefonos
 //             });
 
 //             if (!parsed.success) {
 //                 return res.status(422).json({ error: parsed.error.issues });
 //             }
 
-//             const nacimientoFinal = parsed.data.fechaNacimiento.toISOString().split('T')[0];
-
-//             // Verificar persona existente
 //             const personaExistente = await Persona.getByDni(dni);
 //             if (personaExistente) {
-//                 return res.status(409).json({ message: "Ya existe una persona con ese DNI" });
+//                 return res.status(409).json({ message: 'Ya existe una persona con ese DNI' });
 //             }
 
-//             // Crear persona
 //             const persona = await Persona.create({
 //                 dni,
 //                 nombre,
 //                 apellido,
-//                 nacimiento: nacimientoFinal
+//                 nacimiento: parsed.data.fechaNacimiento.toISOString().split('T')[0]
 //             });
 
-//             const id_persona = persona.id;
-
-//             // Crear usuario
 //             const usuario = await Usuario.create({
-//                 email: email.split("@")[0],
+//                 email,
 //                 password,
-//                 id_persona,
-//                 id_rol: 2 // médico
+//                 id_persona: persona.id,
+//                 id_rol: 2
 //             });
 
-//             // Crear médico
 //             const medicoId = await Medico.crear({
-//                 id_persona,
+//                 id_persona: persona.id,
+//                 id_usuario: usuario.id,
 //                 estado: 1
 //             });
 
-//             // Registrar especialidades
-//             if (especialidades && especialidades.length > 0) {
-//                 for (let esp of especialidades) {
+//             if (especialidades?.length) {
+//                 for (const esp of especialidades) {
 //                     await Especialidad.asignarAMedico(medicoId, esp);
 //                 }
 //             }
 
-//             // Registrar teléfonos
-//             if (telefonos && telefonos.length > 0) {
-//                 for (let tel of telefonos) {
-//                     await Persona.addTelefono(id_persona, tel);
+//             if (telefonos?.length) {
+//                 for (const tel of telefonos) {
+//                     await Persona.addTelefono(persona.id, tel);
 //                 }
 //             }
 
 //             res.redirect('/medicos?nombreStore=1');
 
 //         } catch (error) {
-//             console.error(error);
 //             next(error);
 //         }
 //     }
 
 //     // ================================================================
-//     // EDITAR MÉDICO
+//     // EDITAR MÉDICO (FORMULARIO)
 //     // ================================================================
-//     // async edit(req, res, next) {
-//     //     try {
-//     //         const { dni } = req.params;
+//     async edit(req, res, next) {
+//         try {
+//             const { id_medico } = req.params;
 
-//     //         const persona = await Persona.getByDni(dni);
-//     //         if (!persona) return res.status(404).send("Persona no encontrada");
+//             const medicoDb = await Medico.obtenerPorId(id_medico);
+//             if (!medicoDb) return res.status(404).send('Médico no encontrado');
 
-//     //         const usuario = await Usuario.getByPersonaId(persona.id);
+//             // Normalizar ID
+//             const medico = {
+//                 ...medicoDb,
+//                 id: medicoDb.id_medico
+//             };
 
-//     //         const medico = await Medico.obtenerPorPersonaId(persona.id);
+//             const persona = await Persona.getById(medico.id_persona);
+//             const usuario = await Usuario.getById(medico.id_usuario);
 
-//     //         const especialidades = await Especialidad.getPorMedico(medico.id_medico);
+//             // Fecha para input date
+//             persona.nacimiento = persona.nacimiento
+//                 ? new Date(persona.nacimiento)
+//                 : null;
 
-//     //         const telefonos = await Persona.getTelefonos(persona.id);
+//             // Teléfonos
+//             const telefonos = await Persona.getTelefonos(persona.id) || [];
+//             const telefonosString = telefonos.map(t => t.numero).join(', ');
 
-//     //         res.render('medicos/editar', {
-//     //             persona,
-//     //             usuario,
-//     //             medico,
-//     //             especialidades,
-//     //             telefonos
-//     //         });
+//             // Especialidades
+//             const especialidades = await Especialidad.getAll();
+//             const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
 
-//     //     } catch (error) {
-//     //         next(error);
-//     //     }
-//     // }
+//             res.render('medicos/editar', {
+//                 medico,
+//                 persona,
+//                 usuario,
+//                 especialidades,
+//                 especialidadesAsignadas,
+//                 telefonos: { numeros: telefonosString }
+//             });
 
-// //     async edit(req, res, next) {
-// //     try {
-// //         const { id_medico } = req.params;
-
-// //         const medico = await Medico.obtenerPorId(id_medico);
-// //         if (!medico) return res.status(404).send("Médico no encontrado");
-
-// //         const persona = await Persona.getById(medico.id_persona);
-// //         const usuario = await Usuario.getById(medico.id_usuario);
-// //         const especialidades = await Especialidad.getPorMedico(medico.id_medico);
-// //         const telefonos = await Persona.getTelefonos(persona.id);
-
-// //         res.render('medicos/editar', {
-// //             persona,
-// //             usuario,
-// //             medico,
-// //             especialidades,
-// //             telefonos
-// //         });
-
-// //     } catch (error) {
-// //         next(error);
-// //     }
-// // }
-// async edit(req, res, next) {
-//     try {
-//         const { id_medico } = req.params;
-//         const medico = await Medico.obtenerPorId(id_medico);
-//         if (!medico) return res.status(404).send("Médico no encontrado");
-
-//         const persona = await Persona.getById(medico.id_persona);
-//         const usuario = await Usuario.getById(medico.id_usuario);
-//         const especialidades = await Especialidad.getPorMedico(medico.id_medico);
-//         const telefonos = await Persona.getTelefonos(persona.id);
-
-//         res.render('medicos/editar', { persona, usuario, medico, especialidades, telefonos });
-//     } catch (error) {
-//         next(error);
+//         } catch (error) {
+//             next(error);
+//         }
 //     }
-// }
-
 
 //     // ================================================================
 //     // GUARDAR EDICIÓN
 //     // ================================================================
-//     // async update(req, res, next) {
-//     //     try {
-//     //         const { dni } = req.params;
-//     //         const { nombre, apellido, nacimiento, email, password } = req.body;
-
-//     //         const persona = await Persona.getByDni(dni);
-//     //         if (!persona) return res.status(404).send("Persona no encontrada");
-
-//     //         const usuario = await Usuario.getByPersonaId(persona.id);
-
-//     //         // Actualizar persona
-//     //         await Persona.updatePersona(persona.id, {
-//     //             nombre,
-//     //             apellido,
-//     //             nacimiento
-//     //         });
-
-//     //         // Actualizar usuario
-//     //         await Usuario.updateUsuario(usuario.id, {
-//     //             email: email.split("@")[0],
-//     //             password
-//     //         });
-
-//     //         res.redirect('/medicos?nombreUpdate=1');
-
-//     //     } catch (error) {
-//     //         next(error);
-//     //     }
-//     // }
-
-
 //     async update(req, res, next) {
-//     try {
-//         const { id_medico } = req.params;
-//         const { nombre, apellido, nacimiento, email, password } = req.body;
+//         try {
+//             const { id_medico } = req.params;
+//             const {
+//                 nombre,
+//                 apellido,
+//                 nacimiento,
+//                 email,
+//                 password,
+//                 especialidades,
+//                 matriculas
+//             } = req.body;
 
-//         const medico = await Medico.obtenerPorId(id_medico);
-//         if (!medico) return res.status(404).send("Médico no encontrado");
+//             const medico = await Medico.obtenerPorId(id_medico);
+//             if (!medico) return res.status(404).send('Médico no encontrado');
 
-//         const persona = await Persona.getById(medico.id_persona);
-//         const usuario = await Usuario.getById(medico.id_usuario);
+//             const persona = await Persona.getById(medico.id_persona);
+//             const usuario = await Usuario.getById(medico.id_usuario);
 
-//         await Persona.updatePersona(persona.id, { nombre, apellido, nacimiento });
-//         await Usuario.updateUsuario(usuario.id, { email: email.split("@")[0], password });
+//             await Persona.updatePersona(persona.id, {
+//                 nombre,
+//                 apellido,
+//                 nacimiento
+//             });
 
-//         res.redirect('/medicos?nombreUpdate=1');
-//     } catch (error) {
-//         next(error);
+//             if (email) {
+//                 await Usuario.updateUsuario(usuario.id, { email });
+//             }
+
+//             if (password) {
+//                 await Usuario.updateUsuario(usuario.id, { password });
+//             }
+
+//             // Actualizar especialidades
+//             if (especialidades) {
+//                 await Especialidad.eliminarDeMedico(id_medico);
+
+//                 for (const idEsp of especialidades) {
+//                     await Especialidad.asignarAMedico(
+//                         id_medico,
+//                         idEsp,
+//                         matriculas?.[idEsp] || null
+//                     );
+//                 }
+//             }
+
+//             res.redirect('/medicos?nombreUpdate=1');
+
+//         } catch (error) {
+//             next(error);
+//         }
 //     }
-// }
-
 
 //     // ================================================================
-//     // INACTIVAR
+//     // ACTIVAR / INACTIVAR MÉDICO
 //     // ================================================================
-//     // async inactivar(req, res, next) {
-//     //     try {
-//     //         const { dni } = req.params;
-
-//     //         const persona = await Persona.getByDni(dni);
-//     //         const medico = await Medico.obtenerPorPersonaId(persona.id);
-
-//     //         await Medico.actualizar({
-//     //             id: medico.id_medico,
-//     //             estado: 0,
-//     //             id_usuario: medico.id_usuario,
-//     //             id_persona: medico.id_persona
-//     //         });
-
-//     //         res.redirect('/medicos?nombreInactivo=1');
-
-//     //     } catch (error) {
-//     //         next(error);
-//     //     }
-//     // }
 //     async inactivar(req, res, next) {
-//     try {
-//         const { id_medico } = req.params;
+//         try {
+//             const { id_medico } = req.params;
 
-//         const medico = await Medico.obtenerPorId(id_medico);
-//         if (!medico) return res.status(404).send("Médico no encontrado");
+//             await Medico.actualizarEstado(id_medico, 0);
 
-//         await Medico.actualizar({
-//             id: medico.id_medico,
-//             estado: 0,
-//             id_usuario: medico.id_usuario,
-//             id_persona: medico.id_persona
-//         });
-
-//         res.redirect('/medicos?nombreInactivo=1');
-
-//     } catch (error) {
-//         next(error);
+//             res.redirect('/medicos?nombreInactivo=1');
+//         } catch (error) {
+//             next(error);
+//         }
 //     }
-// }
-
-
-//     // ================================================================
-//     // ACTIVAR
-//     // ================================================================
-//     // async activar(req, res, next) {
-//     //     try {
-//     //         const { dni } = req.params;
-
-//     //         const persona = await Persona.getByDni(dni);
-//     //         const medico = await Medico.obtenerPorPersonaId(persona.id);
-
-//     //         await Medico.actualizar({
-//     //             id: medico.id_medico,
-//     //             estado: 1,
-//     //             id_usuario: medico.id_usuario,
-//     //             id_persona: medico.id_persona
-//     //         });
-
-//     //         res.redirect('/medicos?nombreActivo=1');
-
-//     //     } catch (error) {
-//     //         next(error);
-//     //     }
-//     // }
 
 //     async activar(req, res, next) {
-//     try {
-//         const { id_medico } = req.params;
+//         try {
+//             const { id_medico } = req.params;
 
-//         const medico = await Medico.obtenerPorId(id_medico);
-//         if (!medico) return res.status(404).send("Médico no encontrado");
+//             await Medico.actualizarEstado(id_medico, 1);
 
-//         await Medico.actualizar({
-//             id: medico.id_medico,
-//             estado: 1,
-//             id_usuario: medico.id_usuario,
-//             id_persona: medico.id_persona
-//         });
-
-//         res.redirect('/medicos?nombreActivo=1');
-
-//     } catch (error) {
-//         next(error);
+//             res.redirect('/medicos?nombreActivo=1');
+//         } catch (error) {
+//             next(error);
+//         }
 //     }
-// }
-
-
 // }
 
 // module.exports = new MedicosController();
+
 
 const Medico = require('../models/medicosModels');
 const Persona = require('../models/personasModels');
@@ -973,11 +466,12 @@ const { obtenerFechaFormateada } = require('../utils/dateFormatter');
 class MedicosController {
 
     // ================================================================
-    // LISTAR MÉDICOS
+    // LISTAR
     // ================================================================
     async get(req, res, next) {
         try {
             const medicos = await Medico.listar();
+
             const medicosConFecha = medicos.map(m => ({
                 ...m,
                 nacimiento: m.nacimiento
@@ -987,158 +481,673 @@ class MedicosController {
 
             const { nombreUpdate, nombreStore, nombreInactivo, nombreActivo } = req.query;
             let mensaje = null;
-            if (nombreInactivo) mensaje = 'Se ha dado de Baja a un Médico';
-            if (nombreActivo) mensaje = 'Se ha dado de Alta a un Médico';
+
+            if (nombreInactivo) mensaje = 'Se dio de baja al médico';
+            if (nombreActivo) mensaje = 'Se dio de alta al médico';
             if (nombreUpdate) mensaje = 'Médico actualizado correctamente';
             if (nombreStore) mensaje = 'Médico creado correctamente';
 
             res.render('medicos/index', { medicos: medicosConFecha, mensaje });
-        } catch (error) {
-            console.error('Error listando médicos:', error);
-            next(error);
+        } catch (err) {
+            next(err);
         }
     }
 
     // ================================================================
-    // FORMULARIO CREACIÓN
+    // FORM CREAR
     // ================================================================
     async getCreateForm(req, res, next) {
         try {
             const especialidades = await Especialidad.getAll();
             res.render('medicos/crear', { especialidades });
-        } catch (error) {
-            next(error);
+        } catch (err) {
+            next(err);
         }
     }
 
     // ================================================================
-    // CREAR MÉDICO
+    // CREAR
     // ================================================================
     async store(req, res, next) {
         try {
-            const { dni, nombre, apellido, nacimiento, email, password, repeatPassword, especialidades, telefonos } = req.body;
+            const {
+                dni, nombre, apellido, nacimiento,
+                email, password, repeatPassword,
+                especialidades, telefonos, matricula
+            } = req.body;
 
             if (password !== repeatPassword) {
-                return res.status(400).json({ error: "Las contraseñas no coinciden" });
+                return res.status(400).send('Las contraseñas no coinciden');
             }
 
-            const parsed = validateMedicos({ dni, nombre, apellido, fechaNacimiento: new Date(nacimiento), email, password, especialidades, telefonos });
-            if (!parsed.success) return res.status(422).json({ error: parsed.error.issues });
+            const parsed = validateMedicos({
+                dni,
+                nombre,
+                apellido,
+                fechaNacimiento: new Date(nacimiento),
+                email,
+                password,
+                especialidades,
+                telefonos
+            });
 
-            const nacimientoFinal = parsed.data.fechaNacimiento.toISOString().split('T')[0];
+            if (!parsed.success) {
+                return res.status(422).json(parsed.error.issues);
+            }
 
             const personaExistente = await Persona.getByDni(dni);
-            if (personaExistente) return res.status(409).json({ message: "Ya existe una persona con ese DNI" });
-
-            const persona = await Persona.create({ dni, nombre, apellido, nacimiento: nacimientoFinal });
-            const usuario = await Usuario.create({ email: email.split("@")[0], password, id_persona: persona.id, id_rol: 2 });
-            const medicoId = await Medico.crear({ id_persona: persona.id, estado: 1 });
-
-            if (especialidades && especialidades.length > 0) {
-                for (let esp of especialidades) await Especialidad.asignarAMedico(medicoId, esp);
+            if (personaExistente) {
+                return res.status(409).send('DNI ya existente');
             }
-            if (telefonos && telefonos.length > 0) {
-                for (let tel of telefonos) await Persona.addTelefono(persona.id, tel);
+
+            const persona = await Persona.create({
+                dni,
+                nombre,
+                apellido,
+                nacimiento: parsed.data.fechaNacimiento.toISOString().split('T')[0],
+                email
+            });
+
+            const usuario = await Usuario.create({
+                email,
+                password,
+                id_persona: persona.id,
+                id_rol: 2
+            });
+
+            const medicoId = await Medico.crear({
+                id_persona: persona.id,
+                id_usuario: usuario.id,
+                estado: 1,
+                matricula
+            });
+
+            if (especialidades?.length) {
+                for (const idEsp of especialidades) {
+                    await Especialidad.asignarAMedico(medicoId, idEsp);
+                }
+            }
+
+            if (telefonos?.length) {
+                for (const tel of telefonos) {
+                    await Persona.addTelefono(persona.id, tel);
+                }
             }
 
             res.redirect('/medicos?nombreStore=1');
-        } catch (error) {
-            console.error(error);
-            next(error);
+
+        } catch (err) {
+            next(err);
         }
     }
 
     // ================================================================
-    // EDITAR MÉDICO
+    // EDITAR (FORM)
     // ================================================================
+    // async edit(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+
+    //         const medico = await Medico.obtenerPorId(id_medico);
+    //         if (!medico) return res.status(404).send('Médico no encontrado');
+
+    //         const persona = await Persona.getById(medico.id_persona);
+    //         const usuario = await Usuario.getById(medico.id_usuario);
+
+    //         persona.nacimiento = persona.nacimiento
+    //             ? new Date(persona.nacimiento)
+    //             : null;
+
+    //         const telefonos = await Persona.getTelefonos(persona.id);
+    //         const telefonosString = telefonos.map(t => t.numero).join(', ');
+
+    //         const especialidades = await Especialidad.getAll();
+    //         const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
+
+    //         res.render('medicos/editar', {
+    //             medico,
+    //             persona,
+    //             usuario,
+    //             especialidades,
+    //             especialidadesAsignadas,
+    //             telefonos: { numeros: telefonosString }
+    //         });
+
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
+    //     async edit(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+
+
+    //         const medico = await Medico.obtenerPorId(id_medico);
+    //         if (!medico) return res.status(404).send('Médico no encontrado');
+
+    //         medico.nacimiento = medico.nacimiento
+    //             ? new Date(medico.nacimiento)
+    //             : null;
+
+    //         const especialidades = await Especialidad.getAll();
+    //         const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
+    //         console.log('ESPECIALIDADES ASIGNADAS =>', especialidadesAsignadas);
+
+
+    //         res.render('medicos/editar', {
+    //             medico,
+    //             persona: medico,   
+    //             usuario: medico,   
+    //             especialidades,
+    //             especialidadesAsignadas,
+    //             telefonos: { numeros: medico.telefonos || '' }
+    //         });
+
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
+
     async edit(req, res, next) {
         try {
             const { id_medico } = req.params;
+
+            // ===============================
+            // 1️⃣ MÉDICO (JOIN COMPLETO)
+            // ===============================
             const medico = await Medico.obtenerPorId(id_medico);
-            if (!medico) return res.status(404).send("Médico no encontrado");
+            if (!medico) {
+                return res.status(404).send('Médico no encontrado');
+            }
 
-            const persona = await Persona.getById(medico.id_persona);
-            const usuario = await Usuario.getById(medico.id_usuario);
-            const especialidades = await Especialidad.getPorMedico(medico.id_medico);
-            const telefonos = await Persona.getTelefonos(persona.id);
+            // ===============================
+            // 2️⃣ PERSONA (MAPEO CLAVE)
+            // ===============================
+            const persona = {
+                id: medico.id_persona,
+                nombre: medico.nombre,
+                apellido: medico.apellido,
+                nacimiento: medico.nacimiento
+                    ? new Date(medico.nacimiento)
+                    : null
+            };
 
-            res.render('medicos/editar', { persona, usuario, medico, especialidades, telefonos });
-        } catch (error) {
-            next(error);
+            // ===============================
+            // 3️⃣ USUARIO (MAPEO CLAVE)
+            // ===============================
+            const usuario = {
+                id: medico.id_usuario,
+                email: medico.email
+            };
+
+            // ===============================
+            // 4️⃣ TELÉFONOS (COMO ESPERA EL PUG)
+            // ===============================
+            medico.telefonos = medico.telefonos || '';
+
+            // ===============================
+            // 5️⃣ ESPECIALIDADES
+            // ===============================
+            const especialidades = await Especialidad.getAll();
+            const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
+
+            console.log('ESPECIALIDADES ASIGNADAS =>', especialidadesAsignadas);
+
+            // ===============================
+            // 6️⃣ RENDER
+            // ===============================
+            res.render('medicos/editar', {
+                medico,
+                persona,
+                usuario,
+                especialidades,
+                especialidadesAsignadas
+            });
+
+        } catch (err) {
+            next(err);
         }
     }
 
-//     async edit(req, res, next) {
-//     try {
-//         const { id_medico } = req.params;
 
-//         const medico = await Medico.obtenerPorId(id_medico);
-//         if (!medico) return res.status(404).send("Médico no encontrado");
-
-//         const persona = await Persona.getById(medico.id_persona);
-//         if (!persona) return res.status(404).send("Persona no encontrada");
-
-//         const usuario = await Usuario.getById(medico.id_usuario);
-//         const especialidades = await Especialidad.getPorMedico(medico.id_medico);
-//         const telefonos = await Persona.getTelefonos(persona.id);
-
-//         res.render('medicos/editar', { persona, usuario, medico, especialidades, telefonos });
-
-//     } catch (error) {
-//         next(error);
-//     }
-// }
 
     // ================================================================
-    // GUARDAR EDICIÓN
+    // UPDATE
     // ================================================================
+    // async update(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+    //         const {
+    //             nombre, apellido, nacimiento,
+    //             email, password, matricula,
+    //             especialidades
+    //         } = req.body;
+
+    //         const medico = await Medico.obtenerPorId(id_medico);
+    //         if (!medico) return res.status(404).send('Médico no encontrado');
+
+    //         await Persona.updatePersona(medico.id_persona, {
+    //             nombre,
+    //             apellido,
+    //             nacimiento
+    //         });
+
+    //         if (email) {
+    //             await Usuario.updateUsuario(medico.id_usuario, { email });
+    //         }
+
+    //         if (password) {
+    //             await Usuario.updateUsuario(medico.id_usuario, { password });
+    //         }
+
+    //         await Medico.actualizarMatricula(id_medico, matricula);
+
+    //         await Especialidad.eliminarDeMedico(id_medico);
+    //         if (especialidades?.length) {
+    //             for (const idEsp of especialidades) {
+    //                 await Especialidad.asignarAMedico(id_medico, idEsp);
+    //             }
+    //         }
+
+    //         res.redirect('/medicos?nombreUpdate=1');
+
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
+
+    //     async update(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+
+    //         const {
+    //             nombre,
+    //             apellido,
+    //             nacimiento,
+    //             email,
+    //             password,
+    //             matricula
+    //         } = req.body;
+
+    //         // ===============================
+    //         // OBTENER MÉDICO
+    //         // ===============================
+    //         const medico = await Medico.obtenerPorId(id_medico);
+    //         if (!medico) {
+    //             return res.status(404).send('Médico no encontrado');
+    //         }
+
+    //         // ===============================
+    //         // ACTUALIZAR PERSONA
+    //         // ===============================
+    //         await Persona.updatePersona(medico.id_persona, {
+    //             nombre,
+    //             apellido,
+    //             nacimiento
+    //         });
+
+    //         // ===============================
+    //         // ACTUALIZAR USUARIO
+    //         // ===============================
+    //         const userUpdates = {};
+    //         if (email) userUpdates.email = email;
+    //         if (password && password.trim() !== '') {
+    //             userUpdates.password = password;
+    //         }
+
+    //         if (Object.keys(userUpdates).length > 0) {
+    //             await Usuario.updateUsuario(medico.id_usuario, userUpdates);
+    //         }
+
+    //         // ===============================
+    //         // ACTUALIZAR MÉDICO (matrícula)
+    //         // ===============================
+    //         if (matricula) {
+    //             await Medico.updateMatricula(id_medico, matricula);
+    //         }
+
+    //         // ===============================
+    //         // REDIRECT OK
+    //         // ===============================
+    //         // res.redirect(`/medicos/edit/${id_medico}?ok=1`);
+
+    //         res.redirect('/medicos?nombreUpdate=1');
+
+
+    //     } catch (error) {
+    //         console.error('Error al actualizar médico:', error);
+    //         next(error);
+    //     }
+    // }
+
+
+
+    // async update(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+
+    //         const {
+    //             nombre,
+    //             apellido,
+    //             nacimiento,
+    //             email,
+    //             password,
+    //             matricula,
+    //             especialidades = [],
+    //             telefonos = []
+    //         } = req.body;
+
+    //         // ===============================
+    //         // OBTENER MÉDICO
+    //         // ===============================
+    //         const medico = await Medico.obtenerPorId(id_medico);
+    //         if (!medico) {
+    //             return res.status(404).send('Médico no encontrado');
+    //         }
+
+    //         // ===============================
+    //         // PERSONA
+    //         // ===============================
+    //         await Persona.updatePersona(medico.id_persona, {
+    //             nombre,
+    //             apellido,
+    //             nacimiento
+    //         });
+
+    //         // ===============================
+    //         // USUARIO
+    //         // ===============================
+    //         const userUpdates = {};
+    //         if (email) userUpdates.email = email;
+    //         if (password && password.trim() !== '') {
+    //             userUpdates.password = password;
+    //         }
+
+    //         if (Object.keys(userUpdates).length > 0) {
+    //             await Usuario.updateUsuario(medico.id_usuario, userUpdates);
+    //         }
+
+    //         // ===============================
+    //         // MÉDICO (MATRÍCULA)
+    //         // ===============================
+    //         if (matricula) {
+    //             await Medico.updateMatricula(id_medico, matricula);
+    //         }
+
+    //         // ===============================
+    //         // TELÉFONOS
+    //         // ===============================
+    //         await Persona.eliminarTelefonos(medico.id_persona);
+
+    //         const telefonosArray = Array.isArray(telefonos)
+    //             ? telefonos
+    //             : [telefonos];
+
+    //         for (const tel of telefonosArray) {
+    //             if (tel && tel.trim() !== '') {
+    //                 await Persona.addTelefono(medico.id_persona, tel);
+    //             }
+    //         }
+
+    //         // ===============================
+    //         // ESPECIALIDADES
+    //         // ===============================
+    //         // 1. Desactivar todas
+    //         await Especialidad.desactivarTodasPorMedico(id_medico);
+
+    //         // 2. Activar las seleccionadas
+    //         const especialidadesArray = Array.isArray(especialidades)
+    //             ? especialidades
+    //             : [especialidades];
+
+    //         for (const idEsp of especialidadesArray) {
+    //             await Especialidad.asignarAMedico(id_medico, idEsp);
+    //         }
+
+    //         // ===============================
+    //         // OK
+    //         // ===============================
+    //         res.redirect('/medicos?nombreUpdate=1');
+
+    //     } catch (error) {
+    //         console.error('Error al actualizar médico:', error);
+    //         next(error);
+    //     }
+    // }
+
+
+
+    // async update(req, res, next) {
+    //   try {
+    //     const { id_medico } = req.params;
+
+    //     const {
+    //       nombre,
+    //       apellido,
+    //       nacimiento,
+    //       email,
+    //       password,
+    //       matricula,
+    //       especialidades,
+    //       especialidades_modificadas
+    //     } = req.body;
+
+    //     // ===============================
+    //     // 1️⃣ OBTENER MÉDICO
+    //     // ===============================
+    //     const medico = await Medico.obtenerPorId(id_medico);
+    //     if (!medico) {
+    //       return res.status(404).send('Médico no encontrado');
+    //     }
+
+    //     // ===============================
+    //     // 2️⃣ PERSONA
+    //     // ===============================
+    //     await Persona.updatePersona(medico.id_persona, {
+    //       nombre,
+    //       apellido,
+    //       nacimiento
+    //     });
+
+    //     // ===============================
+    //     // 3️⃣ USUARIO
+    //     // ===============================
+    //     const userUpdates = {};
+    //     if (email) userUpdates.email = email;
+    //     if (password && password.trim() !== '') {
+    //       userUpdates.password = password;
+    //     }
+
+    //     if (Object.keys(userUpdates).length > 0) {
+    //       await Usuario.updateUsuario(medico.id_usuario, userUpdates);
+    //     }
+
+    //     // ===============================
+    //     //  MÉDICO (MATRÍCULA)
+    //     // ===============================
+    //     if (matricula) {
+    //       await Medico.updateMatricula(id_medico, matricula);
+    //     }
+
+    //     // ===============================
+    //     //  ESPECIALIDADES (SOLO SI HUBO CAMBIOS)
+    //     // ===============================
+    //     if (especialidades_modificadas === '1') {
+
+    //       const listaEspecialidades = Array.isArray(especialidades)
+    //         ? especialidades
+    //         : especialidades
+    //           ? [especialidades]
+    //           : [];
+
+    //       // sincronización controlada
+    //       await Especialidad.desactivarTodasPorMedico(id_medico);
+
+    //       for (const idEsp of listaEspecialidades) {
+    //         await Especialidad.asignarAMedico(id_medico, idEsp);
+    //       }
+
+    //     } else {
+    //       console.log('Especialidades no modificadas → no se toca BD');
+    //     }
+
+    //         // ===============================
+    //         // TELÉFONOS
+    //         // ===============================
+    //         if (req.body.telefonos !== undefined) {
+
+    //         // 1️⃣ borrar teléfonos actuales
+    //         await Persona.eliminarTelefonos(medico.id_persona);
+
+    //         // 2️⃣ normalizar
+    //         const telefonosArray = Array.isArray(req.body.telefonos)
+    //             ? req.body.telefonos
+    //             : [req.body.telefonos];
+
+    //         // 3️⃣ insertar
+    //         for (const tel of telefonosArray) {
+    //             if (tel && tel.trim() !== '') {
+    //             await Persona.addTelefono(medico.id_persona, tel);
+    //             }
+    //         }
+    //         }
+
+
+    //     // ===============================
+    //     // 6️⃣ OK
+    //     // ===============================
+    //     res.redirect('/medicos?nombreUpdate=1');
+
+    //   } catch (error) {
+    //     console.error('Error al actualizar médico:', error);
+    //     next(error);
+    //   }
+    // }
+
     async update(req, res, next) {
         try {
             const { id_medico } = req.params;
-            const { nombre, apellido, nacimiento, email, password } = req.body;
 
+            const {
+                nombre,
+                apellido,
+                nacimiento,
+                email,
+                password,
+                matricula,
+                especialidades,
+                especialidades_modificadas,
+                telefonos,
+                telefonos_modificados
+            } = req.body;
+
+            // ===============================
+            // 1️⃣ OBTENER MÉDICO
+            // ===============================
             const medico = await Medico.obtenerPorId(id_medico);
-            if (!medico) return res.status(404).send("Médico no encontrado");
+            if (!medico) {
+                return res.status(404).send('Médico no encontrado');
+            }
 
-            const persona = await Persona.getById(medico.id_persona);
-            const usuario = await Usuario.getById(medico.id_usuario);
+            // ===============================
+            // 2️⃣ PERSONA
+            // ===============================
+            await Persona.updatePersona(medico.id_persona, {
+                nombre,
+                apellido,
+                nacimiento
+            });
 
-            await Persona.updatePersona(persona.id, { nombre, apellido, nacimiento });
-            await Usuario.updateUsuario(usuario.id, { email: email.split("@")[0], password });
+            // ===============================
+            // 3️⃣ USUARIO
+            // ===============================
+            const userUpdates = {};
+            if (email) userUpdates.email = email;
+            if (password && password.trim() !== '') {
+                userUpdates.password = password;
+            }
 
+            if (Object.keys(userUpdates).length > 0) {
+                await Usuario.updateUsuario(medico.id_usuario, userUpdates);
+            }
+
+            // ===============================
+            // 4️⃣ MÉDICO (MATRÍCULA)
+            // ===============================
+            if (matricula) {
+                await Medico.updateMatricula(id_medico, matricula);
+            }
+
+            // ===============================
+            // 5️⃣ ESPECIALIDADES (🔑 SOLO SI HUBO CAMBIOS)
+            // ===============================
+            if (especialidades_modificadas === '1') {
+
+                const listaEspecialidades = Array.isArray(especialidades)
+                    ? especialidades
+                    : especialidades
+                        ? [especialidades]
+                        : [];
+
+                await Especialidad.desactivarTodasPorMedico(id_medico);
+
+                for (const idEsp of listaEspecialidades) {
+                    await Especialidad.asignarAMedico(id_medico, idEsp);
+                }
+
+            } else {
+                console.log('Especialidades no modificadas → no se toca BD');
+            }
+
+            // ===============================
+            // 6️⃣ TELÉFONOS (🔑 SOLO SI HUBO CAMBIOS)
+            // ===============================
+            if (telefonos_modificados === '1') {
+
+                await Persona.eliminarTelefonos(medico.id_persona);
+
+                const telefonosArray = Array.isArray(telefonos)
+                    ? telefonos
+                    : telefonos
+                        ? [telefonos]
+                        : [];
+
+                for (const tel of telefonosArray) {
+                    if (tel && tel.trim() !== '') {
+                        await Persona.addTelefono(medico.id_persona, tel.trim());
+                    }
+                }
+
+            } else {
+                console.log('Teléfonos no modificados → no se toca BD');
+            }
+
+            // ===============================
+            // 7️⃣ OK
+            // ===============================
             res.redirect('/medicos?nombreUpdate=1');
+
         } catch (error) {
+            console.error('Error al actualizar médico:', error);
             next(error);
         }
     }
 
+
+
+
+
     // ================================================================
-    // ACTIVAR / INACTIVAR MÉDICO
+    // ESTADO
     // ================================================================
     async inactivar(req, res, next) {
-        try {
-            const { id_medico } = req.params;
-            const medico = await Medico.obtenerPorId(id_medico);
-            if (!medico) return res.status(404).send("Médico no encontrado");
-
-            await Medico.actualizar({ id: medico.id_medico, estado: 0, id_usuario: medico.id_usuario, id_persona: medico.id_persona });
-            res.redirect('/medicos?nombreInactivo=1');
-        } catch (error) {
-            next(error);
-        }
+        await Medico.actualizarEstado(req.params.id_medico, 0);
+        res.redirect('/medicos?nombreInactivo=1');
     }
 
     async activar(req, res, next) {
-        try {
-            const { id_medico } = req.params;
-            const medico = await Medico.obtenerPorId(id_medico);
-            if (!medico) return res.status(404).send("Médico no encontrado");
-
-            await Medico.actualizar({ id: medico.id_medico, estado: 1, id_usuario: medico.id_usuario, id_persona: medico.id_persona });
-            res.redirect('/medicos?nombreActivo=1');
-        } catch (error) {
-            next(error);
-        }
+        await Medico.actualizarEstado(req.params.id_medico, 1);
+        res.redirect('/medicos?nombreActivo=1');
     }
 }
 

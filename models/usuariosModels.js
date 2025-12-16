@@ -45,150 +45,63 @@ class Usuario extends Persona {
             if (conn) conn.end();
         }
     }
-    //mostrar por dni y los telefonos del usuario
-    // static async getByDni(dni) {
-    //     console.log(`Model: getByDni Usuario dni: ${dni}`);
-    //     try {
-    //         const conn = await createConnection();
-    //         console.log('Conexión a la base de datos establecida');
-    
-    //         // Obtener el usuario por DNI
-    //         const [usuario] = await conn.query('SELECT * FROM usuarios WHERE dni = ?', [dni]);
-            
-    //         if (!usuario || usuario.length === 0) {
-    //             console.log('Model USUARIO: No se encontró ningún usuario');
-    //             return { usuario: null, telefonos: null };
-    //         }
-    
-    //         const { id } = usuario[0];
-    
-    //         // Obtener los teléfonos asociados al usuario
-    //         const [telefonos] = await conn.query(`
-    //             SELECT GROUP_CONCAT(DISTINCT t.numero SEPARATOR ', ') AS numeros
-    //             FROM telefonos t
-    //             WHERE t.id_usuario = ?;
-    //         `, [id]);
-    
-    //         console.log('Model USUARIO: Resultado de la consulta:', usuario);
-    //         console.log('Model: Resultado de la consulta:', telefonos);
-    
-    //         return { usuario: usuario[0], telefonos: telefonos[0] };
-    //     } catch (error) {
-    //         console.error('Error al obtener usuario por DNI:', error);
-    //         throw error;
-    //     }
-    // }
-    
-    // static async getByDni(dni) {
-    // console.log(`Model: getByDni Usuario dni: ${dni}`);
 
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         console.log('Conexión a la base de datos establecida');
+    static async getByDni(dni) {
+        console.log(`Model Usuario: getByDni DNI: ${dni}`);
 
-    //         // 1) Buscar PERSONA para obtener id_persona
-    //         const [personaRows] = await conn.query(
-    //             `SELECT id FROM personas WHERE dni = ?`, 
-    //             [dni]
-    //         );
+        let conn;
+        try {
+            conn = await createConnection();
+            console.log("Conexión establecida");
 
-    //         if (personaRows.length === 0) {
-    //             console.log('No existe persona con ese DNI');
-    //             return { usuario: null, telefonos: null };
-    //         }
-
-    //         const id_persona = personaRows[0].id;
-
-    //         // 2) Buscar USUARIO con id_persona
-    //         const [usuarioRows] = await conn.query(
-    //             `SELECT * FROM usuarios WHERE id_persona = ?`,
-    //             [id_persona]
-    //         );
-
-    //         if (usuarioRows.length === 0) {
-    //             console.log('No existe usuario asociado');
-    //             return { usuario: null, telefonos: null };
-    //         }
-
-    //         const usuario = usuarioRows[0];
-
-    //         // 3) Buscar teléfonos asociados
-    //         const [telefonosRows] = await conn.query(
-    //             `SELECT GROUP_CONCAT(numero SEPARATOR ', ') AS numeros
-    //             FROM telefonos 
-    //             WHERE id_usuario = ?`,
-    //             [usuario.id]
-    //         );
-
-    //         return {
-    //             usuario,
-    //             telefonos: telefonosRows[0].numeros || ''
-    //         };
-
-    //     } catch (error) {
-    //         console.error('Error al obtener usuario por DNI:', error);
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-// }
-static async getByDni(dni) {
-    console.log(`Model Usuario: getByDni DNI: ${dni}`);
-
-    let conn;
-    try {
-        conn = await createConnection();
-        console.log("Conexión establecida");
-
-        // 1️⃣ Buscar persona por DNI
-        const [personaRows] = await conn.query(`
+            // 1️⃣ Buscar persona por DNI
+            const [personaRows] = await conn.query(`
             SELECT id, nombre, apellido, nacimiento 
             FROM personas 
             WHERE dni = ?;
         `, [dni]);
 
-        if (personaRows.length === 0) {
-            console.log("Model USUARIO: No existe persona con ese DNI");
-            return { usuario: null, telefonos: null };
-        }
+            if (personaRows.length === 0) {
+                console.log("Model USUARIO: No existe persona con ese DNI");
+                return { usuario: null, telefonos: null };
+            }
 
-        const persona = personaRows[0];
+            const persona = personaRows[0];
 
-        // 2️⃣ Buscar usuario usando id_persona
-        const [usuarioRows] = await conn.query(`
+            // 2️⃣ Buscar usuario usando id_persona
+            const [usuarioRows] = await conn.query(`
             SELECT *
             FROM usuarios
             WHERE id_persona = ?;
         `, [persona.id]);
 
-        if (usuarioRows.length === 0) {
-            console.log("Model USUARIO: No existe usuario para esa persona");
-            return { usuario: null, telefonos: null };
-        }
+            if (usuarioRows.length === 0) {
+                console.log("Model USUARIO: No existe usuario para esa persona");
+                return { usuario: null, telefonos: null };
+            }
 
-        const usuario = usuarioRows[0];
+            const usuario = usuarioRows[0];
 
-        // 3️⃣ Traer teléfonos
-        const [telefonos] = await conn.query(`
+            // 3️⃣ Traer teléfonos
+            const [telefonos] = await conn.query(`
             SELECT GROUP_CONCAT(numero SEPARATOR ', ') AS numeros
             FROM telefonos
             WHERE id_usuario = ?;
         `, [usuario.id]);
 
-        return {
-            usuario,
-            telefonos: telefonos[0],
-            persona
-        };
+            return {
+                usuario,
+                telefonos: telefonos[0],
+                persona
+            };
 
-    } catch (error) {
-        console.error("Error en getByDni:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+        } catch (error) {
+            console.error("Error en getByDni:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
     //REVISAR NO FUNCIONA
@@ -203,44 +116,48 @@ static async getByDni(dni) {
             throw error;
         }
     }
-    static async updateUsuario(dni, updates) {
+
+
+    static async updateUsuario(id_usuario, updates) {
         console.log('Model Usuario: update usuario');
+
         try {
-            // Verificar que updates no sea null, undefined o vacío
             if (!updates || Object.keys(updates).length === 0) {
-                throw new Error('Datos de actualización inválidos');
+                return false;
             }
-    
+
             const conn = await createConnection();
-    
-            // Construir la consulta de actualización dinámica
+
             const fields = [];
             const values = [];
+
             for (const [key, value] of Object.entries(updates)) {
                 fields.push(`${key} = ?`);
                 values.push(value);
             }
-            values.push(dni); // Añadir el dni al final para la cláusula WHERE
-    
-            const query = `UPDATE usuarios SET ${fields.join(', ')} WHERE dni = ?;`;
+
+            values.push(id_usuario);
+
+            const query = `
+            UPDATE usuarios
+            SET ${fields.join(', ')}
+            WHERE id = ?;
+        `;
+
             const [result] = await conn.query(query, values);
-    
-            console.log('Resultado de la consulta SQL:', result);
+
             console.log('Filas afectadas:', result.affectedRows);
-    
-            if (result.affectedRows === 0) {
-                throw new Error('No se encontró el usuario con el DNI proporcionado');
-            }
-    
-            console.log('Model: Usuario actualizado exitosamente');
+
             return result.affectedRows === 1;
+
         } catch (error) {
-            console.error('Error al modificar usuarios desde el modelo:', error);
-            throw new Error('Error al modificar usuarios desde el modelo');
+            console.error('Error al modificar usuario:', error);
+            throw error;
         }
     }
-      
-    
+
+
+
 
 }
 

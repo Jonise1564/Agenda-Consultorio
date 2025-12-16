@@ -58,7 +58,7 @@ class EspecialidadesController {
     async edit(req, res) {
         const { id } = req.params;
         console.log(`Controller: edit, Buscando especialidad con ID: ${id}`);
-       try{
+        try {
             const especialidad = await Especialidad.getEspecialidadById(id);
             if (!especialidad) {
                 console.log('Especialidad no encontrada');
@@ -67,20 +67,20 @@ class EspecialidadesController {
             console.log('Controller: Especialidad encontrada:', especialidad);
             console.log('Enviando a especialidad a la vista editar...');
             res.render('especialidades/editar', { especialidad });
-        } catch (error) {    
-            console.error('Error al obtener especialidad:', error); 
-            res.status(500).json({ message: 'Error al obtener especialidad' });          
+        } catch (error) {
+            console.error('Error al obtener especialidad:', error);
+            res.status(500).json({ message: 'Error al obtener especialidad' });
         }
-      
+
 
     }
-    async update(req, res) { 
+    async update(req, res) {
         const { id } = req.params;
         const { nombre } = req.body;
         try {
             const especialidad = await Especialidad.updateEspecialidad(id, nombre);
             res.redirect('/especialidades');
-        } catch (error) {    
+        } catch (error) {
             console.error('Error updating especialidad:', error);
             res.status(500).json({ message: 'Error al actualizar especialidad' });
         }

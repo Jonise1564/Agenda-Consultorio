@@ -10,9 +10,6 @@ EspecialidadesRouter.get('/create', especialidadesControllers.create);
 //Guardar especialidad
 EspecialidadesRouter.post('/store', especialidadesControllers.store);
 
-// Editar especialidad
-//EspecialidadesRouter.get('/editar/:id', especialidadesControllers.edit);
-//EspecialidadesRouter.get('/editar', especialidadesControllers.edit);
 
 //Vista editar
 EspecialidadesRouter.get('/editar/:id', especialidadesControllers.edit);

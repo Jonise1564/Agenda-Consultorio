@@ -148,46 +148,46 @@ class AgendasController {
                 });
             }
 
-           
+
 
             // Validación con Zod
-const result = validateAgendas({
-    fecha_creacion: fechaCreacion,
-    fecha_fin: fechaFin,
-    hora_inicio,
-    hora_fin,
-    limite_sobreturnos: Number(limite_sobreturnos),
-    duracion_turnos: Number(duracion_turnos),
-    nromatricula: String(matricula_raw),
-    id_sucursal: Number(id_sucursal_raw),
-    id_clasificacion: Number(id_clasificacion_raw)
-});
+            const result = validateAgendas({
+                fecha_creacion: fechaCreacion,
+                fecha_fin: fechaFin,
+                hora_inicio,
+                hora_fin,
+                limite_sobreturnos: Number(limite_sobreturnos),
+                duracion_turnos: Number(duracion_turnos),
+                nromatricula: String(matricula_raw),
+                id_sucursal: Number(id_sucursal_raw),
+                id_clasificacion: Number(id_clasificacion_raw)
+            });
 
-if (!result.success) {
-    console.error(" Error de validación:", result.error?.errors ?? result.error);
+            if (!result.success) {
+                console.error(" Error de validación:", result.error?.errors ?? result.error);
 
-    return res.status(422).json({
-        error: result.error.errors.map(err => ({
-            campo: err.path.join("."),
-            mensaje: err.message
-        }))
-    });
-}
+                return res.status(422).json({
+                    error: result.error.errors.map(err => ({
+                        campo: err.path.join("."),
+                        mensaje: err.message
+                    }))
+                });
+            }
 
-const data = result.data;
+            const data = result.data;
 
-// Crear agenda
-const agendaCreada = await Agenda.create({
-    fecha_creacion: data.fecha_creacion.toISOString().split("T")[0],
-    fecha_fin: data.fecha_fin.toISOString().split("T")[0],
-    hora_inicio: data.hora_inicio,
-    hora_fin: data.hora_fin,
-    limite_sobreturnos: Number(data.limite_sobreturnos),
-    duracion_turnos: Number(data.duracion_turnos),
-    matricula: Number(data.nromatricula),
-    id_sucursal: Number(data.id_sucursal),
-    id_clasificacion: Number(data.id_clasificacion)
-});
+            // Crear agenda
+            const agendaCreada = await Agenda.create({
+                fecha_creacion: data.fecha_creacion.toISOString().split("T")[0],
+                fecha_fin: data.fecha_fin.toISOString().split("T")[0],
+                hora_inicio: data.hora_inicio,
+                hora_fin: data.hora_fin,
+                limite_sobreturnos: Number(data.limite_sobreturnos),
+                duracion_turnos: Number(data.duracion_turnos),
+                matricula: Number(data.nromatricula),
+                id_sucursal: Number(data.id_sucursal),
+                id_clasificacion: Number(data.id_clasificacion)
+            });
 
 
             if (!agendaCreada) {

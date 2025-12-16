@@ -73,36 +73,74 @@ class Persona {
         }
     }
 
-    static async updatePersona(dni, updates) {
-        console.log('Model Persona: update persona');
+    // static async updatePersona(dni, updates) {
+    //     console.log('Model Persona: update persona');
+    //     try {
+    //         // Verificar que updates no sea null, undefined o vacío
+    //         if (!updates || Object.keys(updates).length === 0) {
+    //             throw new Error('Datos de actualización inválidos');
+    //         }
+
+    //         const conn = await createConnection();
+
+    //         // Construir la consulta de actualización dinámica
+    //         const fields = [];
+    //         const values = [];
+    //         for (const [key, value] of Object.entries(updates)) {
+    //             fields.push(`${key} = ?`);
+    //             values.push(value);
+    //         }
+    //         values.push(dni); // Añadir el dni al final para la cláusula WHERE
+
+    //         const query = `UPDATE personas SET ${fields.join(', ')} WHERE dni = ?;`;
+    //         const [result] = await conn.query(query, values);
+
+    //         console.log('Model: Persona actualizada exitosamente');
+    //         return result.affectedRows === 1;
+    //     } catch (error) {
+    //         console.error('Error al modificar personas desde el modelo:', error);
+    //         throw new Error('Error al modificar personas desde el modelo');
+    //     }
+    // }
+
+    static async updatePersona(id_persona, data) {
         try {
-            // Verificar que updates no sea null, undefined o vacío
-            if (!updates || Object.keys(updates).length === 0) {
-                throw new Error('Datos de actualización inválidos');
+            if (!data || Object.keys(data).length === 0) {
+                throw new Error('Datos vacíos');
             }
-    
+
             const conn = await createConnection();
-    
-            // Construir la consulta de actualización dinámica
+
             const fields = [];
             const values = [];
-            for (const [key, value] of Object.entries(updates)) {
-                fields.push(`${key} = ?`);
-                values.push(value);
+
+            for (const [key, value] of Object.entries(data)) {
+                if (value !== undefined && value !== null) {
+                    fields.push(`${key} = ?`);
+                    values.push(value);
+                }
             }
-            values.push(dni); // Añadir el dni al final para la cláusula WHERE
-    
-            const query = `UPDATE personas SET ${fields.join(', ')} WHERE dni = ?;`;
+
+            values.push(id_persona);
+
+            const query = `
+            UPDATE personas
+            SET ${fields.join(', ')}
+            WHERE id = ?
+        `;
+
             const [result] = await conn.query(query, values);
-    
-            console.log('Model: Persona actualizada exitosamente');
+
+            console.log('Persona updated:', result.affectedRows);
+
             return result.affectedRows === 1;
-        } catch (error) {
-            console.error('Error al modificar personas desde el modelo:', error);
-            throw new Error('Error al modificar personas desde el modelo');
+
+        } catch (err) {
+            console.error('Error updatePersona:', err);
+            throw err;
         }
     }
-    
+
     static async delete(dni) {
         console.log('Model: Delete persona')
         try {
@@ -131,6 +169,64 @@ class Persona {
         }
         return true
     }
+
+    static async getTelefonos(id_persona) {
+        let conn;
+        try {
+            conn = await createConnection();
+
+            const [rows] = await conn.query(`
+            SELECT 
+                id,
+                numero
+            FROM telefonos
+            WHERE id_persona = ?
+            ORDER BY numero ASC
+        `, [id_persona]);
+
+            return rows;
+
+        } catch (error) {
+            console.error("Error obteniendo teléfonos:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    static async addTelefono(id_persona, numero) {
+        let conn;
+        try {
+            conn = await createConnection();
+
+            await conn.query(`
+            INSERT INTO telefonos (numero, id_persona)
+            VALUES (?, ?)
+        `, [numero, id_persona]);
+
+            return true;
+
+        } catch (error) {
+            console.error("Error creando teléfono:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    static async eliminarTelefonos(id_persona) {
+        const conn = await createConnection();
+        await conn.query(
+            `DELETE FROM telefonos WHERE id_persona = ?`,
+            [id_persona]
+        );
+        conn.end();
+    }
+
+
+
+
+
 }
 
 module.exports = Persona
