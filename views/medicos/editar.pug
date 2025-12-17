@@ -1,3 +1,204 @@
+//- //- extends ../layout
+
+//- //- block contenido
+//- //-   a.btn.btn-outline-dark.mb-3(href="/medicos") ← Volver a Médicos
+
+//- //-   h2.text-center Editar Médico
+
+//- //-   // ======================
+//- //-   // ESTADO
+//- //-   // ======================
+//- //-   hr
+//- //-   h5.text-center Estado del Profesional
+//- //-   p.text-center(class= medico.estado == 1 ? 'text-success' : 'text-danger')
+//- //-     | #{medico.estado == 1 ? 'Activo' : 'Inactivo'}
+
+//- //-   .mb-3.text-center
+//- //-     if medico.estado == 1
+//- //-       form(method="POST" action=`/medicos/inactivar/${medico.id_medico}`)
+//- //-         button.btn.btn-danger(type="submit") Inactivar
+//- //-     else
+//- //-       form(method="POST" action=`/medicos/activar/${medico.id_medico}`)
+//- //-         button.btn.btn-success(type="submit") Activar
+
+//- //-   // ======================
+//- //-   // FORMULARIO
+//- //-   // ======================
+//- //-   hr
+//- //-   form(
+//- //-     action=`/medicos/update/${medico.id_medico}`
+//- //-     method="POST"
+//- //-     novalidate
+//- //-   )
+//- //-     // IDs ocultos
+//- //-     input(type="hidden" name="id_persona" value=persona.id)
+//- //-     input(type="hidden" name="id_usuario" value=usuario.id)
+
+//- //-     // FLAGS DE CONTROL
+//- //-     input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
+//- //-     input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+
+//- //-     .row
+//- //-       .col-md-6.mb-3
+//- //-         label.form-label Nombre
+//- //-         input.form-control(type="text" name="nombre" value=persona.nombre required)
+
+//- //-       .col-md-6.mb-3
+//- //-         label.form-label Apellido
+//- //-         input.form-control(type="text" name="apellido" value=persona.apellido required)
+
+//- //-       .col-md-6.mb-3
+//- //-         label.form-label Fecha de nacimiento
+//- //-         input.form-control(
+//- //-           type="date"
+//- //-           name="nacimiento"
+//- //-           value=persona.nacimiento
+//- //-             ? persona.nacimiento.toISOString().split('T')[0]
+//- //-             : ''
+//- //-           required
+//- //-         )
+
+//- //-       .col-md-6.mb-3
+//- //-         label.form-label Email
+//- //-         input.form-control(type="email" name="email" value=usuario.email required)
+
+//- //-       .col-md-6.mb-3
+//- //-         label.form-label Nueva contraseña
+//- //-         input.form-control(type="password" name="password" placeholder="Opcional")
+
+//- //-       .col-md-6.mb-3
+//- //-         label.form-label Matrícula profesional
+//- //-         input.form-control(type="text" name="matricula" value=medico.matricula required)
+
+//- //-     // ======================
+//- //-     // TELÉFONOS
+//- //-     // ======================
+//- //-     hr
+//- //-     h5 Teléfonos
+
+//- //-     #telefonos-container
+//- //-       each tel in (medico.telefonos || '').split(', ')
+//- //-         if tel
+//- //-           .input-group.mb-2
+//- //-             input.form-control(
+//- //-               type="text"
+//- //-               name="telefonos"
+//- //-               value=tel
+//- //-               oninput="marcarTelefonosModificados()"
+//- //-             )
+//- //-             button.btn.btn-outline-danger(
+//- //-               type="button"
+//- //-               onclick="marcarTelefonosModificados(); this.parentElement.remove()"
+//- //-             ) ✕ 
+
+//- //-     button.btn.btn-outline-primary.btn-sm(
+//- //-       type="button"
+//- //-       onclick="agregarTelefono()"
+//- //-     ) + Agregar teléfono
+
+//- //-     // ======================
+//- //-     // ESPECIALIDADES
+//- //-     // ======================
+//- //-     hr
+//- //-     h5 Especialidades
+
+//- //-     #especialidades-container
+//- //-       each esp in especialidadesAsignadas
+//- //-         .input-group.mb-2
+//- //-           input.form-control(type="text" readonly value=esp.nombre)
+//- //-           input(type="hidden" name="especialidades" value=esp.id_especialidad)
+//- //-           button.btn.btn-outline-danger(
+//- //-             type="button"
+//- //-             onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()"
+//- //-           ) ✕ 
+
+//- //-     select.form-select.mt-2#select-especialidad
+//- //-       option(value="") + Agregar especialidad
+//- //-       each esp in especialidades
+//- //-         option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+
+//- //-     button.btn.btn-outline-primary.mt-2(
+//- //-       type="button"
+//- //-       onclick="agregarEspecialidad()"
+//- //-     ) Agregar especialidad
+
+//- //-     // ======================
+//- //-     // GUARDAR
+//- //-     // ======================
+//- //-     .mt-4.text-end
+//- //-       button.btn.btn-success(type="submit") Guardar cambios
+
+//- //-   // ======================
+//- //-   // SCRIPTS
+//- //-   // ======================
+//- //-   script.
+//- //-     // Marcar especialidades como modificadas
+//- //-     function marcarEspecialidadesModificadas() {
+//- //-       document.getElementById('esp-mod').value = '1';
+//- //-     }
+
+//- //-     // Marcar teléfonos como modificados
+//- //-     function marcarTelefonosModificados() {
+//- //-       document.getElementById('tel-mod').value = '1';
+//- //-     }
+
+//- //-     // Agregar nuevo teléfono
+//- //-     function agregarTelefono() {
+//- //-       marcarTelefonosModificados();
+
+//- //-       const cont = document.getElementById('telefonos-container');
+//- //-       const div = document.createElement('div');
+//- //-       div.className = 'input-group mb-2';
+
+//- //-       const input = document.createElement('input');
+//- //-       input.className = 'form-control';
+//- //-       input.type = 'text';
+//- //-       input.name = 'telefonos';
+//- //-       input.oninput = marcarTelefonosModificados;
+
+//- //-       const btn = document.createElement('button');
+//- //-       btn.type = 'button';
+//- //-       btn.className = 'btn btn-outline-danger';
+//- //-       btn.textContent = '✕';
+//- //-       btn.onclick = () => {
+//- //-         marcarTelefonosModificados();
+//- //-         div.remove();
+//- //-       };
+
+//- //-       div.appendChild(input);
+//- //-       div.appendChild(btn);
+//- //-       cont.appendChild(div);
+//- //-     }
+
+//- //-     // Agregar nueva especialidad
+//- //-     function agregarEspecialidad() {
+//- //-       const select = document.getElementById('select-especialidad');
+//- //-       const id = select.value;
+//- //-       if (!id) return;
+
+//- //-       marcarEspecialidadesModificadas();
+
+//- //-       const nombre = select.options[select.selectedIndex].dataset.nombre;
+//- //-       const cont = document.getElementById('especialidades-container');
+
+//- //-       // Evitar duplicados
+//- //-       if ([...cont.querySelectorAll('input[type="hidden"]')]
+//- //-           .some(i => i.value === id)) return;
+
+//- //-       const div = document.createElement('div');
+//- //-       div.className = 'input-group mb-2';
+//- //-       div.innerHTML = `
+//- //-         <input class="form-control" readonly value="${nombre}" />
+//- //-         <input type="hidden" name="especialidades" value="${id}" />
+//- //-         <button class="btn btn-outline-danger" type="button"
+//- //-           onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()">✕</button>
+//- //-       `;
+
+//- //-       cont.appendChild(div);
+//- //-       select.value = '';
+//- //-     }
+
+
 //- extends ../layout
 
 //- block contenido
@@ -30,11 +231,11 @@
 //-     method="POST"
 //-     novalidate
 //-   )
-//-     // IDs ocultos
+//-     // IDS
 //-     input(type="hidden" name="id_persona" value=persona.id)
 //-     input(type="hidden" name="id_usuario" value=usuario.id)
 
-//-     // FLAGS DE CONTROL
+//-     // FLAGS
 //-     input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
 //-     input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
 
@@ -42,10 +243,12 @@
 //-       .col-md-6.mb-3
 //-         label.form-label Nombre
 //-         input.form-control(type="text" name="nombre" value=persona.nombre required)
+//-         .invalid-feedback El nombre es obligatorio
 
 //-       .col-md-6.mb-3
 //-         label.form-label Apellido
 //-         input.form-control(type="text" name="apellido" value=persona.apellido required)
+//-         .invalid-feedback El apellido es obligatorio
 
 //-       .col-md-6.mb-3
 //-         label.form-label Fecha de nacimiento
@@ -57,18 +260,21 @@
 //-             : ''
 //-           required
 //-         )
+//-         .invalid-feedback Fecha inválida
 
 //-       .col-md-6.mb-3
 //-         label.form-label Email
 //-         input.form-control(type="email" name="email" value=usuario.email required)
+//-         .invalid-feedback Email inválido
 
 //-       .col-md-6.mb-3
 //-         label.form-label Nueva contraseña
 //-         input.form-control(type="password" name="password" placeholder="Opcional")
 
 //-       .col-md-6.mb-3
-//-         label.form-label Matrícula profesional
+//-         label.form-label Matrícula
 //-         input.form-control(type="text" name="matricula" value=medico.matricula required)
+//-         .invalid-feedback Matrícula obligatoria
 
 //-     // ======================
 //-     // TELÉFONOS
@@ -84,17 +290,11 @@
 //-               type="text"
 //-               name="telefonos"
 //-               value=tel
-//-               oninput="marcarTelefonosModificados()"
 //-             )
-//-             button.btn.btn-outline-danger(
-//-               type="button"
-//-               onclick="marcarTelefonosModificados(); this.parentElement.remove()"
-//-             ) ✕ 
+//-             button.btn.btn-outline-danger(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()") ✕
 
-//-     button.btn.btn-outline-primary.btn-sm(
-//-       type="button"
-//-       onclick="agregarTelefono()"
-//-     ) + Agregar teléfono
+//-     button.btn.btn-outline-primary.btn-sm(type="button" onclick="agregarTelefono()")
+//-       | + Agregar teléfono
 
 //-     // ======================
 //-     // ESPECIALIDADES
@@ -110,17 +310,15 @@
 //-           button.btn.btn-outline-danger(
 //-             type="button"
 //-             onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()"
-//-           ) ✕ 
+//-           ) ✕
 
 //-     select.form-select.mt-2#select-especialidad
 //-       option(value="") + Agregar especialidad
 //-       each esp in especialidades
 //-         option(value=esp.id data-nombre=esp.nombre)= esp.nombre
 
-//-     button.btn.btn-outline-primary.mt-2(
-//-       type="button"
-//-       onclick="agregarEspecialidad()"
-//-     ) Agregar especialidad
+//-     button.btn.btn-outline-primary.mt-2(type="button" onclick="agregarEspecialidad()")
+//-       | Agregar especialidad
 
 //-     // ======================
 //-     // GUARDAR
@@ -132,45 +330,35 @@
 //-   // SCRIPTS
 //-   // ======================
 //-   script.
-//-     // Marcar especialidades como modificadas
+//-     const form = document.querySelector('form');
+
 //-     function marcarEspecialidadesModificadas() {
 //-       document.getElementById('esp-mod').value = '1';
 //-     }
 
-//-     // Marcar teléfonos como modificados
 //-     function marcarTelefonosModificados() {
 //-       document.getElementById('tel-mod').value = '1';
 //-     }
 
-//-     // Agregar nuevo teléfono
 //-     function agregarTelefono() {
 //-       marcarTelefonosModificados();
-
 //-       const cont = document.getElementById('telefonos-container');
 //-       const div = document.createElement('div');
 //-       div.className = 'input-group mb-2';
 
-//-       const input = document.createElement('input');
-//-       input.className = 'form-control';
-//-       input.type = 'text';
-//-       input.name = 'telefonos';
-//-       input.oninput = marcarTelefonosModificados;
+//-       div.innerHTML = `
+//-         <input class="form-control" type="text" name="telefonos">
+//-         <button class="btn btn-outline-danger" type="button">✕</button>
+//-       `;
 
-//-       const btn = document.createElement('button');
-//-       btn.type = 'button';
-//-       btn.className = 'btn btn-outline-danger';
-//-       btn.textContent = '✕';
-//-       btn.onclick = () => {
+//-       div.querySelector('button').onclick = () => {
 //-         marcarTelefonosModificados();
 //-         div.remove();
 //-       };
 
-//-       div.appendChild(input);
-//-       div.appendChild(btn);
 //-       cont.appendChild(div);
 //-     }
 
-//-     // Agregar nueva especialidad
 //-     function agregarEspecialidad() {
 //-       const select = document.getElementById('select-especialidad');
 //-       const id = select.value;
@@ -181,157 +369,216 @@
 //-       const nombre = select.options[select.selectedIndex].dataset.nombre;
 //-       const cont = document.getElementById('especialidades-container');
 
-//-       // Evitar duplicados
-//-       if ([...cont.querySelectorAll('input[type="hidden"]')]
-//-           .some(i => i.value === id)) return;
+//-       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
 
 //-       const div = document.createElement('div');
 //-       div.className = 'input-group mb-2';
 //-       div.innerHTML = `
-//-         <input class="form-control" readonly value="${nombre}" />
-//-         <input type="hidden" name="especialidades" value="${id}" />
-//-         <button class="btn btn-outline-danger" type="button"
-//-           onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()">✕</button>
+//-         <input class="form-control" readonly value="${nombre}">
+//-         <input type="hidden" name="especialidades" value="${id}">
+//-         <button class="btn btn-outline-danger" type="button">✕</button>
 //-       `;
+
+//-       div.querySelector('button').onclick = () => {
+//-         marcarEspecialidadesModificadas();
+//-         div.remove();
+//-       };
 
 //-       cont.appendChild(div);
 //-       select.value = '';
 //-     }
 
+//-     // ======================
+//-     // VALIDACIÓN ANTES DE ENVIAR
+//-     // ======================
+//-     form.addEventListener('submit', e => {
+//-       let valido = true;
 
+//-       form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+//-       const requeridos = ['nombre', 'apellido', 'email', 'matricula'];
+//-       requeridos.forEach(name => {
+//-         const input = form.querySelector(`[name="${name}"]`);
+//-         if (!input.value.trim()) {
+//-           input.classList.add('is-invalid');
+//-           valido = false;
+//-         }
+//-       });
+
+//-       const email = form.querySelector('[name="email"]');
+//-       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+//-         email.classList.add('is-invalid');
+//-         valido = false;
+//-       }
+
+//-       const telefonos = form.querySelectorAll('[name="telefonos"]');
+//-       telefonos.forEach(t => {
+//-         if (t.value && !/^[0-9+\-\s()]{8,15}$/.test(t.value)) {
+//-           t.classList.add('is-invalid');
+//-           valido = false;
+//-         }
+//-       });
+
+//-       if (!valido) {
+//-         e.preventDefault();
+//-         e.stopPropagation();
+//-       }
+//-     });
 extends ../layout
 
 block contenido
-  a.btn.btn-outline-dark.mb-3(href="/medicos") ← Volver a Médicos
+  .container.mt-4.mb-4
+    h2.text-center.mb-3 Editar Médico
 
-  h2.text-center Editar Médico
+    .d-flex.justify-content-between.mb-3
+      a.btn.btn-outline-secondary(href="/medicos")
+        i.bi.bi-arrow-left
+        |  Volver a Médicos
 
-  // ======================
-  // ESTADO
-  // ======================
-  hr
-  h5.text-center Estado del Profesional
-  p.text-center(class= medico.estado == 1 ? 'text-success' : 'text-danger')
-    | #{medico.estado == 1 ? 'Activo' : 'Inactivo'}
+      if medico.estado == 1
+        form(method="POST" action=`/medicos/inactivar/${medico.id_medico}`)
+          button.btn.btn-danger.btn-sm(type="submit")
+            i.bi.bi-x-circle
+            |  Inactivar
+      else
+        form(method="POST" action=`/medicos/activar/${medico.id_medico}`)
+          button.btn.btn-success.btn-sm(type="submit")
+            i.bi.bi-check-circle
+            |  Activar
 
-  .mb-3.text-center
-    if medico.estado == 1
-      form(method="POST" action=`/medicos/inactivar/${medico.id_medico}`)
-        button.btn.btn-danger(type="submit") Inactivar
-    else
-      form(method="POST" action=`/medicos/activar/${medico.id_medico}`)
-        button.btn.btn-success(type="submit") Activar
+    form(
+      action=`/medicos/update/${medico.id_medico}`
+      method="POST"
+      novalidate
+    )
 
-  // ======================
-  // FORMULARIO
-  // ======================
-  hr
-  form(
-    action=`/medicos/update/${medico.id_medico}`
-    method="POST"
-    novalidate
-  )
-    // IDS
-    input(type="hidden" name="id_persona" value=persona.id)
-    input(type="hidden" name="id_usuario" value=usuario.id)
+      // =========================
+      // IDS + FLAGS
+      // =========================
+      input(type="hidden" name="id_persona" value=persona.id)
+      input(type="hidden" name="id_usuario" value=usuario.id)
+      input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
+      input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
 
-    // FLAGS
-    input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
-    input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+      // =========================
+      // DATOS PERSONALES
+      // =========================
+      .card.mb-3.shadow-sm
+        .card-header.bg-primary.text-white
+          strong Datos Personales
 
-    .row
-      .col-md-6.mb-3
-        label.form-label Nombre
-        input.form-control(type="text" name="nombre" value=persona.nombre required)
-        .invalid-feedback El nombre es obligatorio
+        .card-body
+          .row.g-3
+            .col-md-3
+              label.form-label Nombre
+              input.form-control(type="text" name="nombre" value=persona.nombre required)
 
-      .col-md-6.mb-3
-        label.form-label Apellido
-        input.form-control(type="text" name="apellido" value=persona.apellido required)
-        .invalid-feedback El apellido es obligatorio
+            .col-md-3
+              label.form-label Apellido
+              input.form-control(type="text" name="apellido" value=persona.apellido required)
 
-      .col-md-6.mb-3
-        label.form-label Fecha de nacimiento
-        input.form-control(
-          type="date"
-          name="nacimiento"
-          value=persona.nacimiento
-            ? persona.nacimiento.toISOString().split('T')[0]
-            : ''
-          required
-        )
-        .invalid-feedback Fecha inválida
+            .col-md-3
+              label.form-label Fecha Nacimiento
+              input.form-control(
+                type="date"
+                name="nacimiento"
+                value=persona.nacimiento
+                  ? persona.nacimiento.toISOString().split('T')[0]
+                  : ''
+                required
+              )
 
-      .col-md-6.mb-3
-        label.form-label Email
-        input.form-control(type="email" name="email" value=usuario.email required)
-        .invalid-feedback Email inválido
+            .col-md-3
+              label.form-label Matrícula
+              input.form-control(type="text" name="matricula" value=medico.matricula required)
 
-      .col-md-6.mb-3
-        label.form-label Nueva contraseña
-        input.form-control(type="password" name="password" placeholder="Opcional")
+      // =========================
+      // USUARIO
+      // =========================
+      .card.mb-3.shadow-sm
+        .card-header.bg-secondary.text-white
+          strong Usuario
 
-      .col-md-6.mb-3
-        label.form-label Matrícula
-        input.form-control(type="text" name="matricula" value=medico.matricula required)
-        .invalid-feedback Matrícula obligatoria
+        .card-body
+          .row.g-3
+            .col-md-6
+              label.form-label Email
+              input.form-control(type="email" name="email" value=usuario.email required)
 
-    // ======================
-    // TELÉFONOS
-    // ======================
-    hr
-    h5 Teléfonos
+            .col-md-6
+              label.form-label Nueva contraseña
+              input.form-control(
+                type="password"
+                name="password"
+                placeholder="Opcional"
+              )
 
-    #telefonos-container
-      each tel in (medico.telefonos || '').split(', ')
-        if tel
-          .input-group.mb-2
-            input.form-control(
-              type="text"
-              name="telefonos"
-              value=tel
-            )
-            button.btn.btn-outline-danger(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()") ✕
+      // =========================
+      // TELÉFONOS
+      // =========================
+      .card.mb-3.shadow-sm
+        .card-header.bg-dark.text-white.d-flex.justify-content-between.align-items-center
+          strong Teléfonos
+          button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()")
+            i.bi.bi-plus
+            |  Agregar
 
-    button.btn.btn-outline-primary.btn-sm(type="button" onclick="agregarTelefono()")
-      | + Agregar teléfono
+        .card-body#telefonos-container
+          each tel in (medico.telefonos || '').split(', ')
+            if tel
+              .input-group.mb-2
+                input.form-control(
+                  type="text"
+                  name="telefonos"
+                  value=tel
+                  oninput="marcarTelefonosModificados()"
+                )
+                button.btn.btn-outline-danger(type="button"
+                  onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+                  i.bi.bi-trash
 
-    // ======================
-    // ESPECIALIDADES
-    // ======================
-    hr
-    h5 Especialidades
+      // =========================
+      // ESPECIALIDADES
+      // =========================
+      .card.mb-3.shadow-sm
+        .card-header.bg-info.text-white
+          strong Especialidades
 
-    #especialidades-container
-      each esp in especialidadesAsignadas
-        .input-group.mb-2
-          input.form-control(type="text" readonly value=esp.nombre)
-          input(type="hidden" name="especialidades" value=esp.id_especialidad)
-          button.btn.btn-outline-danger(
-            type="button"
-            onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()"
-          ) ✕
+        .card-body
+          #especialidades-container
+            each esp in especialidadesAsignadas
+              .input-group.mb-2
+                input.form-control(readonly value=esp.nombre)
+                input(type="hidden" name="especialidades" value=esp.id_especialidad)
+                button.btn.btn-outline-danger(type="button"
+                  onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()")
+                  i.bi.bi-trash
 
-    select.form-select.mt-2#select-especialidad
-      option(value="") + Agregar especialidad
-      each esp in especialidades
-        option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+          .row.g-2.mt-2
+            .col-md-8
+              select.form-select#select-especialidad
+                option(value="") + Agregar especialidad
+                each esp in especialidades
+                  option(value=esp.id data-nombre=esp.nombre)= esp.nombre
 
-    button.btn.btn-outline-primary.mt-2(type="button" onclick="agregarEspecialidad()")
-      | Agregar especialidad
+            .col-md-4
+              button.btn.btn-outline-primary.w-100(
+                type="button"
+                onclick="agregarEspecialidad()"
+              ) Agregar
 
-    // ======================
-    // GUARDAR
-    // ======================
-    .mt-4.text-end
-      button.btn.btn-success(type="submit") Guardar cambios
+      // =========================
+      // GUARDAR
+      // =========================
+      .d-flex.justify-content-end.mt-3
+        button.btn.btn-success.px-4(type="submit")
+          i.bi.bi-save
+          |  Guardar cambios
 
-  // ======================
+  // =========================
   // SCRIPTS
-  // ======================
+  // =========================
   script.
-    const form = document.querySelector('form');
-
     function marcarEspecialidadesModificadas() {
       document.getElementById('esp-mod').value = '1';
     }
@@ -345,17 +592,16 @@ block contenido
       const cont = document.getElementById('telefonos-container');
       const div = document.createElement('div');
       div.className = 'input-group mb-2';
-
       div.innerHTML = `
         <input class="form-control" type="text" name="telefonos">
-        <button class="btn btn-outline-danger" type="button">✕</button>
+        <button class="btn btn-outline-danger" type="button">
+          <i class="bi bi-trash"></i>
+        </button>
       `;
-
       div.querySelector('button').onclick = () => {
         marcarTelefonosModificados();
         div.remove();
       };
-
       cont.appendChild(div);
     }
 
@@ -376,51 +622,15 @@ block contenido
       div.innerHTML = `
         <input class="form-control" readonly value="${nombre}">
         <input type="hidden" name="especialidades" value="${id}">
-        <button class="btn btn-outline-danger" type="button">✕</button>
+        <button class="btn btn-outline-danger" type="button">
+          <i class="bi bi-trash"></i>
+        </button>
       `;
-
       div.querySelector('button').onclick = () => {
         marcarEspecialidadesModificadas();
         div.remove();
       };
-
       cont.appendChild(div);
       select.value = '';
     }
 
-    // ======================
-    // VALIDACIÓN ANTES DE ENVIAR
-    // ======================
-    form.addEventListener('submit', e => {
-      let valido = true;
-
-      form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-
-      const requeridos = ['nombre', 'apellido', 'email', 'matricula'];
-      requeridos.forEach(name => {
-        const input = form.querySelector(`[name="${name}"]`);
-        if (!input.value.trim()) {
-          input.classList.add('is-invalid');
-          valido = false;
-        }
-      });
-
-      const email = form.querySelector('[name="email"]');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        email.classList.add('is-invalid');
-        valido = false;
-      }
-
-      const telefonos = form.querySelectorAll('[name="telefonos"]');
-      telefonos.forEach(t => {
-        if (t.value && !/^[0-9+\-\s()]{8,15}$/.test(t.value)) {
-          t.classList.add('is-invalid');
-          valido = false;
-        }
-      });
-
-      if (!valido) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    });

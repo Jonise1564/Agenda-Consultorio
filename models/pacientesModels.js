@@ -95,72 +95,18 @@ class Paciente {
     // ======================================================
     // UPDATE PACIENTE POR ID
     // ======================================================
-    // static async updatePaciente(id_paciente, updates) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         await conn.beginTransaction();
-
-    //         // --- UPDATE PERSONA ---
-    //         await conn.query(`
-    //             UPDATE personas
-    //             SET nombre = ?, apellido = ?, nacimiento = ?
-    //             WHERE id = (
-    //                 SELECT id_persona FROM pacientes WHERE id = ?
-    //             )
-    //         `, [
-    //             updates.nombre,
-    //             updates.apellido,
-    //             updates.nacimiento,
-    //             id_paciente
-    //         ]);
-
-    //         // --- UPDATE USUARIO ---
-    //         await conn.query(`
-    //             UPDATE usuarios
-    //             SET email = ?, password = ?
-    //             WHERE id = (
-    //                 SELECT id_usuario FROM pacientes WHERE id = ?
-    //             )
-    //         `, [
-    //             updates.email,
-    //             updates.password,
-    //             id_paciente
-    //         ]);
-
-    //         // --- UPDATE PACIENTE ---
-    //         await conn.query(`
-    //             UPDATE pacientes
-    //             SET id_obra_social = ?
-    //             WHERE id = ?
-    //         `, [
-    //             updates.id_obra_social,
-    //             id_paciente
-    //         ]);
-
-    //         await conn.commit();
-    //         return true;
-
-    //     } catch (error) {
-    //         if (conn) await conn.rollback();
-    //         console.error("Error al modificar paciente:", error);
-    //         throw new Error("Error al modificar paciente");
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
-
+    
     static async updatePaciente(id_paciente, updates) {
-    let conn;
+        let conn;
 
-    try {
-        conn = await createConnection();
-        await conn.beginTransaction();
+        try {
+            conn = await createConnection();
+            await conn.beginTransaction();
 
-        // ================================
-        // UPDATE PERSONA
-        // ================================
-        await conn.query(`
+            // ================================
+            // UPDATE PERSONA
+            // ================================
+            await conn.query(`
             UPDATE personas
             SET nombre = ?, apellido = ?, nacimiento = ?
             WHERE id = (
@@ -169,32 +115,32 @@ class Paciente {
                 WHERE id = ?
             )
         `, [
-            updates.nombre,
-            updates.apellido,
-            updates.nacimiento,
-            id_paciente
-        ]);
+                updates.nombre,
+                updates.apellido,
+                updates.nacimiento,
+                id_paciente
+            ]);
 
-        // ================================
-        // UPDATE USUARIO (CONDICIONAL)
-        // ================================
-        if (updates.email || updates.password) {
-            const campos = [];
-            const valores = [];
+            // ================================
+            // UPDATE USUARIO (CONDICIONAL)
+            // ================================
+            if (updates.email || updates.password) {
+                const campos = [];
+                const valores = [];
 
-            if (updates.email) {
-                campos.push('email = ?');
-                valores.push(updates.email);
-            }
+                if (updates.email) {
+                    campos.push('email = ?');
+                    valores.push(updates.email);
+                }
 
-            if (updates.password) {
-                campos.push('password = ?');
-                valores.push(updates.password);
-            }
+                if (updates.password) {
+                    campos.push('password = ?');
+                    valores.push(updates.password);
+                }
 
-            // 🔒 SEGURIDAD: nunca ejecutar SET vacío
-            if (campos.length > 0) {
-                await conn.query(`
+                // 🔒 SEGURIDAD: nunca ejecutar SET vacío
+                if (campos.length > 0) {
+                    await conn.query(`
                     UPDATE usuarios
                     SET ${campos.join(', ')}
                     WHERE id = (
@@ -203,34 +149,34 @@ class Paciente {
                         WHERE id = ?
                     )
                 `, [...valores, id_paciente]);
+                }
             }
-        }
 
-        // ================================
-        // UPDATE PACIENTE
-        // ================================
-        await conn.query(`
+            // ================================
+            // UPDATE PACIENTE
+            // ================================
+            await conn.query(`
             UPDATE pacientes
             SET id_obra_social = ?
             WHERE id = ?
         `, [
-            updates.id_obra_social,
-            id_paciente
-        ]);
+                updates.id_obra_social,
+                id_paciente
+            ]);
 
-        await conn.commit();
-        return true;
+            await conn.commit();
+            return true;
 
-    } catch (error) {
-        if (conn) await conn.rollback();
+        } catch (error) {
+            if (conn) await conn.rollback();
 
-        console.error('Model Paciente.updatePaciente:', error);
-        throw new Error('Error al modificar paciente');
+            console.error('Model Paciente.updatePaciente:', error);
+            throw new Error('Error al modificar paciente');
 
-    } finally {
-        if (conn) conn.end();
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
     // ======================================================

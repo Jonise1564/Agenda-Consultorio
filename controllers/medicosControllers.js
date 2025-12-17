@@ -5,6 +5,8 @@ const Especialidad = require('../models/especialidadesModels');
 
 const { validateMedicos } = require('../schemas/validation');
 const { obtenerFechaFormateada } = require('../utils/dateFormatter');
+const bcrypt = require('bcrypt');
+
 
 class MedicosController {
 
@@ -127,7 +129,7 @@ class MedicosController {
     // ================================================================
     // EDITAR (FORM)
     // ================================================================
-    
+
     async edit(req, res, next) {
         try {
             const { id_medico } = req.params;
@@ -192,210 +194,125 @@ class MedicosController {
 
 
 
-    // async update(req, res, next) {
-    //     try {
-    //         const { id_medico } = req.params;
+    async update(req, res, next) {
+        try {
+            const { id_medico } = req.params;
 
-    //         const {
-    //             nombre,
-    //             apellido,
-    //             nacimiento,
-    //             email,
-    //             password,
-    //             matricula,
-    //             especialidades,
-    //             especialidades_modificadas,
-    //             telefonos,
-    //             telefonos_modificados
-    //         } = req.body;
+            const {
+                nombre,
+                apellido,
+                nacimiento,
+                email,
+                password,
+                matricula,
+                especialidades,
+                especialidades_modificadas,
+                telefonos,
+                telefonos_modificados
+            } = req.body;
 
-    //         // ===============================
-    //         // 1️⃣ OBTENER MÉDICO
-    //         // ===============================
-    //         const medico = await Medico.obtenerPorId(id_medico);
-    //         if (!medico) {
-    //             return res.status(404).send('Médico no encontrado');
-    //         }
-
-    //         // ===============================
-    //         // 2️⃣ PERSONA
-    //         // ===============================
-    //         await Persona.updatePersona(medico.id_persona, {
-    //             nombre,
-    //             apellido,
-    //             nacimiento
-    //         });
-
-    //         // ===============================
-    //         // 3️⃣ USUARIO
-    //         // ===============================
-    //         const userUpdates = {};
-    //         if (email) userUpdates.email = email;
-    //         if (password && password.trim() !== '') {
-    //             userUpdates.password = password;
-    //         }
-
-    //         if (Object.keys(userUpdates).length > 0) {
-    //             await Usuario.updateUsuario(medico.id_usuario, userUpdates);
-    //         }
-
-    //         // ===============================
-    //         // 4️⃣ MÉDICO (MATRÍCULA)
-    //         // ===============================
-    //         if (matricula) {
-    //             await Medico.updateMatricula(id_medico, matricula);
-    //         }
-
-    //         // ===============================
-    //         // 5️⃣ ESPECIALIDADES SOLO SI HUBO CAMBIOS)
-    //         // ===============================
-    //         if (especialidades_modificadas === '1') {
-
-    //             const listaEspecialidades = Array.isArray(especialidades)
-    //                 ? especialidades
-    //                 : especialidades
-    //                     ? [especialidades]
-    //                     : [];
-
-    //             await Especialidad.desactivarTodasPorMedico(id_medico);
-
-    //             for (const idEsp of listaEspecialidades) {
-    //                 await Especialidad.asignarAMedico(id_medico, idEsp);
-    //             }
-
-    //         } else {
-    //             console.log('Especialidades no modificadas → no se toca BD');
-    //         }
-
-            
-    //         // ===============================
-    //         // TELÉFONOS
-    //         // ===============================
-    //         if (telefonos_modificados === '1') {
-
-    //             // 🔑 Si no llegó el campo, interpretamos: borrar todos
-    //             const telefonosArray = Array.isArray(telefonos)
-    //                 ? telefonos
-    //                 : typeof telefonos === 'string'
-    //                     ? [telefonos]
-    //                     : [];
-
-    //             // Limpiar vacíos
-    //             const telefonosLimpios = telefonosArray
-    //                 .map(t => t?.trim())
-    //                 .filter(Boolean);
-
-    //             // Borrar siempre si hubo cambios
-    //             await Persona.eliminarTelefonos(medico.id_persona);
-
-    //             //  Insertar solo si hay algo
-    //             for (const tel of telefonosLimpios) {
-    //                 await Persona.addTelefono(medico.id_persona, tel);
-    //             }
-
-    //         }
-
-    //         // ===============================
-    //         // 7️⃣ OK
-    //         // ===============================
-    //         res.redirect('/medicos?nombreUpdate=1');
-
-    //     } catch (error) {
-    //         console.error('Error al actualizar médico:', error);
-    //         next(error);
-    //     }
-    // }
-
-async update(req, res, next) {
-    try {
-        const { id_medico } = req.params;
-
-        const {
-            nombre,
-            apellido,
-            nacimiento,
-            email,
-            password,
-            matricula,
-            especialidades,
-            especialidades_modificadas,
-            telefonos,
-            telefonos_modificados
-        } = req.body;
-
-        const medico = await Medico.obtenerPorId(id_medico);
-        if (!medico) return res.status(404).send('Médico no encontrado');
-
-        // PERSONA
-        await Persona.updatePersona(medico.id_persona, {
-            nombre,
-            apellido,
-            nacimiento
-        });
-
-        // USUARIO
-        const userUpdates = {};
-        if (email) userUpdates.email = email;
-        if (password?.trim()) userUpdates.password = password;
-
-        if (Object.keys(userUpdates).length) {
-            await Usuario.updateUsuario(medico.id_usuario, userUpdates);
-        }
-
-        // MATRÍCULA
-        if (matricula) {
-            await Medico.updateMatricula(id_medico, matricula);
-        }
-
-        // ESPECIALIDADES
-        if (especialidades_modificadas === '1') {
-            const listaEspecialidades = Array.isArray(especialidades)
-                ? especialidades
-                : especialidades
-                    ? [especialidades]
-                    : [];
-
-            await Especialidad.desactivarTodasPorMedico(id_medico);
-
-            for (const idEsp of listaEspecialidades) {
-                await Especialidad.asignarAMedico(
-                    id_medico,
-                    Number(idEsp)
-                );
+            // ===============================
+            // 1️⃣ OBTENER MÉDICO
+            // ===============================
+            const medico = await Medico.obtenerPorId(id_medico);
+            if (!medico) {
+                return res.status(404).send('Médico no encontrado');
             }
-        }
 
-        // TELÉFONOS
-        if (telefonos_modificados === '1') {
-            const telefonosArray = Array.isArray(telefonos)
-                ? telefonos
-                : typeof telefonos === 'string'
-                    ? [telefonos]
-                    : [];
+            // ===============================
+            // 2️⃣ PERSONA
+            // ===============================
+            await Persona.updatePersona(medico.id_persona, {
+                nombre,
+                apellido,
+                nacimiento
+            });
 
-            const telefonosLimpios = telefonosArray
-                .map(t => t?.trim())
-                .filter(t =>
-                    t &&
-                    /^[0-9+\-\s()]{8,15}$/.test(t)
-                );
+            // =========================
+            // USUARIO
+            // =========================
+            const userUpdates = {};
 
-            await Persona.eliminarTelefonos(medico.id_persona);
-
-            for (const tel of telefonosLimpios) {
-                await Persona.addTelefono(medico.id_persona, tel);
+            if (email) {
+                userUpdates.email = email.trim();
             }
+
+            if (password && password.trim() !== '') {
+                const saltRounds = 10;
+                const hashedPassword = await bcrypt.hash(password.trim(), saltRounds);
+                userUpdates.password = hashedPassword;
+            }
+
+            if (Object.keys(userUpdates).length > 0) {
+                await Usuario.updateUsuario(medico.id_usuario, userUpdates);
+            }
+
+            // ===============================
+            // 4️⃣ MÉDICO (MATRÍCULA)
+            // ===============================
+            if (matricula) {
+                await Medico.updateMatricula(id_medico, matricula);
+            }
+
+            // ===============================
+            // 5️⃣ ESPECIALIDADES SOLO SI HUBO CAMBIOS)
+            // ===============================
+            if (especialidades_modificadas === '1') {
+
+                const listaEspecialidades = Array.isArray(especialidades)
+                    ? especialidades
+                    : especialidades
+                        ? [especialidades]
+                        : [];
+
+                await Especialidad.desactivarTodasPorMedico(id_medico);
+
+                for (const idEsp of listaEspecialidades) {
+                    await Especialidad.asignarAMedico(id_medico, idEsp);
+                }
+
+            } else {
+                console.log('Especialidades no modificadas → no se toca BD');
+            }
+
+
+            // ===============================
+            // TELÉFONOS
+            // ===============================
+            if (telefonos_modificados === '1') {
+
+                // 🔑 Si no llegó el campo, interpretamos: borrar todos
+                const telefonosArray = Array.isArray(telefonos)
+                    ? telefonos
+                    : typeof telefonos === 'string'
+                        ? [telefonos]
+                        : [];
+
+                // Limpiar vacíos
+                const telefonosLimpios = telefonosArray
+                    .map(t => t?.trim())
+                    .filter(Boolean);
+
+                // Borrar siempre si hubo cambios
+                await Persona.eliminarTelefonos(medico.id_persona);
+
+                //  Insertar solo si hay algo
+                for (const tel of telefonosLimpios) {
+                    await Persona.addTelefono(medico.id_persona, tel);
+                }
+
+            }
+
+            // ===============================
+            // 7️⃣ OK
+            // ===============================
+            res.redirect('/medicos?nombreUpdate=1');
+
+        } catch (error) {
+            console.error('Error al actualizar médico:', error);
+            next(error);
         }
-
-        res.redirect('/medicos?nombreUpdate=1');
-
-    } catch (error) {
-        console.error('Error al actualizar médico:', error);
-        next(error);
     }
-}
-
-
 
 
 

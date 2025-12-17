@@ -125,234 +125,149 @@ class PacientesController {
     // ===========================================
     // FORM EDITAR PACIENTE
     // ===========================================
-
-    // async edit(req, res, next) {
-    //     try {
-    //         const { id } = req.params;
-
-    //         // ================================
-    //         // PACIENTE
-    //         // ================================
-    //         const paciente = await Paciente.getPacienteById(id);
-    //         if (!paciente) {
-    //             return res.status(404).send('Paciente no encontrado');
-    //         }
-
-    //         // ================================
-    //         // FECHA (para input type="date")
-    //         // ================================
-    //         if (paciente.nacimiento) {
-    //             const f = new Date(paciente.nacimiento);
-    //             paciente.nacimiento =
-    //                 f.getFullYear() + '-' +
-    //                 String(f.getMonth() + 1).padStart(2, '0') + '-' +
-    //                 String(f.getDate()).padStart(2, '0');
-    //         }
-
-    //         // ================================
-    //         // USUARIO
-    //         // ================================
-    //         const usuario = await Usuario.getById(paciente.id_usuario);
-
-    //         // ================================
-    //         // TELÉFONOS → SOLO STRINGS
-    //         // ================================
-    //         const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
-    //         const telefonos = telefonosDB.map(t => t.numero);
-
-    //         // ================================
-    //         // OBRA SOCIAL
-    //         // ================================
-    //         const obra_social = await Paciente.getOSByPaciente(id);
-    //         const obrasSociales = await Paciente.getAllOS();
-
-    //         // ================================
-    //         // RENDER
-    //         // ================================
-    //         res.render('pacientes/editar', {
-    //             paciente,
-    //             usuario,
-    //             telefonos,
-    //             obra_social,
-    //             obrasSociales
-    //         });
-
-    //     } catch (error) {
-    //         console.error('Controller edit paciente:', error);
-    //         next(error);
-    //     }
-    // }
-
-
     async edit(req, res, next) {
-    try {
-        const { id } = req.params;
+        try {
+            const { id } = req.params;
 
-        // ================================
-        // PACIENTE
-        // ================================
-        const paciente = await Paciente.getPacienteById(id);
-        if (!paciente) {
-            return res.status(404).send('Paciente no encontrado');
+            // ================================
+            // PACIENTE
+            // ================================
+            const paciente = await Paciente.getPacienteById(id);
+            if (!paciente) {
+                return res.status(404).send('Paciente no encontrado');
+            }
+
+            // ================================
+            // FECHA 
+            // ================================
+            if (paciente.nacimiento) {
+                const f = new Date(paciente.nacimiento);
+                paciente.nacimiento =
+                    f.getFullYear() + '-' +
+                    String(f.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(f.getDate()).padStart(2, '0');
+            }
+
+            // ================================
+            // USUARIO
+            // ================================
+            const usuario = await Usuario.getById(paciente.id_usuario);
+
+            // ================================
+            // TELÉFONOS → SOLO STRINGS
+            // ================================
+            const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+            const telefonos = telefonosDB.map(t => t.numero);
+
+            // ================================
+            // OBRA SOCIAL
+            // ================================
+            const obra_social = await Paciente.getOSByPaciente(id);
+            const obrasSociales = await Paciente.getAllOS();
+
+            // ================================
+            // RENDER
+            // ================================
+            res.render('pacientes/editar', {
+                paciente,
+                usuario,
+                telefonos,
+                obra_social,
+                obrasSociales
+            });
+
+        } catch (error) {
+            console.error('Controller edit paciente:', error);
+            next(error);
         }
-
-        // ================================
-        // FECHA (para input type="date")
-        // ================================
-        if (paciente.nacimiento) {
-            const f = new Date(paciente.nacimiento);
-            paciente.nacimiento =
-                f.getFullYear() + '-' +
-                String(f.getMonth() + 1).padStart(2, '0') + '-' +
-                String(f.getDate()).padStart(2, '0');
-        }
-
-        // ================================
-        // USUARIO
-        // ================================
-        const usuario = await Usuario.getById(paciente.id_usuario);
-
-        // ================================
-        // TELÉFONOS → SOLO STRINGS
-        // ================================
-        const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
-        const telefonos = telefonosDB.map(t => t.numero);
-
-        // ================================
-        // OBRA SOCIAL
-        // ================================
-        const obra_social = await Paciente.getOSByPaciente(id);
-        const obrasSociales = await Paciente.getAllOS();
-
-        // ================================
-        // RENDER
-        // ================================
-        res.render('pacientes/editar', {
-            paciente,
-            usuario,
-            telefonos,
-            obra_social,
-            obrasSociales
-        });
-
-    } catch (error) {
-        console.error('Controller edit paciente:', error);
-        next(error);
     }
-}
 
 
 
+    async update(req, res, next) {
+        try {
+            const { id } = req.params;
 
+            const {
+                nombre,
+                apellido,
+                nacimiento,
+                email,
+                password,
+                id_obra_social,
+                telefonos
+            } = req.body;
 
-    // ===========================================
-    // ACTUALIZAR PACIENTE
-    // ===========================================
-    // async update(req, res, next) {
-    //     try {
-    //         const { id } = req.params;
-    //         const { nombre, apellido, nacimiento, email, password, telefonoAlternativo, obras_sociales } = req.body;
+            // ================================
+            // ARMAR OBJETO DE UPDATES
+            // ================================
+            const updates = {
+                nombre,
+                apellido,
+                nacimiento,
+                id_obra_social: id_obra_social || null
+            };
 
-    //         const result = validatePartialPacientes({
-    //             nombre,
-    //             apellido,
-    //             fechaNacimiento: new Date(nacimiento),
-    //             email,
-    //             password,
-    //             telefonoAlternativo: telefonoAlternativo ? parseInt(telefonoAlternativo) : null,
-    //             obras_sociales
-    //         });
+            // ================================
+            // DATOS DE USUARIO (OPCIONAL)
+            // ================================
+            if (email && email.trim() !== '') {
+                updates.email = email;
+            }
 
-    //         if (!result.success)
-    //             return res.status(400).json({ error: JSON.parse(result.error.message) });
+            if (password && password.trim() !== '') {
+                const saltRounds = 10;
+                updates.password = await bcrypt.hash(password, saltRounds);
+            }
 
-    //         const data = result.data;
+            // ================================
+            // UPDATE PACIENTE / PERSONA / USUARIO
+            // ================================
+            await Paciente.updatePaciente(id, updates);
 
-    //         await Paciente.updatePaciente(id, {
-    //             nombre,
-    //             apellido,
-    //             nacimiento: data.fechaNacimiento.toISOString().split('T')[0],
-    //             email,
-    //             password,
-    //             id_obra_social: data.obras_sociales
-    //         });
+            // ================================
+            // TELÉFONOS (PERSONA)
+            // ================================
+            // if (telefonos) {
+            //     const lista = Array.isArray(telefonos)
+            //         ? telefonos
+            //         : [telefonos];
 
-    //         if (telefonoAlternativo) {
-    //             const paciente = await Paciente.getPacienteById(id);
-    //             await Usuario.addTelefonoAlternativo(paciente.id_usuario, parseInt(telefonoAlternativo));
-    //         }
+            //     const telefonosLimpios = lista.filter(
+            //         t => t && t.trim() !== ''
+            //     );
 
-    //         res.redirect(`/pacientes?nombreUpdate=${nombre}`);
+            //     await Persona.updateTelefonos(id, telefonosLimpios);
+            // }
+            if (telefonos) {
+                const lista = Array.isArray(telefonos)
+                    ? telefonos
+                    : [telefonos];
 
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-    
+                const telefonosLimpios = lista
+                    .map(t => t.trim())
+                    .filter(t => t !== '');
 
-async update(req, res, next) {
-    try {
-        const { id } = req.params;
+                // obtener id_persona real
+                const paciente = await Paciente.getPacienteById(id);
+                const id_persona = paciente.id_persona;
 
-        const {
-            nombre,
-            apellido,
-            nacimiento,
-            email,
-            password,
-            id_obra_social,
-            telefonos
-        } = req.body;
+                // borrar teléfonos anteriores
+                await Persona.eliminarTelefonos(id_persona);
 
-        // ================================
-        // ARMAR OBJETO DE UPDATES
-        // ================================
-        const updates = {
-            nombre,
-            apellido,
-            nacimiento,
-            id_obra_social: id_obra_social || null
-        };
+                // insertar nuevos
+                for (const numero of telefonosLimpios) {
+                    await Persona.addTelefono(id_persona, numero);
+                }
+            }
 
-        // ================================
-        // DATOS DE USUARIO (OPCIONAL)
-        // ================================
-        if (email && email.trim() !== '') {
-            updates.email = email;
+            res.redirect('/pacientes');
+
+        } catch (error) {
+            console.error('Error update paciente:', error);
+            next(error);
         }
-
-        if (password && password.trim() !== '') {
-            const saltRounds = 10;
-            updates.password = await bcrypt.hash(password, saltRounds);
-        }
-
-        // ================================
-        // UPDATE PACIENTE / PERSONA / USUARIO
-        // ================================
-        await Paciente.updatePaciente(id, updates);
-
-        // ================================
-        // TELÉFONOS (PERSONA)
-        // ================================
-        if (telefonos) {
-            const lista = Array.isArray(telefonos)
-                ? telefonos
-                : [telefonos];
-
-            const telefonosLimpios = lista.filter(
-                t => t && t.trim() !== ''
-            );
-
-            await Persona.updateTelefonos(id, telefonosLimpios);
-        }
-
-        res.redirect('/pacientes');
-
-    } catch (error) {
-        console.error('Error update paciente:', error);
-        next(error);
     }
-}
 
 
     // ===========================================
