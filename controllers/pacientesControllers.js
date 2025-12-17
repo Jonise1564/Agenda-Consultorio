@@ -228,17 +228,7 @@ class PacientesController {
             // ================================
             // TELÉFONOS (PERSONA)
             // ================================
-            // if (telefonos) {
-            //     const lista = Array.isArray(telefonos)
-            //         ? telefonos
-            //         : [telefonos];
-
-            //     const telefonosLimpios = lista.filter(
-            //         t => t && t.trim() !== ''
-            //     );
-
-            //     await Persona.updateTelefonos(id, telefonosLimpios);
-            // }
+            
             if (telefonos) {
                 const lista = Array.isArray(telefonos)
                     ? telefonos

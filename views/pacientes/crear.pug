@@ -1,65 +1,173 @@
+//- //- extends ../layout
+
+//- //- block contenido
+//- //-   .container.mt-5
+//- //-     h2 Crear Nuevo Paciente
+//- //-     form(action="/pacientes" method="POST")
+//- //-       .mb-3
+//- //-         label(for="dni" class="form-label") DNI
+//- //-         input#dni.form-control(type="number" name="dni" required)
+//- //-       .mb-3
+//- //-         label(for="nombre" class="form-label") Nombre
+//- //-         input#nombre.form-control(type="text" name="nombre" required)
+//- //-       .mb-3
+//- //-         label(for="apellido" class="form-label") Apellido
+//- //-         input#apellido.form-control(type="text" name="apellido" required)
+//- //-       .mb-3
+//- //-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
+//- //-         input#nacimiento.form-control(type="date" name="nacimiento" required)
+//- //-       .mb-3
+//- //-         label(for="email" class="form-label") Email
+//- //-         input#email.form-control(type="email" name="email" required)
+//- //-       .mb-3
+//- //-         label(for="password" class="form-label") Contraseña
+//- //-         input#password.form-control(type="password" name="password" required)
+//- //-       .mb-3
+//- //-         label(for="repeatPassword" class="form-label") Repetir Contraseña
+//- //-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
+//- //-       .mb-3
+//- //-         label(for="id_rol" class="form-label") Rol
+//- //-         select#id_rol.form-control(name="id_rol" required)
+//- //-           option(value="4") Paciente
+//- //-       .mb-3
+//- //-         label(for="estado" class="form-label") Estado
+//- //-         select#estado.form-control(name="estado" required)
+//- //-           option(value="3") Seleccione
+//- //-           option(value="1") Activo
+//- //-           option(value="0") Inactivo
+//- //-       .mb-3
+//- //-         label(for="telefonos" class="form-label") Teléfono
+//- //-         input#telefonos.form-control(type="text" name="telefonos" required)
+//- //-       .mb-3
+//- //-         label(for="obra_sociales" class="form-label") Obras Sociales Disponibles
+//- //-         select#obra_sociales.form-control(name="obra_sociales" required)
+//- //-           option(value="") Seleccione
+//- //-           if obra_sociales
+//- //-             each obra_social in obra_sociales
+//- //-               option(value=obra_social.id)= obra_social.nombre
+//- //-           else
+//- //-             option(value="") No hay Obras Sociales disponibles
+     
+//- //-       button.btn.btn-primary(type="submit") Crear Paciente
+//- //-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
+//- //-     script(src="/js/medicos.js")
+
 //- extends ../layout
 
 //- block contenido
-//-   .container.mt-5
-//-     h2 Crear Nuevo Paciente
+  
+//-   .container.mt-4.mb-4
+//-     h2.text-center.mb-3 Crear Nuevo Paciente
+//-     .d-flex.justify-content-between.mb-4
+//-             a.btn.btn-outline-secondary(href="/pacientes")
+//-                 i.bi.bi-arrow-left
+//-                 |  Volver a Pacientes
+
 //-     form(action="/pacientes" method="POST")
-//-       .mb-3
-//-         label(for="dni" class="form-label") DNI
-//-         input#dni.form-control(type="number" name="dni" required)
-//-       .mb-3
-//-         label(for="nombre" class="form-label") Nombre
-//-         input#nombre.form-control(type="text" name="nombre" required)
-//-       .mb-3
-//-         label(for="apellido" class="form-label") Apellido
-//-         input#apellido.form-control(type="text" name="apellido" required)
-//-       .mb-3
-//-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-//-       .mb-3
-//-         label(for="email" class="form-label") Email
-//-         input#email.form-control(type="email" name="email" required)
-//-       .mb-3
-//-         label(for="password" class="form-label") Contraseña
-//-         input#password.form-control(type="password" name="password" required)
-//-       .mb-3
-//-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-//-       .mb-3
-//-         label(for="id_rol" class="form-label") Rol
-//-         select#id_rol.form-control(name="id_rol" required)
-//-           option(value="4") Paciente
-//-       .mb-3
-//-         label(for="estado" class="form-label") Estado
-//-         select#estado.form-control(name="estado" required)
-//-           option(value="3") Seleccione
-//-           option(value="1") Activo
-//-           option(value="0") Inactivo
-//-       .mb-3
-//-         label(for="telefonos" class="form-label") Teléfono
-//-         input#telefonos.form-control(type="text" name="telefonos" required)
-//-       .mb-3
-//-         label(for="obra_sociales" class="form-label") Obras Sociales Disponibles
-//-         select#obra_sociales.form-control(name="obra_sociales" required)
-//-           option(value="") Seleccione
-//-           if obra_sociales
-//-             each obra_social in obra_sociales
-//-               option(value=obra_social.id)= obra_social.nombre
-//-           else
-//-             option(value="") No hay Obras Sociales disponibles
-     
-//-       button.btn.btn-primary(type="submit") Crear Paciente
-//-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
-//-     script(src="/js/medicos.js")
+      
+//-       // =========================
+//-       // DATOS PERSONALES
+//-       // =========================
+//-       .card.mb-3.shadow-sm
+//-         .card-header.bg-primary.text-white
+//-           strong Datos Personales
+
+//-         .card-body
+//-           .row.g-3
+//-             .col-md-3
+//-               label.form-label DNI
+//-               input.form-control(type="number" name="dni" required)
+
+//-             .col-md-3
+//-               label.form-label Nombre
+//-               input.form-control(type="text" name="nombre" required)
+
+//-             .col-md-3
+//-               label.form-label Apellido
+//-               input.form-control(type="text" name="apellido" required)
+
+//-             .col-md-3
+//-               label.form-label Fecha Nacimiento
+//-               input.form-control(type="date" name="nacimiento" required)
+
+//-       // =========================
+//-       // USUARIO
+//-       // =========================
+//-       .card.mb-3.shadow-sm
+//-         .card-header.bg-secondary.text-white
+//-           strong Usuario
+
+//-         .card-body
+//-           .row.g-3
+//-             .col-md-4
+//-               label.form-label Email
+//-               input.form-control(type="email" name="email" required)
+
+//-             .col-md-4
+//-               label.form-label Contraseña
+//-               input.form-control(type="password" name="password" required)
+
+//-             .col-md-4
+//-               label.form-label Repetir Contraseña
+//-               input.form-control(type="password" name="repeatPassword" required)
+
+//-       // =========================
+//-       // CONFIGURACIÓN
+//-       // =========================
+//-       .card.mb-3.shadow-sm
+//-         .card-header.bg-info.text-white
+//-           strong Configuración
+
+//-         .card-body
+//-           .row.g-3
+//-             .col-md-3
+//-               label.form-label Rol
+//-               select.form-select(name="id_rol" required)
+//-                 option(value="4") Paciente
+
+//-             .col-md-3
+//-               label.form-label Estado
+//-               select.form-select(name="estado" required)
+//-                 option(value="") Seleccione
+//-                 option(value="1") Activo
+//-                 option(value="0") Inactivo
+
+//-             .col-md-3
+//-               label.form-label Teléfono
+//-               input.form-control(type="text" name="telefonos" required)
+
+//-             .col-md-3
+//-               label.form-label Obra Social
+//-               select.form-select(name="obra_sociales" required)
+//-                 option(value="") Seleccione
+//-                 if obra_sociales
+//-                   each obra_social in obra_sociales
+//-                     option(value=obra_social.id)= obra_social.nombre
+//-                 else
+//-                   option(value="") No hay disponibles
+
+//-       // =========================
+//-       // BOTÓN
+//-       // =========================
+//-       .d-flex.justify-content-end.mt-3
+//-         button.btn.btn-success.px-4(type="submit")
+//-           i.bi.bi-person-plus
+//-           |  Crear Paciente
 
 extends ../layout
 
 block contenido
+
   .container.mt-4.mb-4
     h2.text-center.mb-3 Crear Nuevo Paciente
 
-    form(action="/pacientes" method="POST")
-      
+    .d-flex.justify-content-between.mb-3
+      a.btn.btn-outline-secondary(href="/pacientes")
+        i.bi.bi-arrow-left
+        |  Volver a Pacientes
+
+    form(action="/pacientes" method="POST" novalidate)
+
       // =========================
       // DATOS PERSONALES
       // =========================
@@ -71,19 +179,35 @@ block contenido
           .row.g-3
             .col-md-3
               label.form-label DNI
-              input.form-control(type="number" name="dni" required)
+              input.form-control(
+                type="number"
+                name="dni"
+                required
+              )
 
             .col-md-3
               label.form-label Nombre
-              input.form-control(type="text" name="nombre" required)
+              input.form-control(
+                type="text"
+                name="nombre"
+                required
+              )
 
             .col-md-3
               label.form-label Apellido
-              input.form-control(type="text" name="apellido" required)
+              input.form-control(
+                type="text"
+                name="apellido"
+                required
+              )
 
             .col-md-3
-              label.form-label Fecha Nacimiento
-              input.form-control(type="date" name="nacimiento" required)
+              label.form-label Fecha de Nacimiento
+              input.form-control(
+                type="date"
+                name="nacimiento"
+                required
+              )
 
       // =========================
       // USUARIO
@@ -96,15 +220,27 @@ block contenido
           .row.g-3
             .col-md-4
               label.form-label Email
-              input.form-control(type="email" name="email" required)
+              input.form-control(
+                type="email"
+                name="email"
+                required
+              )
 
             .col-md-4
               label.form-label Contraseña
-              input.form-control(type="password" name="password" required)
+              input.form-control(
+                type="password"
+                name="password"
+                required
+              )
 
             .col-md-4
               label.form-label Repetir Contraseña
-              input.form-control(type="password" name="repeatPassword" required)
+              input.form-control(
+                type="password"
+                name="repeatPassword"
+                required
+              )
 
       // =========================
       // CONFIGURACIÓN
@@ -117,23 +253,49 @@ block contenido
           .row.g-3
             .col-md-3
               label.form-label Rol
-              select.form-select(name="id_rol" required)
+              select.form-select(
+                name="id_rol"
+                required
+              )
                 option(value="4") Paciente
 
             .col-md-3
               label.form-label Estado
-              select.form-select(name="estado" required)
+              select.form-select(
+                name="estado"
+                required
+              )
                 option(value="") Seleccione
                 option(value="1") Activo
                 option(value="0") Inactivo
 
             .col-md-3
-              label.form-label Teléfono
-              input.form-control(type="text" name="telefonos" required)
+              label.form-label Teléfonos
+              #telefonos-container
+                .input-group
+                  input.form-control(
+                    type="text"
+                    name="telefonos[]"
+                    placeholder="Ej: 11 1234 5678"
+                    required
+                  )
+                  button.btn.btn-outline-danger(
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                  ) ✕
+
+              button.btn.btn-outline-primary.btn-sm.mt-2(
+                type="button"
+                onclick="agregarTelefono()"
+              )
+                | + Agregar teléfono
 
             .col-md-3
               label.form-label Obra Social
-              select.form-select(name="obra_sociales" required)
+              select.form-select(
+                name="id_obra_social"
+                required
+              )
                 option(value="") Seleccione
                 if obra_sociales
                   each obra_social in obra_sociales
@@ -148,3 +310,22 @@ block contenido
         button.btn.btn-success.px-4(type="submit")
           i.bi.bi-person-plus
           |  Crear Paciente
+
+  // =========================
+  // SCRIPTS
+  // =========================
+  script.
+    function agregarTelefono() {
+      const cont = document.getElementById('telefonos-container');
+
+      const div = document.createElement('div');
+      div.className = 'input-group mt-2';
+
+      div.innerHTML = `
+        <input class="form-control" type="text" name="telefonos[]" placeholder="Ej: 11 1234 5678">
+        <button class="btn btn-outline-danger" type="button">✕</button>
+      `;
+
+      div.querySelector('button').onclick = () => div.remove();
+      cont.appendChild(div);
+    }

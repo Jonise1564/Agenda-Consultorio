@@ -39,17 +39,26 @@ class Medico {
         INNER JOIN personas p ON m.id_persona = p.id
         INNER JOIN usuarios u ON u.id = m.id_usuario
 
-        LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico
-        LEFT JOIN especialidades e ON e.id = me.id_especialidad
+        LEFT JOIN medico_especialidad me
+            ON me.id_medico = m.id_medico
+            AND me.estado = 1        -- ✅ solo especialidades activas
 
-        -- JOIN corregido para teléfonos
-        LEFT JOIN telefonos t ON t.id_persona = p.id
+        LEFT JOIN especialidades e
+            ON e.id = me.id_especialidad
+
+        LEFT JOIN telefonos t
+            ON t.id_persona = p.id
 
         GROUP BY 
             m.id_medico,
-            p.dni, p.nombre, p.apellido, p.nacimiento,
-            u.email, u.id_rol,
+            p.dni,
+            p.nombre,
+            p.apellido,
+            p.nacimiento,
+            u.email,
+            u.id_rol,
             m.estado;
+
 
 
             `);

@@ -51,6 +51,93 @@ class Paciente {
             if (conn) conn.end();
         }
     }
+    // ======================================================
+    // CREATE PACIENTE
+    // ======================================================
+    static async createPaciente(data) {
+        let conn;
+
+        try {
+            conn = await createConnection();
+            await conn.beginTransaction();
+
+            const {
+                dni,
+                nombre,
+                apellido,
+                nacimiento,
+                email,
+                password,          
+                id_rol,
+                id_obra_social,
+                estado,
+                telefonos = []
+            } = data;
+
+            // ================================
+            // 1. CREAR PERSONA
+            // ================================
+            const [personaRes] = await conn.query(`
+            INSERT INTO personas (dni, nombre, apellido, nacimiento)
+            VALUES (?, ?, ?, ?)
+        `, [dni, nombre, apellido, nacimiento]);
+
+            const id_persona = personaRes.insertId;
+
+            // ================================
+            // 2. CREAR USUARIO
+            // ================================
+            const [usuarioRes] = await conn.query(`
+            INSERT INTO usuarios (email, password, id_rol)
+            VALUES (?, ?, ?)
+        `, [email, password, id_rol]);
+
+            const id_usuario = usuarioRes.insertId;
+
+            // ================================
+            // 3. CREAR PACIENTE
+            // ================================
+            const [pacienteRes] = await conn.query(`
+            INSERT INTO pacientes (id_usuario, id_persona, id_obra_social, estado)
+            VALUES (?, ?, ?, ?)
+        `, [
+                id_usuario,
+                id_persona,
+                id_obra_social || null,
+                estado
+            ]);
+
+            const id_paciente = pacienteRes.insertId;
+
+            // ================================
+            // 4. TELÉFONOS (OPCIONAL)
+            // ================================
+            if (telefonos.length) {
+                const valores = telefonos.map(t => [id_persona, t]);
+
+                await conn.query(`
+                INSERT INTO telefonos (id_persona, numero)
+                VALUES ?
+            `, [valores]);
+            }
+
+            await conn.commit();
+
+            return {
+                id_paciente,
+                id_persona,
+                id_usuario
+            };
+
+        } catch (error) {
+            if (conn) await conn.rollback();
+            console.error('Model Paciente.createPaciente:', error);
+            throw new Error('Error al crear paciente');
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
 
     // ======================================================
     // GET PACIENTE POR ID
@@ -95,7 +182,7 @@ class Paciente {
     // ======================================================
     // UPDATE PACIENTE POR ID
     // ======================================================
-    
+
     static async updatePaciente(id_paciente, updates) {
         let conn;
 
@@ -138,7 +225,7 @@ class Paciente {
                     valores.push(updates.password);
                 }
 
-                // 🔒 SEGURIDAD: nunca ejecutar SET vacío
+                //SEGURIDAD: nunca ejecutar SET vacío
                 if (campos.length > 0) {
                     await conn.query(`
                     UPDATE usuarios
@@ -159,7 +246,7 @@ class Paciente {
             UPDATE pacientes
             SET id_obra_social = ?
             WHERE id = ?
-        `, [
+                `, [
                 updates.id_obra_social,
                 id_paciente
             ]);
@@ -283,6 +370,7 @@ class Paciente {
             if (conn) conn.end();
         }
     }
+
 
 
 
