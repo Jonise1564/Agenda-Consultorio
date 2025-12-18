@@ -41,7 +41,7 @@ class Medico {
 
         LEFT JOIN medico_especialidad me
             ON me.id_medico = m.id_medico
-            AND me.estado = 1        -- ✅ solo especialidades activas
+            AND me.estado = 1        
 
         LEFT JOIN especialidades e
             ON e.id = me.id_especialidad
@@ -335,6 +335,21 @@ class Medico {
         );
         conn.end();
     }
+
+//     static async function buscarPorNombre(texto) {
+//     const [rows] = await db.query(`
+//         SELECT m.id_medico, p.nombre, p.apellido
+//         FROM medicos m
+//         JOIN personas p ON p.id = m.id_persona
+//         WHERE p.nombre LIKE ? OR p.apellido LIKE ?
+//         AND m.estado = 1
+//         LIMIT 10
+//     `, [`%${texto}%`, `%${texto}%`]);
+
+//     return rows;
+// }
+
+    
 
 
 

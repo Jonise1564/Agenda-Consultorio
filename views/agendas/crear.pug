@@ -1,8 +1,16 @@
+
+  
 //- extends ../layout
 
 //- block contenido
 //-   .container.mt-5
 //-     h2.text-center.mb-4 Crear Nueva Agenda
+
+//-     // ===========================
+//-     // CARTEL DE ERROR
+//-     // ===========================
+//-     if error
+//-       .alert.alert-danger.text-center.mb-4= error
 
 //-     form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light")
 
@@ -84,7 +92,8 @@
 //-         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
 
 //-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
-  
+
+
 extends ../layout
 
 block contenido
@@ -137,19 +146,27 @@ block contenido
           input#limite_sobreturnos.form-control(type="number" min="0" name="limite_sobreturnos" required)
 
       // ===========================
-      // MÉDICO Y ESPECIALIDAD
+      // MÉDICO Y ESPECIALIDAD (BUSCADOR)
       // ===========================
       h4.mt-4.mb-3.text-primary Profesional
 
+      .mb-3
+        label.form-label Buscar médico:
+        input#buscarMedico.form-control(
+          type="text"
+          placeholder="Escriba nombre o apellido"
+          autocomplete="off"
+        )
+
+      .mb-3
+        label.form-label Médico:
+        select#medicoSelect.form-select(required)
+          option(value="") Seleccione un médico
+
       .mb-4
-        label.form-label(for="nromatricula") Médico + Especialidad:
-        select.form-select(name="nromatricula" required)
-          option(value="") Seleccione un profesional
-          if matriculas
-            each m in matriculas
-              option(value=m.matricula)= `${m.nombreMat} - ${m.nombre} ${m.apellido}`
-          else
-            option(value="") No hay profesionales registrados
+        label.form-label Especialidad:
+        select#especialidadSelect.form-select(name="id_especialidad" required)
+          option(value="") Seleccione una especialidad
 
       // ===========================
       // SUCURSAL
@@ -176,4 +193,132 @@ block contenido
       .text-center.mt-4
         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
 
-    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+  // ===========================
+  // JAVASCRIPT
+  // ===========================
+  //- script.
+  //-   const inputBuscar = document.getElementById('buscarMedico');
+  //-   const medicoSelect = document.getElementById('medicoSelect');
+  //-   const especialidadSelect = document.getElementById('especialidadSelect');
+
+  //-   let timeout = null;
+
+  //-   inputBuscar.addEventListener('input', () => {
+  //-     clearTimeout(timeout);
+
+  //-     timeout = setTimeout(async () => {
+  //-       const texto = inputBuscar.value.trim();
+  //-       if (texto.length < 2) return;
+
+  //-       const res = await fetch(`/api/medicos/buscar?q=${texto}`);
+  //-       const medicos = await res.json();
+
+  //-       medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+  //-       especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+  //-       medicos.forEach(m => {
+  //-         medicoSelect.innerHTML += `
+  //-           <option value="${m.id_medico}">
+  //-             ${m.nombre} ${m.apellido}
+  //-           </option>`;
+  //-       });
+  //-     }, 300);
+  //-   });
+
+  //-   medicoSelect.addEventListener('change', async () => {
+  //-     const idMedico = medicoSelect.value;
+  //-     if (!idMedico) return;
+
+  //-     const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
+  //-     const especialidades = await res.json();
+
+  //-     especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+  //-     if (especialidades.length === 0) {
+  //-       especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
+  //-       return;
+  //-     }
+
+  //-     especialidades.forEach(e => {
+  //-       especialidadSelect.innerHTML += `
+  //-         <option value="${e.id}">
+  //-           ${e.nombre}
+  //-         </option>`;
+  //-     });
+  //-   });
+  script.
+    const inputBuscar = document.getElementById('buscarMedico');
+    const medicoSelect = document.getElementById('medicoSelect');
+    const especialidadSelect = document.getElementById('especialidadSelect');
+
+    let timeout;
+
+    inputBuscar.addEventListener('input', () => {
+      clearTimeout(timeout);
+
+      timeout = setTimeout(async () => {
+        const texto = inputBuscar.value.trim();
+
+        if (texto.length < 2) {
+          medicoSelect.innerHTML = '<option value="">Escriba al menos 2 letras</option>';
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/medicos/buscar?q=${encodeURIComponent(texto)}`);
+          if (!res.ok) throw new Error('Error en búsqueda');
+
+          const medicos = await res.json();
+
+          medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+          especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+          if (medicos.length === 0) {
+            medicoSelect.innerHTML += '<option value="">Sin resultados</option>';
+            return;
+          }
+
+          medicos.forEach(m => {
+            medicoSelect.innerHTML += `
+              <option value="${m.id_medico}">
+                ${m.nombre} ${m.apellido}
+              </option>`;
+          });
+        } catch (err) {
+          console.error(err);
+          medicoSelect.innerHTML = '<option value="">Error al buscar</option>';
+        }
+      }, 300);
+    });
+
+    medicoSelect.addEventListener('change', async () => {
+      const idMedico = medicoSelect.value;
+      if (!idMedico) return;
+
+      try {
+        const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
+        if (!res.ok) throw new Error('Error al traer especialidades');
+
+        const especialidades = await res.json();
+
+        especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+        if (especialidades.length === 0) {
+          especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
+          return;
+        }
+
+        especialidades.forEach(e => {
+          especialidadSelect.innerHTML += `
+            <option value="${e.id}">
+              ${e.nombre}
+            </option>`;
+        });
+      } catch (err) {
+        console.error(err);
+        especialidadSelect.innerHTML = '<option value="">Error al cargar</option>';
+      }
+    });
+
+  script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+

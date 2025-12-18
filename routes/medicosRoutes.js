@@ -31,11 +31,23 @@ MedicosRouter.post('/activar/:id_medico', MedicosControllers.activar);
 
 
 
+
+
 // Especialidades del médico
 // MedicosRouter.get('/editarEsp/:dni', MedicosControllers.editarEspecialidades);
 
 // MedicosRouter.post('/activarEsp/:Id', MedicosControllers.activarEspecialidad);
 // MedicosRouter.post('/inactivarEsp/:Id', MedicosControllers.inactivarEspecialidad);
+
+// ==============================
+// API - BUSCADOR ON DEMAND
+// ==============================
+
+    // // Buscar médicos
+    // MedicosRouter.get('/api/buscar', MedicosControllers.buscar);
+
+    // // Especialidades activas del médico
+    // MedicosRouter.get('/api/:id_medico/especialidades', MedicosControllers.especialidadesActivas);
 
 module.exports = MedicosRouter;
 
