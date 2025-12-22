@@ -1,61 +1,218 @@
+//- extends ../layout
+
+//- block contenido
+//-     a(href="/pacientes" class="btn btn-outline-dark") Volver
+    
+//-     .container
+//-         h1 Obras Sociales
+        
+//-         if successMessage
+//-             .alert.alert-success= successMessage
+//-         a.btn.btn-primary(href="/obrasSociales/create") Agregar Obra Social      
+
+//-         ul.list-group
+//-             each obraSocial in obrasSociales
+//-                 li.list-group-item
+//-                     //- Nombre de la obra social
+//-                     span.obraSocial-nombre= obraSocial.nombre
+
+//-                     //- Formulario de edición (oculto inicialmente)
+//-                     form.edit-form(action=`/obrasSociales/update/${obraSocial.id}`, method='post' style="display: none;")
+//-                         input.form-control(type="text" name="nombre" value=obraSocial.nombre required)
+//-                         textarea.form-control(name="descripcion" rows="3" required)= obraSocial.descripcion
+//-                         input.form-control(type="text" name="direccion" value=obraSocial.direccion required)
+//-                         button.btn.btn-success(type="submit") Guardar
+
+//-                     //- Grupo de botones
+//-                     .button-group(style="display: flex; gap: 10px; margin-top: 5px;")
+//-                         button.btn.btn-primary(type="button" onclick=`toggleEditForm(${obraSocial.id})` class="btn btn-primary btn-sm") Modificar
+
+//-                         if obraSocial.estado == 1                       
+//-                             form(action=`/obrasSociales/inactivar/${obraSocial.id}`, method='post' id=`inactivar-form-${obraSocial.id}`)
+//-                                 button(type='submit' class="btn btn-danger btn-sm") Inactivar
+//-                         else
+//-                             form(action=`/obrasSociales/activar/${obraSocial.id}`, method='post' id=`activar-form-${obraSocial.id}`)
+//-                                 button(type='submit' class="btn btn-success btn-sm") Activar
+
+//-     //- Script para mostrar/ocultar el formulario de edición y permitir solo uno a la vez
+//-     script.
+//-         let activeEditForm = null;
+
+//-         function toggleEditForm(id) {
+//-             const editForm = document.querySelector(`form.edit-form[action='/obrasSociales/update/${id}']`);
+//-             const nombreSpan = editForm.previousElementSibling;
+
+//-             // Si hay un formulario activo y no es el actual, lo cerramos
+//-             if (activeEditForm && activeEditForm !== editForm) {
+//-                 activeEditForm.style.display = 'none';
+//-                 activeEditForm.previousElementSibling.style.display = 'block';
+//-             }
+
+//-             // Alternar el estado del formulario actual
+//-             if (editForm.style.display === 'none') {
+//-                 editForm.style.display = 'block';
+//-                 nombreSpan.style.display = 'none';
+//-                 activeEditForm = editForm; // Actualizamos el formulario activo
+//-             } else {
+//-                 editForm.style.display = 'none';
+//-                 nombreSpan.style.display = 'block';
+//-                 activeEditForm = null; // Ningún formulario está activo
+//-             }
+//-         }
+
+
+
+
+
 extends ../layout
 
 block contenido
-    a(href="/pacientes" class="btn btn-outline-dark") Volver
-    
-    .container
-        h1 Obras Sociales
-        
-        if successMessage
-            .alert.alert-success= successMessage
-        a.btn.btn-primary(href="/obrasSociales/create") Agregar Obra Social      
+    style.
+        body {
+            background-color: #eef5ff;
+            font-family: Arial, sans-serif;
+        }
+        .center-text {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .page-container {
+            padding: 20px;
+        }
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .obraSocial-nombre {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .obraSocial-detalle {
+            font-size: 14px;
+            color: #555;
+        }
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
 
+    .page-container
+
+        // ---------- BOTÓN VOLVER ----------
+        a.btn.btn-outline-dark.mb-3(href="/pacientes")
+            i.fa-solid.fa-arrow-left
+            |  Volver a Pacientes
+
+        // ---------- TÍTULO ----------
+        h3.center-text Obras Sociales
+
+        // ---------- MENSAJE ----------
+        if successMessage
+            script.
+                Swal.fire({
+                    title: 'Éxito',
+                    text: '#{successMessage}',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+
+        // ---------- ACCIONES SUPERIORES ----------
+        .top-actions
+            a.btn.btn-primary(href="/obrasSociales/create")
+                i.fa-solid.fa-plus
+                |  Nueva Obra Social
+
+        // ---------- LISTA ----------
         ul.list-group
             each obraSocial in obrasSociales
                 li.list-group-item
-                    //- Nombre de la obra social
-                    span.obraSocial-nombre= obraSocial.nombre
+                    .flex-grow-1
+                        span.obraSocial-nombre= obraSocial.nombre
+                        br
+                        span.obraSocial-detalle= obraSocial.descripcion
+                        br
+                        span.obraSocial-detalle Dirección: #{obraSocial.direccion}
 
-                    //- Formulario de edición (oculto inicialmente)
-                    form.edit-form(action=`/obrasSociales/update/${obraSocial.id}`, method='post' style="display: none;")
-                        input.form-control(type="text" name="nombre" value=obraSocial.nombre required)
-                        textarea.form-control(name="descripcion" rows="3" required)= obraSocial.descripcion
-                        input.form-control(type="text" name="direccion" value=obraSocial.direccion required)
-                        button.btn.btn-success(type="submit") Guardar
+                        // ---------- FORM EDIT ----------
+                        form.edit-form(
+                            action=`/obrasSociales/update/${obraSocial.id}`
+                            method="post"
+                            style="display:none; margin-top:10px;"
+                        )
+                            input.form-control.mb-2(
+                                type="text"
+                                name="nombre"
+                                value=obraSocial.nombre
+                                required
+                            )
+                            textarea.form-control.mb-2(
+                                name="descripcion"
+                                rows="3"
+                                required
+                            )= obraSocial.descripcion
+                            input.form-control.mb-2(
+                                type="text"
+                                name="direccion"
+                                value=obraSocial.direccion
+                                required
+                            )
+                            button.btn.btn-success.btn-sm(type="submit")
+                                i.fa-solid.fa-save
+                                |  Guardar
 
-                    //- Grupo de botones
-                    .button-group(style="display: flex; gap: 10px; margin-top: 5px;")
-                        button.btn.btn-primary(type="button" onclick=`toggleEditForm(${obraSocial.id})` class="btn btn-primary btn-sm") Modificar
+                    // ---------- BOTONES ----------
+                    .button-group
+                        button.btn.btn-sm.btn-primary(
+                            type="button"
+                            onclick=`toggleEditForm(${obraSocial.id})`
+                        )
+                            i.fa-solid.fa-pen
+                            |  Editar
 
-                        if obraSocial.estado == 1                       
-                            form(action=`/obrasSociales/inactivar/${obraSocial.id}`, method='post' id=`inactivar-form-${obraSocial.id}`)
-                                button(type='submit' class="btn btn-danger btn-sm") Inactivar
+                        if obraSocial.estado == 1
+                            form(action=`/obrasSociales/inactivar/${obraSocial.id}` method="post")
+                                button.btn.btn-sm.btn-danger(type="submit")
+                                    i.fa-solid.fa-ban
+                                    |  Inactivar
                         else
-                            form(action=`/obrasSociales/activar/${obraSocial.id}`, method='post' id=`activar-form-${obraSocial.id}`)
-                                button(type='submit' class="btn btn-success btn-sm") Activar
+                            form(action=`/obrasSociales/activar/${obraSocial.id}` method="post")
+                                button.btn.btn-sm.btn-success(type="submit")
+                                    i.fa-solid.fa-check
+                                    |  Activar
 
-    //- Script para mostrar/ocultar el formulario de edición y permitir solo uno a la vez
+    // ---------- SCRIPTS ----------
     script.
         let activeEditForm = null;
 
         function toggleEditForm(id) {
-            const editForm = document.querySelector(`form.edit-form[action='/obrasSociales/update/${id}']`);
+            const editForm = document.querySelector(
+                `form.edit-form[action='/obrasSociales/update/${id}']`
+            );
             const nombreSpan = editForm.previousElementSibling;
 
-            // Si hay un formulario activo y no es el actual, lo cerramos
             if (activeEditForm && activeEditForm !== editForm) {
                 activeEditForm.style.display = 'none';
                 activeEditForm.previousElementSibling.style.display = 'block';
             }
 
-            // Alternar el estado del formulario actual
             if (editForm.style.display === 'none') {
                 editForm.style.display = 'block';
                 nombreSpan.style.display = 'none';
-                activeEditForm = editForm; // Actualizamos el formulario activo
+                activeEditForm = editForm;
             } else {
                 editForm.style.display = 'none';
                 nombreSpan.style.display = 'block';
-                activeEditForm = null; // Ningún formulario está activo
+                activeEditForm = null;
             }
         }

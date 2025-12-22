@@ -89,22 +89,407 @@
 //-                     // -----------------------------
 //-                     td
 //-                         a(href=`/medicos/edit/${medico.id}` class="btn btn-info btn-sm") Gestionar
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+//-         .top-actions {
+//-             display: flex;
+//-             justify-content: space-between;
+//-             align-items: center;
+//-             margin-bottom: 20px;
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 12px;
+//-         }
+//-         .icon-edit {
+//-             color: #1e88e5;
+//-         }
+//-         .icon-matricula {
+//-             color: #2e7d32;
+//-         }
+
+//-         tr:hover {
+//-             filter: brightness(0.96);
+//-         }
+
+//-     .page-container
+
+//-         // ---------- TÍTULO ----------
+//-         h3.center-text Médicos
+
+//-         // ---------- ACCIONES SUPERIORES ----------
+//-         .top-actions
+//-             a.btn.btn-success(href="/medicos/create")
+//-                 i.fa-solid.fa-user-doctor
+//-                 |  Nuevo Médico
+
+//-         // ---------- MENSAJE ----------
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({
+//-                     title: 'Mensaje',
+//-                     text: '#{mensaje}',
+//-                     icon: 'success',
+//-                     confirmButtonText: 'OK'
+//-                 });
+
+//-         // ---------- TABLA ----------
+//-         table#tablaMedicos.table.table-striped.table-bordered.table-hover
+//-             thead.table-dark
+//-                 tr
+//-                     th DNI
+//-                     th Nombre
+//-                     th Apellido
+//-                     th Nacimiento
+//-                     th Especialidades
+//-                     th Matrículas
+//-                     th Teléfonos
+//-                     th Estado
+//-                     th Acciones
+
+//-             tbody
+//-                 each medico in medicos
+//-                     - const especialidades = medico.especialidades ? medico.especialidades.split(', ') : []
+//-                     - const matriculas = medico.matriculas ? medico.matriculas.split(', ') : []
+//-                     - const telefonos = medico.telefonos ? medico.telefonos.split(', ') : []
+
+//-                     tr
+//-                         td= medico.dni
+//-                         td= medico.nombre
+//-                         td= medico.apellido
+//-                         td= medico.nacimiento || "Sin datos"
+
+//-                         // ---------- ESPECIALIDADES ----------
+//-                         td
+//-                             if especialidades.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if especialidades.length === 1
+//-                                 span= especialidades[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each esp in especialidades
+//-                                         option= esp
+
+//-                         // ---------- MATRÍCULAS ----------
+//-                         td
+//-                             if matriculas.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if matriculas.length === 1
+//-                                 span= matriculas[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each mat in matriculas
+//-                                         option= mat
+
+//-                         // ---------- TELÉFONOS ----------
+//-                         td
+//-                             if telefonos.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if telefonos.length === 1
+//-                                 span= telefonos[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each tel in telefonos
+//-                                         option= tel
+
+//-                         // ---------- ESTADO ----------
+//-                         td
+//-                             if medico.estado === 1
+//-                                 span.badge.bg-success Activo
+//-                             else
+//-                                 span.badge.bg-secondary Inactivo
+
+//-                         // ---------- ACCIONES ----------
+//-                         td.actions
+//-                             a(href=`/medicos/edit/${medico.id}` title="Gestionar médico")
+//-                                 i.icon-edit.fa-solid.fa-pen-to-square
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+//-         .top-actions {
+//-             display: flex;
+//-             justify-content: space-between;
+//-             align-items: center;
+//-             margin-bottom: 20px;
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 12px;
+//-         }
+//-         .icon-edit {
+//-             color: #1e88e5;
+//-         }
+//-         .icon-matricula {
+//-             color: #2e7d32;
+//-         }
+
+//-         tr:hover {
+//-             filter: brightness(0.96);
+//-         }
+
+//-     .page-container
+
+//-         // ---------- TÍTULO ----------
+//-         h3.center-text Médicos
+
+//-         // ---------- ACCIONES SUPERIORES ----------
+//-         .top-actions
+//-             a.btn.btn-success(href="/medicos/create")
+//-                 i.fa-solid.fa-user-doctor
+//-                 |  Nuevo Médico
+
+//-         // ---------- MENSAJE ----------
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({
+//-                     title: 'Mensaje',
+//-                     text: '#{mensaje}',
+//-                     icon: 'success',
+//-                     confirmButtonText: 'OK'
+//-                 });
+
+//-         // ---------- TABLA ----------
+//-         table#tablaMedicos.table.table-striped.table-bordered.table-hover
+//-             thead.table-dark
+//-                 tr
+//-                     th DNI
+//-                     th Nombre
+//-                     th Apellido
+//-                     th Nacimiento
+//-                     th Especialidades
+//-                     th Matrículas
+//-                     th Teléfonos
+//-                     th Estado
+//-                     th Acciones
+
+//-             tbody
+//-                 each medico in medicos
+//-                     - const especialidades = medico.especialidades ? medico.especialidades.split(', ') : []
+//-                     - const matriculas = medico.matriculas ? medico.matriculas.split(', ') : []
+//-                     - const telefonos = medico.telefonos ? medico.telefonos.split(', ') : []
+
+//-                     tr
+//-                         td= medico.dni
+//-                         td= medico.nombre
+//-                         td= medico.apellido
+//-                         td= medico.nacimiento || "Sin datos"
+
+//-                         // ---------- ESPECIALIDADES ----------
+//-                         td
+//-                             if especialidades.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if especialidades.length === 1
+//-                                 span= especialidades[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each esp in especialidades
+//-                                         option= esp
+
+//-                         // ---------- MATRÍCULAS ----------
+//-                         td
+//-                             if matriculas.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if matriculas.length === 1
+//-                                 span= matriculas[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each mat in matriculas
+//-                                         option= mat
+
+//-                         // ---------- TELÉFONOS ----------
+//-                         td
+//-                             if telefonos.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if telefonos.length === 1
+//-                                 span= telefonos[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each tel in telefonos
+//-                                         option= tel
+
+//-                         // ---------- ESTADO ----------
+//-                         td
+//-                             if medico.estado === 1
+//-                                 span.badge.bg-success Activo
+//-                             else
+//-                                 span.badge.bg-secondary Inactivo
+
+//-                         // ---------- ACCIONES ----------
+//-                         td.actions
+//-                             a(href=`/medicos/edit/${medico.id}` title="Gestionar médico")
+//-                                 i.icon-edit.fa-solid.fa-pen-to-square
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         .page-container {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-             padding: 20px;
+//-             border-radius: 10px;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .top-actions {
+//-             display: flex;
+//-             justify-content: space-between;
+//-             align-items: center;
+//-             margin-bottom: 20px;
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 12px;
+//-         }
+//-         .icon-edit {
+//-             color: #1e88e5;
+//-         }
+//-         tr:hover {
+//-             filter: brightness(0.96);
+//-         }
+
+//-     .page-container
+
+//-         h3.center-text Médicos
+
+//-         .top-actions
+//-             a.btn.btn-success(href="/medicos/create")
+//-                 i.fa-solid.fa-user-doctor
+//-                 |  Nuevo Médico
+
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({
+//-                     title: 'Mensaje',
+//-                     text: '#{mensaje}',
+//-                     icon: 'success',
+//-                     confirmButtonText: 'OK'
+//-                 });
+
+//-         table#tablaMedicos.table.table-striped.table-bordered.table-hover
+//-             thead.table-dark
+//-                 tr
+//-                     th DNI
+//-                     th Nombre
+//-                     th Apellido
+//-                     th Nacimiento
+//-                     th Especialidades
+//-                     th Matrículas
+//-                     th Teléfonos
+//-                     th Estado
+//-                     th Acciones
+
+//-             tbody
+//-                 each medico in medicos
+//-                     - const especialidades = medico.especialidades ? medico.especialidades.split(', ') : []
+//-                     - const matriculas = medico.matriculas ? medico.matriculas.split(', ') : []
+//-                     - const telefonos = medico.telefonos ? medico.telefonos.split(', ') : []
+
+//-                     tr
+//-                         td= medico.dni
+//-                         td= medico.nombre
+//-                         td= medico.apellido
+//-                         td= medico.nacimiento || "Sin datos"
+
+//-                         td
+//-                             if especialidades.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if especialidades.length === 1
+//-                                 span= especialidades[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each esp in especialidades
+//-                                         option= esp
+
+//-                         td
+//-                             if matriculas.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if matriculas.length === 1
+//-                                 span= matriculas[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each mat in matriculas
+//-                                         option= mat
+
+//-                         td
+//-                             if telefonos.length === 0
+//-                                 span.text-muted Sin datos
+//-                             else if telefonos.length === 1
+//-                                 span= telefonos[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each tel in telefonos
+//-                                         option= tel
+
+//-                         td
+//-                             if medico.estado === 1
+//-                                 span.badge.bg-success Activo
+//-                             else
+//-                                 span.badge.bg-secondary Inactivo
+
+//-                         td.actions
+//-                             a(href=`/medicos/edit/${medico.id}` title="Gestionar médico")
+//-                                 i.icon-edit.fa-solid.fa-pen-to-square
+
+
 extends ../layout
 
 block contenido
     style.
-        body {
+        .page-container {
             background-color: #eef5ff;
             font-family: Arial, sans-serif;
+            padding: 20px;
+            border-radius: 10px;
         }
         .center-text {
             text-align: center;
             margin-bottom: 20px;
             font-size: 28px;
             font-weight: bold;
-        }
-        .page-container {
-            padding: 20px;
         }
         .top-actions {
             display: flex;
@@ -120,26 +505,19 @@ block contenido
         .icon-edit {
             color: #1e88e5;
         }
-        .icon-matricula {
-            color: #2e7d32;
-        }
-
         tr:hover {
             filter: brightness(0.96);
         }
 
     .page-container
 
-        // ---------- TÍTULO ----------
         h3.center-text Médicos
 
-        // ---------- ACCIONES SUPERIORES ----------
         .top-actions
             a.btn.btn-success(href="/medicos/create")
                 i.fa-solid.fa-user-doctor
                 |  Nuevo Médico
 
-        // ---------- MENSAJE ----------
         if mensaje
             script.
                 Swal.fire({
@@ -149,7 +527,6 @@ block contenido
                     confirmButtonText: 'OK'
                 });
 
-        // ---------- TABLA ----------
         table#tablaMedicos.table.table-striped.table-bordered.table-hover
             thead.table-dark
                 tr
@@ -175,7 +552,6 @@ block contenido
                         td= medico.apellido
                         td= medico.nacimiento || "Sin datos"
 
-                        // ---------- ESPECIALIDADES ----------
                         td
                             if especialidades.length === 0
                                 span.text-muted Sin datos
@@ -186,7 +562,6 @@ block contenido
                                     each esp in especialidades
                                         option= esp
 
-                        // ---------- MATRÍCULAS ----------
                         td
                             if matriculas.length === 0
                                 span.text-muted Sin datos
@@ -197,7 +572,6 @@ block contenido
                                     each mat in matriculas
                                         option= mat
 
-                        // ---------- TELÉFONOS ----------
                         td
                             if telefonos.length === 0
                                 span.text-muted Sin datos
@@ -208,14 +582,12 @@ block contenido
                                     each tel in telefonos
                                         option= tel
 
-                        // ---------- ESTADO ----------
                         td
                             if medico.estado === 1
                                 span.badge.bg-success Activo
                             else
                                 span.badge.bg-secondary Inactivo
 
-                        // ---------- ACCIONES ----------
                         td.actions
                             a(href=`/medicos/edit/${medico.id}` title="Gestionar médico")
                                 i.icon-edit.fa-solid.fa-pen-to-square

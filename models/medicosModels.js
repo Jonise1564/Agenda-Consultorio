@@ -286,7 +286,7 @@ class Medico {
                 m.matricula,
                 p.nombre,
                 p.apellido,
-                GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS nombreMat
+                GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS Especialidades
             FROM medicos m
             INNER JOIN personas p ON p.id = m.id_persona
             LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico

@@ -1,76 +1,249 @@
+//- extends ../layout
+
+//- block contenido
+//-     a(href="/medicos" class="btn btn-outline-dark") Volver
+//-     .container
+//-         h1 Especialidades
+        
+//-         if successMessage
+//-             .alert.alert-success= successMessage
+//-         a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad
+
+//-         //- Campo de búsqueda
+//-         input#search(type="text" class="form-control" placeholder="Buscar especialidad..." onkeyup="filterEspecialidades()")
+
+//-         ul.list-group#especialidades-list
+//-             each especialidad in especialidades
+//-                 li.list-group-item(data-nombre=especialidad.nombre.toLowerCase())
+//-                     //- Nombre de la especialidad
+//-                     span.especialidad-nombre= especialidad.nombre
+
+//-                     //- Formulario de edición (oculto inicialmente)
+//-                     form.edit-form(action=`/especialidades/update/${especialidad.id}`, method='post' style="display: none;")
+//-                         input.form-control(type="text" name="nombre" value=especialidad.nombre required)
+//-                         button.btn.btn-success(type="submit") Guardar
+
+//-                     //- Grupo de botones
+//-                     .button-group(style="display: flex; gap: 10px; margin-top: 5px;")
+//-                         button.btn.btn-primary(type="button" onclick=`toggleEditForm(${especialidad.id})` class="btn btn-primary btn-sm") Modificar
+
+//-                         if especialidad.estado == 1                       
+//-                             form(action=`/especialidades/inactivar/${especialidad.id}`, method='post' id=`inactivar-form-${especialidad.id}`)
+//-                                 button(type='submit' class="btn btn-danger btn-sm") Inactivar
+//-                         else
+//-                             form(action=`/especialidades/activar/${especialidad.id}`, method='post' id=`activar-form-${especialidad.id}`)
+//-                                 button(type='submit' class="btn btn-success btn-sm") Activar
+
+//-     //- Script para mostrar/ocultar el formulario de edición y permitir solo uno a la vez
+//-     script.
+//-         let activeEditForm = null;
+
+//-         function toggleEditForm(id) {
+//-             const editForm = document.querySelector(`form.edit-form[action='/especialidades/update/${id}']`);
+//-             const nombreSpan = editForm.previousElementSibling;
+
+//-             // Si hay un formulario activo y no es el actual, lo cerramos
+//-             if (activeEditForm && activeEditForm !== editForm) {
+//-                 activeEditForm.style.display = 'none';
+//-                 activeEditForm.previousElementSibling.style.display = 'block';
+//-             }
+
+//-             // Alternamos el estado del formulario actual
+//-             if (editForm.style.display === 'none') {
+//-                 editForm.style.display = 'block';
+//-                 nombreSpan.style.display = 'none';
+//-                 activeEditForm = editForm; // Actualizamos el formulario activo
+//-             } else {
+//-                 editForm.style.display = 'none';
+//-                 nombreSpan.style.display = 'block';
+//-                 activeEditForm = null; // Ningún formulario está activo
+//-             }
+//-         }
+
+//-         function filterEspecialidades() {
+//-             const searchInput = document.getElementById('search').value.toLowerCase();
+//-             const especialidades = document.querySelectorAll('#especialidades-list li');
+
+//-             especialidades.forEach(especialidad => {
+//-                 const nombre = especialidad.getAttribute('data-nombre');
+//-                 if (nombre.includes(searchInput)) {
+//-                     especialidad.style.display = '';
+//-                 } else {
+//-                     especialidad.style.display = 'none';
+//-                 }
+//-             });
+//-         }
+
+
+
+
+
+
+
+
 extends ../layout
 
 block contenido
-    a(href="/medicos" class="btn btn-outline-dark") Volver
-    .container
-        h1 Especialidades
-        
+    style.
+        body {
+            background-color: #eef5ff;
+            font-family: Arial, sans-serif;
+        }
+        .center-text {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .page-container {
+            padding: 20px;
+        }
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            margin-bottom: 15px;
+        }
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .especialidad-nombre {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+    .page-container
+
+        // ---------- BOTÓN VOLVER ----------
+        a.btn.btn-outline-dark.mb-3(href="/medicos")
+            i.fa-solid.fa-arrow-left
+            |  Volver a Médicos
+
+        // ---------- TÍTULO ----------
+        h3.center-text Especialidades
+
+        // ---------- MENSAJE ----------
         if successMessage
-            .alert.alert-success= successMessage
-        a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad
+            script.
+                Swal.fire({
+                    title: 'Éxito',
+                    text: '#{successMessage}',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
 
-        //- Campo de búsqueda
-        input#search(type="text" class="form-control" placeholder="Buscar especialidad..." onkeyup="filterEspecialidades()")
+        // ---------- ACCIONES SUPERIORES ----------
+        .top-actions
+            a.btn.btn-primary(href="/especialidades/create")
+                i.fa-solid.fa-plus
+                |  Nueva Especialidad
 
+        // ---------- BUSCADOR ----------
+        .search-box
+            input#search.form-control(
+                type="text"
+                placeholder="Buscar especialidad..."
+                onkeyup="filterEspecialidades()"
+            )
+
+        // ---------- LISTA ----------
         ul.list-group#especialidades-list
             each especialidad in especialidades
                 li.list-group-item(data-nombre=especialidad.nombre.toLowerCase())
-                    //- Nombre de la especialidad
-                    span.especialidad-nombre= especialidad.nombre
+                    .flex-grow-1
+                        span.especialidad-nombre= especialidad.nombre
 
-                    //- Formulario de edición (oculto inicialmente)
-                    form.edit-form(action=`/especialidades/update/${especialidad.id}`, method='post' style="display: none;")
-                        input.form-control(type="text" name="nombre" value=especialidad.nombre required)
-                        button.btn.btn-success(type="submit") Guardar
+                        // ---------- FORM EDIT ----------
+                        form.edit-form(
+                            action=`/especialidades/update/${especialidad.id}`
+                            method="post"
+                            style="display:none; margin-top:10px;"
+                        )
+                            input.form-control.mb-2(
+                                type="text"
+                                name="nombre"
+                                value=especialidad.nombre
+                                required
+                            )
+                            button.btn.btn-success.btn-sm(type="submit")
+                                i.fa-solid.fa-save
+                                |  Guardar
 
-                    //- Grupo de botones
-                    .button-group(style="display: flex; gap: 10px; margin-top: 5px;")
-                        button.btn.btn-primary(type="button" onclick=`toggleEditForm(${especialidad.id})` class="btn btn-primary btn-sm") Modificar
+                    // ---------- BOTONES ----------
+                    .button-group
+                        button.btn.btn-sm.btn-primary(
+                            type="button"
+                            onclick=`toggleEditForm(${especialidad.id})`
+                        )
+                            i.fa-solid.fa-pen
+                            |  Editar
 
-                        if especialidad.estado == 1                       
-                            form(action=`/especialidades/inactivar/${especialidad.id}`, method='post' id=`inactivar-form-${especialidad.id}`)
-                                button(type='submit' class="btn btn-danger btn-sm") Inactivar
+                        if especialidad.estado == 1
+                            form(
+                                action=`/especialidades/inactivar/${especialidad.id}`
+                                method="post"
+                            )
+                                button.btn.btn-sm.btn-danger(type="submit")
+                                    i.fa-solid.fa-ban
+                                    |  Inactivar
                         else
-                            form(action=`/especialidades/activar/${especialidad.id}`, method='post' id=`activar-form-${especialidad.id}`)
-                                button(type='submit' class="btn btn-success btn-sm") Activar
+                            form(
+                                action=`/especialidades/activar/${especialidad.id}`
+                                method="post"
+                            )
+                                button.btn.btn-sm.btn-success(type="submit")
+                                    i.fa-solid.fa-check
+                                    |  Activar
 
-    //- Script para mostrar/ocultar el formulario de edición y permitir solo uno a la vez
+    // ---------- SCRIPTS ----------
     script.
         let activeEditForm = null;
 
         function toggleEditForm(id) {
-            const editForm = document.querySelector(`form.edit-form[action='/especialidades/update/${id}']`);
+            const editForm = document.querySelector(
+                `form.edit-form[action='/especialidades/update/${id}']`
+            );
             const nombreSpan = editForm.previousElementSibling;
 
-            // Si hay un formulario activo y no es el actual, lo cerramos
             if (activeEditForm && activeEditForm !== editForm) {
                 activeEditForm.style.display = 'none';
                 activeEditForm.previousElementSibling.style.display = 'block';
             }
 
-            // Alternamos el estado del formulario actual
             if (editForm.style.display === 'none') {
                 editForm.style.display = 'block';
                 nombreSpan.style.display = 'none';
-                activeEditForm = editForm; // Actualizamos el formulario activo
+                activeEditForm = editForm;
             } else {
                 editForm.style.display = 'none';
                 nombreSpan.style.display = 'block';
-                activeEditForm = null; // Ningún formulario está activo
+                activeEditForm = null;
             }
         }
 
         function filterEspecialidades() {
-            const searchInput = document.getElementById('search').value.toLowerCase();
-            const especialidades = document.querySelectorAll('#especialidades-list li');
+            const searchInput = document
+                .getElementById('search')
+                .value
+                .toLowerCase();
 
-            especialidades.forEach(especialidad => {
-                const nombre = especialidad.getAttribute('data-nombre');
-                if (nombre.includes(searchInput)) {
-                    especialidad.style.display = '';
-                } else {
-                    especialidad.style.display = 'none';
-                }
-            });
+            document
+                .querySelectorAll('#especialidades-list li')
+                .forEach(item => {
+                    const nombre = item.dataset.nombre;
+                    item.style.display = nombre.includes(searchInput)
+                        ? ''
+                        : 'none';
+                });
         }
-
