@@ -349,7 +349,36 @@ class Medico {
 //     return rows;
 // }
 
-    
+    // ============================================================
+// BUSCAR MÉDICOS POR NOMBRE / APELLIDO (PARA AGENDA)
+// ============================================================
+static async buscarPorNombre(texto) {
+    let conn;
+    try {
+        conn = await createConnection();
+
+        const [rows] = await conn.query(`
+            SELECT
+                m.id_medico,
+                p.nombre,
+                p.apellido
+            FROM medicos m
+            INNER JOIN personas p ON p.id = m.id_persona
+            WHERE m.estado = 1
+              AND (p.nombre LIKE ? OR p.apellido LIKE ?)
+            ORDER BY p.apellido, p.nombre
+            LIMIT 20
+        `, [`%${texto}%`, `%${texto}%`]);
+
+        return rows;
+
+    } catch (error) {
+        throw error;
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
 
 
 

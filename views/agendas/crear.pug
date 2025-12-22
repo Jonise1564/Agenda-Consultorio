@@ -1,5 +1,4 @@
 
-  
 //- extends ../layout
 
 //- block contenido
@@ -57,8 +56,8 @@
 //-       h4.mt-4.mb-3.text-primary Profesional
 
 //-       .mb-4
-//-         label.form-label(for="nromatricula") Médico + Especialidad:
-//-         select.form-select(name="nromatricula" required)
+//-         label.form-label(for="matricula") Médico + Especialidad:
+//-         select.form-select(name="matricula" required)
 //-           option(value="") Seleccione un profesional
 //-           if matriculas
 //-             each m in matriculas
@@ -94,60 +93,276 @@
 //-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
 
 
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-5
+//-     h2.text-center.mb-4 Crear Nueva Agenda
+
+//-     // ===========================
+//-     // CARTEL DE ERROR
+//-     // ===========================
+//-     if error
+//-       .alert.alert-danger.text-center.mb-4= error
+
+//-     form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light")
+
+//-       // ===========================
+//-       // FECHAS
+//-       // ===========================
+//-       h4.mb-3.text-primary Fechas de la Agenda
+
+//-       .row
+//-         .col-md-6.mb-3
+//-           label.form-label(for="fecha_creacion") Desde:
+//-           input#fecha_creacion.form-control(type="date" name="fecha_creacion" required)
+
+//-         .col-md-6.mb-3
+//-           label.form-label(for="fecha_fin") Hasta:
+//-           input#fecha_fin.form-control(type="date" name="fecha_fin" required)
+
+//-       // ===========================
+//-       // HORARIOS
+//-       // ===========================
+//-       h4.mt-4.mb-3.text-primary Horarios
+
+//-       .row
+//-         .col-md-6.mb-3
+//-           label.form-label(for="hora_inicio") Hora Inicio:
+//-           input#hora_inicio.form-control(type="time" name="hora_inicio" required)
+
+//-         .col-md-6.mb-3
+//-           label.form-label(for="hora_fin") Hora Fin:
+//-           input#hora_fin.form-control(type="time" name="hora_fin" required)
+
+//-       .row
+//-         .col-md-6.mb-3
+//-           label.form-label(for="duracion_turnos") Duración del Turno (minutos):
+//-           input#duracion_turnos.form-control(type="number" min="5" max="120" step="5" name="duracion_turnos" required)
+
+//-         .col-md-6.mb-3
+//-           label.form-label(for="limite_sobreturnos") Límite de Sobreturnos:
+//-           input#limite_sobreturnos.form-control(type="number" min="0" name="limite_sobreturnos" required)
+
+//-       // ===========================
+//-       // MÉDICO Y ESPECIALIDAD (BUSCADOR)
+//-       // ===========================
+//-       h4.mt-4.mb-3.text-primary Profesional
+
+//-       .mb-3
+//-         label.form-label Buscar médico:
+//-         input#buscarMedico.form-control(
+//-           type="text"
+//-           placeholder="Escriba nombre o apellido"
+//-           autocomplete="off"
+//-         )
+
+//-       .mb-3
+//-         label.form-label Médico:
+//-         select#medicoSelect.form-select(required)
+//-           option(value="") Seleccione un médico
+
+//-       .mb-4
+//-         label.form-label Especialidad:
+//-         select#especialidadSelect.form-select(name="id_especialidad" required)
+//-           option(value="") Seleccione una especialidad
+
+//-       // ===========================
+//-       // SUCURSAL
+//-       // ===========================
+//-       .mb-3
+//-         label.form-label(for="id_sucursal") Sucursal:
+//-         select.form-select(name="id_sucursal" required)
+//-           option(value="") Seleccione una sucursal
+//-           option(value="1") Clínica Argentina – San Luis
+//-           option(value="2") Clínica España – Juana Koslay
+
+//-       // ===========================
+//-       // CLASIFICACIÓN
+//-       // ===========================
+//-       .mb-4
+//-         label.form-label(for="id_clasificacion") Clasificación:
+//-         select.form-select(name="id_clasificacion" required)
+//-           option(value="") Seleccione una clasificación
+//-           option(value="1") Normal
+//-           option(value="2") Especial
+//-           option(value="3") VIP
+
+//-       // BOTÓN
+//-       .text-center.mt-4
+//-         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
+
+//-   // ===========================
+//-   // JAVASCRIPT
+//-   // ===========================
+//-   //- script.
+//-   //-   const inputBuscar = document.getElementById('buscarMedico');
+//-   //-   const medicoSelect = document.getElementById('medicoSelect');
+//-   //-   const especialidadSelect = document.getElementById('especialidadSelect');
+
+//-   //-   let timeout = null;
+
+//-   //-   inputBuscar.addEventListener('input', () => {
+//-   //-     clearTimeout(timeout);
+
+//-   //-     timeout = setTimeout(async () => {
+//-   //-       const texto = inputBuscar.value.trim();
+//-   //-       if (texto.length < 2) return;
+
+//-   //-       const res = await fetch(`/api/medicos/buscar?q=${texto}`);
+//-   //-       const medicos = await res.json();
+
+//-   //-       medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+//-   //-       especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+//-   //-       medicos.forEach(m => {
+//-   //-         medicoSelect.innerHTML += `
+//-   //-           <option value="${m.id_medico}">
+//-   //-             ${m.nombre} ${m.apellido}
+//-   //-           </option>`;
+//-   //-       });
+//-   //-     }, 300);
+//-   //-   });
+
+//-   //-   medicoSelect.addEventListener('change', async () => {
+//-   //-     const idMedico = medicoSelect.value;
+//-   //-     if (!idMedico) return;
+
+//-   //-     const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
+//-   //-     const especialidades = await res.json();
+
+//-   //-     especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+//-   //-     if (especialidades.length === 0) {
+//-   //-       especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
+//-   //-       return;
+//-   //-     }
+
+//-   //-     especialidades.forEach(e => {
+//-   //-       especialidadSelect.innerHTML += `
+//-   //-         <option value="${e.id}">
+//-   //-           ${e.nombre}
+//-   //-         </option>`;
+//-   //-     });
+//-   //-   });
+//-   script.
+//-     const inputBuscar = document.getElementById('buscarMedico');
+//-     const medicoSelect = document.getElementById('medicoSelect');
+//-     const especialidadSelect = document.getElementById('especialidadSelect');
+
+//-     let timeout;
+
+//-     inputBuscar.addEventListener('input', () => {
+//-       clearTimeout(timeout);
+
+//-       timeout = setTimeout(async () => {
+//-         const texto = inputBuscar.value.trim();
+
+//-         if (texto.length < 2) {
+//-           medicoSelect.innerHTML = '<option value="">Escriba al menos 2 letras</option>';
+//-           return;
+//-         }
+
+//-         try {
+//-           const res = await fetch(`/api/medicos/buscar?q=${encodeURIComponent(texto)}`);
+//-           if (!res.ok) throw new Error('Error en búsqueda');
+
+//-           const medicos = await res.json();
+
+//-           medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+//-           especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+//-           if (medicos.length === 0) {
+//-             medicoSelect.innerHTML += '<option value="">Sin resultados</option>';
+//-             return;
+//-           }
+
+//-           medicos.forEach(m => {
+//-             medicoSelect.innerHTML += `
+//-               <option value="${m.id_medico}">
+//-                 ${m.nombre} ${m.apellido}
+//-               </option>`;
+//-           });
+//-         } catch (err) {
+//-           console.error(err);
+//-           medicoSelect.innerHTML = '<option value="">Error al buscar</option>';
+//-         }
+//-       }, 300);
+//-     });
+
+//-     medicoSelect.addEventListener('change', async () => {
+//-       const idMedico = medicoSelect.value;
+//-       if (!idMedico) return;
+
+//-       try {
+//-         const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
+//-         if (!res.ok) throw new Error('Error al traer especialidades');
+
+//-         const especialidades = await res.json();
+
+//-         especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+
+//-         if (especialidades.length === 0) {
+//-           especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
+//-           return;
+//-         }
+
+//-         especialidades.forEach(e => {
+//-           especialidadSelect.innerHTML += `
+//-             <option value="${e.id}">
+//-               ${e.nombre}
+//-             </option>`;
+//-         });
+//-       } catch (err) {
+//-         console.error(err);
+//-         especialidadSelect.innerHTML = '<option value="">Error al cargar</option>';
+//-       }
+//-     });
+
+//-   script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+
 extends ../layout
 
 block contenido
   .container.mt-5
     h2.text-center.mb-4 Crear Nueva Agenda
 
-    // ===========================
-    // CARTEL DE ERROR
-    // ===========================
     if error
       .alert.alert-danger.text-center.mb-4= error
 
     form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light")
 
-      // ===========================
-      // FECHAS
-      // ===========================
       h4.mb-3.text-primary Fechas de la Agenda
 
       .row
         .col-md-6.mb-3
-          label.form-label(for="fecha_creacion") Desde:
-          input#fecha_creacion.form-control(type="date" name="fecha_creacion" required)
+          label.form-label Desde:
+          input.form-control(type="date" name="fecha_creacion" required)
 
         .col-md-6.mb-3
-          label.form-label(for="fecha_fin") Hasta:
-          input#fecha_fin.form-control(type="date" name="fecha_fin" required)
+          label.form-label Hasta:
+          input.form-control(type="date" name="fecha_fin" required)
 
-      // ===========================
-      // HORARIOS
-      // ===========================
       h4.mt-4.mb-3.text-primary Horarios
 
       .row
         .col-md-6.mb-3
-          label.form-label(for="hora_inicio") Hora Inicio:
-          input#hora_inicio.form-control(type="time" name="hora_inicio" required)
+          label.form-label Hora Inicio:
+          input.form-control(type="time" name="hora_inicio" required)
 
         .col-md-6.mb-3
-          label.form-label(for="hora_fin") Hora Fin:
-          input#hora_fin.form-control(type="time" name="hora_fin" required)
+          label.form-label Hora Fin:
+          input.form-control(type="time" name="hora_fin" required)
 
       .row
         .col-md-6.mb-3
-          label.form-label(for="duracion_turnos") Duración del Turno (minutos):
-          input#duracion_turnos.form-control(type="number" min="5" max="120" step="5" name="duracion_turnos" required)
+          label.form-label Duración del Turno (min):
+          input.form-control(type="number" min="5" max="120" step="5" name="duracion_turnos" required)
 
         .col-md-6.mb-3
-          label.form-label(for="limite_sobreturnos") Límite de Sobreturnos:
-          input#limite_sobreturnos.form-control(type="number" min="0" name="limite_sobreturnos" required)
+          label.form-label Límite de Sobreturnos:
+          input.form-control(type="number" min="0" name="limite_sobreturnos" required)
 
-      // ===========================
-      // MÉDICO Y ESPECIALIDAD (BUSCADOR)
-      // ===========================
       h4.mt-4.mb-3.text-primary Profesional
 
       .mb-3
@@ -160,7 +375,7 @@ block contenido
 
       .mb-3
         label.form-label Médico:
-        select#medicoSelect.form-select(required)
+        select#medicoSelect.form-select(name="id_medico" required)
           option(value="") Seleccione un médico
 
       .mb-4
@@ -168,106 +383,47 @@ block contenido
         select#especialidadSelect.form-select(name="id_especialidad" required)
           option(value="") Seleccione una especialidad
 
-      // ===========================
-      // SUCURSAL
-      // ===========================
       .mb-3
-        label.form-label(for="id_sucursal") Sucursal:
+        label.form-label Sucursal:
         select.form-select(name="id_sucursal" required)
           option(value="") Seleccione una sucursal
           option(value="1") Clínica Argentina – San Luis
           option(value="2") Clínica España – Juana Koslay
 
-      // ===========================
-      // CLASIFICACIÓN
-      // ===========================
       .mb-4
-        label.form-label(for="id_clasificacion") Clasificación:
+        label.form-label Clasificación:
         select.form-select(name="id_clasificacion" required)
           option(value="") Seleccione una clasificación
           option(value="1") Normal
           option(value="2") Especial
           option(value="3") VIP
 
-      // BOTÓN
       .text-center.mt-4
         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
 
   // ===========================
   // JAVASCRIPT
   // ===========================
-  //- script.
-  //-   const inputBuscar = document.getElementById('buscarMedico');
-  //-   const medicoSelect = document.getElementById('medicoSelect');
-  //-   const especialidadSelect = document.getElementById('especialidadSelect');
-
-  //-   let timeout = null;
-
-  //-   inputBuscar.addEventListener('input', () => {
-  //-     clearTimeout(timeout);
-
-  //-     timeout = setTimeout(async () => {
-  //-       const texto = inputBuscar.value.trim();
-  //-       if (texto.length < 2) return;
-
-  //-       const res = await fetch(`/api/medicos/buscar?q=${texto}`);
-  //-       const medicos = await res.json();
-
-  //-       medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
-  //-       especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-  //-       medicos.forEach(m => {
-  //-         medicoSelect.innerHTML += `
-  //-           <option value="${m.id_medico}">
-  //-             ${m.nombre} ${m.apellido}
-  //-           </option>`;
-  //-       });
-  //-     }, 300);
-  //-   });
-
-  //-   medicoSelect.addEventListener('change', async () => {
-  //-     const idMedico = medicoSelect.value;
-  //-     if (!idMedico) return;
-
-  //-     const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
-  //-     const especialidades = await res.json();
-
-  //-     especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-  //-     if (especialidades.length === 0) {
-  //-       especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
-  //-       return;
-  //-     }
-
-  //-     especialidades.forEach(e => {
-  //-       especialidadSelect.innerHTML += `
-  //-         <option value="${e.id}">
-  //-           ${e.nombre}
-  //-         </option>`;
-  //-     });
-  //-   });
   script.
-    const inputBuscar = document.getElementById('buscarMedico');
-    const medicoSelect = document.getElementById('medicoSelect');
-    const especialidadSelect = document.getElementById('especialidadSelect');
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputBuscar = document.getElementById('buscarMedico');
+      const medicoSelect = document.getElementById('medicoSelect');
+      const especialidadSelect = document.getElementById('especialidadSelect');
 
-    let timeout;
+      let timeout;
 
-    inputBuscar.addEventListener('input', () => {
-      clearTimeout(timeout);
+      inputBuscar.addEventListener('input', () => {
+        clearTimeout(timeout);
 
-      timeout = setTimeout(async () => {
-        const texto = inputBuscar.value.trim();
+        timeout = setTimeout(async () => {
+          const texto = inputBuscar.value.trim();
 
-        if (texto.length < 2) {
-          medicoSelect.innerHTML = '<option value="">Escriba al menos 2 letras</option>';
-          return;
-        }
+          if (texto.length < 2) {
+            medicoSelect.innerHTML = '<option value="">Escriba al menos 2 letras</option>';
+            return;
+          }
 
-        try {
-          const res = await fetch(`/api/medicos/buscar?q=${encodeURIComponent(texto)}`);
-          if (!res.ok) throw new Error('Error en búsqueda');
-
+          const res = await fetch(`/medicos/buscar?q=${encodeURIComponent(texto)}`);
           const medicos = await res.json();
 
           medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
@@ -284,21 +440,14 @@ block contenido
                 ${m.nombre} ${m.apellido}
               </option>`;
           });
-        } catch (err) {
-          console.error(err);
-          medicoSelect.innerHTML = '<option value="">Error al buscar</option>';
-        }
-      }, 300);
-    });
+        }, 300);
+      });
 
-    medicoSelect.addEventListener('change', async () => {
-      const idMedico = medicoSelect.value;
-      if (!idMedico) return;
+      medicoSelect.addEventListener('change', async () => {
+        const idMedico = medicoSelect.value;
+        if (!idMedico) return;
 
-      try {
-        const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
-        if (!res.ok) throw new Error('Error al traer especialidades');
-
+        const res = await fetch(`/medicos/${idMedico}/especialidades`);
         const especialidades = await res.json();
 
         especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
@@ -314,10 +463,7 @@ block contenido
               ${e.nombre}
             </option>`;
         });
-      } catch (err) {
-        console.error(err);
-        especialidadSelect.innerHTML = '<option value="">Error al cargar</option>';
-      }
+      });
     });
 
   script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")

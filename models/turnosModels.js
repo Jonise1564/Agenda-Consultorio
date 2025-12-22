@@ -15,38 +15,86 @@ class Turno {
     // ============================================
     // GET ALL TURNOS DE UNA AGENDA
     // ============================================
+    // static async getAll(id_agenda) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         const [turnos] = await conn.query(`
+    //         SELECT 
+    //                 t.*,
+    //                 p.nombre AS paciente_nombre,
+    //                 p.dni AS paciente_dni,
+    //                 m.id_medico,
+    //                 mp.nombre AS nombre_medico,
+    //                 mp.apellido AS apellido_medico
+    //             FROM turnos t
+    //             LEFT JOIN pacientes pa ON t.id_paciente = pa.id
+    //             LEFT JOIN personas p ON pa.id_persona = p.id
+    //             INNER JOIN agendas a ON t.id_agenda = a.id
+    //             INNER JOIN medicos m ON a.matricula = m.matricula
+    //             INNER JOIN personas mp ON m.id_persona = mp.id
+    //             WHERE t.id_agenda = ?
+    //             ORDER BY t.fecha, t.hora_inicio;
+
+    //         `, [id_agenda]);
+
+    //         return turnos;
+
+    //     } catch (error) {
+    //         console.error('Error fetching turnos:', error);
+    //         throw new Error('Error al traer turnos desde el modelo');
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
     static async getAll(id_agenda) {
-        let conn;
-        try {
-            conn = await createConnection();
-            const [turnos] = await conn.query(`
+    let conn;
+    try {
+        conn = await createConnection();
+
+        const [turnos] = await conn.query(`
             SELECT 
-                    t.*,
-                    p.nombre AS paciente_nombre,
-                    p.dni AS paciente_dni,
-                    m.id_medico,
-                    mp.nombre AS nombre_medico,
-                    mp.apellido AS apellido_medico
-                FROM turnos t
-                LEFT JOIN pacientes pa ON t.id_paciente = pa.id
-                LEFT JOIN personas p ON pa.id_persona = p.id
-                INNER JOIN agendas a ON t.id_agenda = a.id
-                INNER JOIN medicos m ON a.matricula = m.matricula
-                INNER JOIN personas mp ON m.id_persona = mp.id
-                WHERE t.id_agenda = ?
-                ORDER BY t.fecha, t.hora_inicio;
+                t.id,
+                t.fecha,
+                t.hora_inicio,
+                t.estado,
+                t.orden,
+                t.motivo,
 
-            `, [id_agenda]);
+                -- Paciente
+                p.nombre   AS paciente_nombre,
+                p.dni      AS paciente_dni,
 
-            return turnos;
+                -- Médico
+                m.id_medico,
+                mp.nombre  AS medico_nombre,
+                mp.apellido AS medico_apellido
 
-        } catch (error) {
-            console.error('Error fetching turnos:', error);
-            throw new Error('Error al traer turnos desde el modelo');
-        } finally {
-            if (conn) conn.end();
-        }
+            FROM turnos t
+
+            -- Paciente (puede ser NULL)
+            LEFT JOIN pacientes pa ON t.id_paciente = pa.id
+            LEFT JOIN personas p   ON pa.id_persona = p.id
+
+            -- Agenda / Médico
+            INNER JOIN agendas a ON t.id_agenda = a.id
+            INNER JOIN medicos m ON a.id_medico = m.id_medico
+            INNER JOIN personas mp ON m.id_persona = mp.id
+
+            WHERE t.id_agenda = ?
+            ORDER BY t.fecha, t.hora_inicio, t.orden
+        `, [id_agenda]);
+
+        return turnos;
+
+    } catch (error) {
+        console.error('Error fetching turnos:', error);
+        throw new Error('Error al traer turnos desde el modelo');
+    } finally {
+        if (conn) conn.end();
     }
+}
+
 
 
     // ============================================

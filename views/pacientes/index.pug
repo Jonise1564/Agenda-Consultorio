@@ -1,65 +1,4 @@
-
-                        
-//- //- extends ../layout
-//- //- block contenido
-//- //-     h1 Pacientes
-//- //-     a(href="/pacientes/create" class="btn btn-success") Crear Paciente
-//- //-     if mensaje
-//- //-       .alert.alert-success
-//- //-         h1= mensaje
-
-//- //-     table#example 
-//- //-         thead 
-//- //-             tr 
-//- //-                 th N° Documento
-//- //-                 th Nombre
-//- //-                 th Apellido
-//- //-                 th Fecha de nacimiento
-//- //-                 th Correo
-//- //-                 th Telefonos
-//- //-                 th Obras Sociales
-//- //-                 th Estado
-//- //-                 th Acciones
-
-//- //-         tbody 
-//- //-             each paciente in pacientes 
-//- //-                 - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
-//- //-                 - const obras = paciente.obra_sociale ? paciente.obra_social.split(', ') : []
-
-//- //-                 tr 
-//- //-                     td= paciente.dni
-//- //-                     td= paciente.nombre
-//- //-                     td= paciente.apellido
-//- //-                     td= paciente.nacimiento
-//- //-                     td= paciente.email 
-
-//- //-                     // ------------------------------ TELEFONOS --------------------------------
-//- //-                     td
-//- //-                         if telefonos.length === 0
-//- //-                             span No phone
-//- //-                         else if telefonos.length === 1
-//- //-                             span= telefonos[0]
-//- //-                         else
-//- //-                             select
-//- //-                                 each tel in telefonos
-//- //-                                     option= tel
-
-//- //-                     // ------------------------------ OBRAS SOCIALES --------------------------------
-//- //-                     td
-//- //-                         if obras.length === 0
-//- //-                             span Sin Obra Social
-//- //-                         else if obras.length === 1
-//- //-                             span= obras[0]
-//- //-                         else 
-//- //-                             select
-//- //-                                 each os in obras
-//- //-                                     option= os
-
-//- //-                     td= (paciente.estado === 1) ? 'Activo' : 'Inactivo'
-
-//- //-                     td
-//- //-                        a(href=`/pacientes/edit/${paciente.id}` class="btn btn-info") Gestionar
-
+//- CONTIENE EL BUSCADOR
 //- extends ../layout
 
 //- block contenido
@@ -73,7 +12,7 @@
 //-     table#example
 //-         thead
 //-             tr
-//-                 th id                
+//-                 th ID Paciente
 //-                 th N° Documento
 //-                 th Nombre
 //-                 th Apellido
@@ -90,14 +29,13 @@
 //-                 - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
 
 //-                 tr
-//-                     td= paciente.id
+//-                     td= paciente.id_paciente
 //-                     td= paciente.dni
 //-                     td= paciente.nombre
 //-                     td= paciente.apellido
 //-                     td= paciente.nacimiento
 //-                     td= paciente.email
 
-//-                     // ------------------------------ TELEFONOS --------------------------------
 //-                     td
 //-                         if telefonos.length === 0
 //-                             span Sin Teléfono
@@ -108,7 +46,6 @@
 //-                                 each tel in telefonos
 //-                                     option= tel
 
-//-                     // ------------------------------ OBRAS SOCIALES --------------------------------
 //-                     td
 //-                         if obras.length === 0
 //-                             span Sin Obra Social
@@ -123,65 +60,141 @@
 
 //-                     td
 //-                         a(href=`/pacientes/edit/${paciente.id_paciente}` class="btn btn-info") Gestionar
-
 extends ../layout
 
 block contenido
-    h1 Pacientes
-    a(href="/pacientes/create" class="btn btn-success") Crear Paciente
+    style.
+        body {
+            background-color: #eef5ff;
+            font-family: Arial, sans-serif;
+        }
+        .center-text {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .page-container {
+            padding: 20px;
+        }
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .actions i {
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+        .icon-edit {
+            color: #1e88e5;
+        }
+        .icon-photo {
+            color: #6a1b9a;
+        }
 
-    if mensaje
-        .alert.alert-success
-            h1= mensaje
+        table img {
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
-    table#example
-        thead
-            tr
-                th ID Paciente
-                th N° Documento
-                th Nombre
-                th Apellido
-                th Fecha de nacimiento
-                th Correo
-                th Teléfonos
-                th Obras Sociales
-                th Estado
-                th Acciones
+        tr:hover {
+            filter: brightness(0.96);
+        }
 
-        tbody
-            each paciente in pacientes
-                - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
-                - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
+    .page-container
 
+        // ---------- TÍTULO ----------
+        h3.center-text Pacientes
+
+        // ---------- ACCIONES SUPERIORES ----------
+        .top-actions
+            a.btn.btn-success(href="/pacientes/create")
+                i.fa-solid.fa-user-plus
+                |  Nuevo Paciente
+
+        // ---------- MENSAJE ----------
+        if mensaje
+            script.
+                Swal.fire({
+                    title: 'Mensaje',
+                    text: '#{mensaje}',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+
+        // ---------- TABLA ----------
+        table#tablaPacientes.table.table-striped.table-bordered.table-hover
+            thead.table-dark
                 tr
-                    td= paciente.id_paciente
-                    td= paciente.dni
-                    td= paciente.nombre
-                    td= paciente.apellido
-                    td= paciente.nacimiento
-                    td= paciente.email
+                    th ID
+                    th DNI
+                    th Nombre
+                    th Apellido
+                    th Nacimiento
+                    th Email
+                    th Foto
+                    th Teléfonos
+                    th Obras Sociales
+                    th Estado
+                    th Acciones
 
-                    td
-                        if telefonos.length === 0
-                            span Sin Teléfono
-                        else if telefonos.length === 1
-                            span= telefonos[0]
-                        else
-                            select
-                                each tel in telefonos
-                                    option= tel
+            tbody
+                each paciente in pacientes
+                    - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+                    - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
 
-                    td
-                        if obras.length === 0
-                            span Sin Obra Social
-                        else if obras.length === 1
-                            span= obras[0]
-                        else
-                            select
-                                each os in obras
-                                    option= os
+                    tr
+                        td= paciente.id_paciente
+                        td= paciente.dni
+                        td= paciente.nombre
+                        td= paciente.apellido
+                        td= paciente.nacimiento
+                        td= paciente.email
 
-                    td= (paciente.estado === 1) ? 'Activo' : 'Inactivo'
+                        // ---------- FOTO HARDCODEADA ----------
+                        td.text-center
+                            img(
+                                src="/img/paciente-default.png"
+                                width="55"
+                                height="55"
+                                alt="Foto paciente"
+                            )
 
-                    td
-                        a(href=`/pacientes/edit/${paciente.id_paciente}` class="btn btn-info") Gestionar
+                        // ---------- TELÉFONOS ----------
+                        td
+                            if telefonos.length === 0
+                                span.text-muted Sin teléfono
+                            else if telefonos.length === 1
+                                span= telefonos[0]
+                            else
+                                select.form-select.form-select-sm
+                                    each tel in telefonos
+                                        option= tel
+
+                        // ---------- OBRAS ----------
+                        td
+                            if obras.length === 0
+                                span.text-muted Sin obra social
+                            else if obras.length === 1
+                                span= obras[0]
+                            else
+                                select.form-select.form-select-sm
+                                    each os in obras
+                                        option= os
+
+                        // ---------- ESTADO ----------
+                        td
+                            if paciente.estado === 1
+                                span.badge.bg-success Activo
+                            else
+                                span.badge.bg-secondary Inactivo
+
+                        // ---------- ACCIONES ----------
+                        td.actions
+                            a(href=`/pacientes/edit/${paciente.id_paciente}` title="Gestionar paciente")
+                                i.icon-edit.fa-solid.fa-pen-to-square
+                            a(href=`/pacientes/foto/${paciente.id_paciente}` title="Cambiar foto")
+                                i.icon-photo.fa-solid.fa-camera

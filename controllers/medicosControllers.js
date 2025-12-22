@@ -135,7 +135,7 @@ class MedicosController {
             const { id_medico } = req.params;
 
             // ===============================
-            // 1️⃣ MÉDICO (JOIN COMPLETO)
+            //  MÉDICO (JOIN COMPLETO)
             // ===============================
             const medico = await Medico.obtenerPorId(id_medico);
             if (!medico) {
@@ -143,7 +143,7 @@ class MedicosController {
             }
 
             // ===============================
-            // 2️⃣ PERSONA (MAPEO CLAVE)
+            //  PERSONA (MAPEO CLAVE)
             // ===============================
             const persona = {
                 id: medico.id_persona,
@@ -155,7 +155,7 @@ class MedicosController {
             };
 
             // ===============================
-            // 3️⃣ USUARIO (MAPEO CLAVE)
+            // USUARIO (MAPEO CLAVE)
             // ===============================
             const usuario = {
                 id: medico.id_usuario,
@@ -163,12 +163,12 @@ class MedicosController {
             };
 
             // ===============================
-            // 4️⃣ TELÉFONOS (COMO ESPERA EL PUG)
+            // TELÉFONOS (COMO ESPERA EL PUG)
             // ===============================
             medico.telefonos = medico.telefonos || '';
 
             // ===============================
-            // 5️⃣ ESPECIALIDADES
+            //  ESPECIALIDADES
             // ===============================
             const especialidades = await Especialidad.getAll();
             const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
@@ -176,7 +176,7 @@ class MedicosController {
             console.log('ESPECIALIDADES ASIGNADAS =>', especialidadesAsignadas);
 
             // ===============================
-            // 6️⃣ RENDER
+            // RENDER
             // ===============================
             res.render('medicos/editar', {
                 medico,
@@ -330,6 +330,47 @@ class MedicosController {
         await Medico.actualizarEstado(req.params.id_medico, 1);
         res.redirect('/medicos?nombreActivo=1');
     }
+    // ================================================================
+    // API - BUSCADOR ON DEMAND
+    // ================================================================
+
+    // 🔎 Buscar médicos por nombre/apellido
+    async buscar(req, res) {
+        try {
+            const { q } = req.query;
+
+            if (!q || q.length < 2) {
+                return res.json([]);
+            }
+
+            const resultados = await Medico.buscarPorNombre(q);
+            res.json(resultados);
+
+        } catch (error) {
+            console.error('Error buscando médicos:', error);
+            res.status(500).json([]);
+        }
+    }
+
+    //Especialidades activas del médico
+    async especialidadesActivas(req, res) {
+        try {
+            const { id_medico } = req.params;
+
+            const especialidades = await Especialidad.getActivasPorMedico(id_medico);
+            res.json(especialidades);
+
+        } catch (error) {
+            console.error('Error obteniendo especialidades:', error);
+            res.status(500).json([]);
+        }
+    }
+
+
+
+
+
 }
+
 
 module.exports = new MedicosController();

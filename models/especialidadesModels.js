@@ -273,6 +273,39 @@ class Especialidad {
         }
     }
 
+    
+    // ============================================================
+    // ESPECIALIDADES ACTIVAS DE UN MÉDICO
+    // ============================================================
+    static async getActivasPorMedico(id_medico) {
+        let conn;
+        try {
+            conn = await createConnection();
+
+            const [rows] = await conn.query(`
+                SELECT
+                    e.id,
+                    e.nombre
+                FROM medico_especialidad me
+                INNER JOIN especialidades e
+                    ON e.id = me.id_especialidad
+                INNER JOIN medicos m
+                    ON m.id_medico = me.id_medico
+                WHERE me.id_medico = ?
+                  AND me.estado = 1
+                  AND m.estado = 1
+                ORDER BY e.nombre
+            `, [id_medico]);
+
+            return rows;
+
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
 
 
 
