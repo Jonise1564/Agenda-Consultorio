@@ -129,7 +129,7 @@ block contenido
         table#tablaPacientes.table.table-striped.table-bordered.table-hover
             thead.table-dark
                 tr
-                    th ID
+                    //- th ID
                     th DNI
                     th Nombre
                     th Apellido
@@ -147,7 +147,7 @@ block contenido
                     - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
 
                     tr
-                        td= paciente.id_paciente
+                        //- td= paciente.id_paciente
                         td= paciente.dni
                         td= paciente.nombre
                         td= paciente.apellido

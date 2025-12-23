@@ -1,402 +1,185 @@
-
-//- extends ../layout
-
-//- block contenido
-//-   .container.mt-5
-//-     h2.text-center.mb-4 Crear Nueva Agenda
-
-//-     // ===========================
-//-     // CARTEL DE ERROR
-//-     // ===========================
-//-     if error
-//-       .alert.alert-danger.text-center.mb-4= error
-
-//-     form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light")
-
-//-       // ===========================
-//-       // FECHAS
-//-       // ===========================
-//-       h4.mb-3.text-primary Fechas de la Agenda
-
-//-       .row
-//-         .col-md-6.mb-3
-//-           label.form-label(for="fecha_creacion") Desde:
-//-           input#fecha_creacion.form-control(type="date" name="fecha_creacion" required)
-
-//-         .col-md-6.mb-3
-//-           label.form-label(for="fecha_fin") Hasta:
-//-           input#fecha_fin.form-control(type="date" name="fecha_fin" required)
-
-//-       // ===========================
-//-       // HORARIOS
-//-       // ===========================
-//-       h4.mt-4.mb-3.text-primary Horarios
-
-//-       .row
-//-         .col-md-6.mb-3
-//-           label.form-label(for="hora_inicio") Hora Inicio:
-//-           input#hora_inicio.form-control(type="time" name="hora_inicio" required)
-
-//-         .col-md-6.mb-3
-//-           label.form-label(for="hora_fin") Hora Fin:
-//-           input#hora_fin.form-control(type="time" name="hora_fin" required)
-
-//-       .row
-//-         .col-md-6.mb-3
-//-           label.form-label(for="duracion_turnos") Duración del Turno (minutos):
-//-           input#duracion_turnos.form-control(type="number" min="5" max="120" step="5" name="duracion_turnos" required)
-
-//-         .col-md-6.mb-3
-//-           label.form-label(for="limite_sobreturnos") Límite de Sobreturnos:
-//-           input#limite_sobreturnos.form-control(type="number" min="0" name="limite_sobreturnos" required)
-
-//-       // ===========================
-//-       // MÉDICO Y ESPECIALIDAD
-//-       // ===========================
-//-       h4.mt-4.mb-3.text-primary Profesional
-
-//-       .mb-4
-//-         label.form-label(for="matricula") Médico + Especialidad:
-//-         select.form-select(name="matricula" required)
-//-           option(value="") Seleccione un profesional
-//-           if matriculas
-//-             each m in matriculas
-//-               option(value=m.matricula)= `${m.nombreMat} - ${m.nombre} ${m.apellido}`
-//-           else
-//-             option(value="") No hay profesionales registrados
-
-//-       // ===========================
-//-       // SUCURSAL
-//-       // ===========================
-//-       .mb-3
-//-         label.form-label(for="id_sucursal") Sucursal:
-//-         select.form-select(name="id_sucursal" required)
-//-           option(value="") Seleccione una sucursal
-//-           option(value="1") Clínica Argentina – San Luis
-//-           option(value="2") Clínica España – Juana Koslay
-
-//-       // ===========================
-//-       // CLASIFICACIÓN
-//-       // ===========================
-//-       .mb-4
-//-         label.form-label(for="id_clasificacion") Clasificación:
-//-         select.form-select(name="id_clasificacion" required)
-//-           option(value="") Seleccione una clasificación
-//-           option(value="1") Normal
-//-           option(value="2") Especial
-//-           option(value="3") VIP
-
-//-       // BOTÓN
-//-       .text-center.mt-4
-//-         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
-
-//-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
-
-
-//- extends ../layout
-
-//- block contenido
-//-   .container.mt-5
-//-     h2.text-center.mb-4 Crear Nueva Agenda
-
-//-     // ===========================
-//-     // CARTEL DE ERROR
-//-     // ===========================
-//-     if error
-//-       .alert.alert-danger.text-center.mb-4= error
-
-//-     form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light")
-
-//-       // ===========================
-//-       // FECHAS
-//-       // ===========================
-//-       h4.mb-3.text-primary Fechas de la Agenda
-
-//-       .row
-//-         .col-md-6.mb-3
-//-           label.form-label(for="fecha_creacion") Desde:
-//-           input#fecha_creacion.form-control(type="date" name="fecha_creacion" required)
-
-//-         .col-md-6.mb-3
-//-           label.form-label(for="fecha_fin") Hasta:
-//-           input#fecha_fin.form-control(type="date" name="fecha_fin" required)
-
-//-       // ===========================
-//-       // HORARIOS
-//-       // ===========================
-//-       h4.mt-4.mb-3.text-primary Horarios
-
-//-       .row
-//-         .col-md-6.mb-3
-//-           label.form-label(for="hora_inicio") Hora Inicio:
-//-           input#hora_inicio.form-control(type="time" name="hora_inicio" required)
-
-//-         .col-md-6.mb-3
-//-           label.form-label(for="hora_fin") Hora Fin:
-//-           input#hora_fin.form-control(type="time" name="hora_fin" required)
-
-//-       .row
-//-         .col-md-6.mb-3
-//-           label.form-label(for="duracion_turnos") Duración del Turno (minutos):
-//-           input#duracion_turnos.form-control(type="number" min="5" max="120" step="5" name="duracion_turnos" required)
-
-//-         .col-md-6.mb-3
-//-           label.form-label(for="limite_sobreturnos") Límite de Sobreturnos:
-//-           input#limite_sobreturnos.form-control(type="number" min="0" name="limite_sobreturnos" required)
-
-//-       // ===========================
-//-       // MÉDICO Y ESPECIALIDAD (BUSCADOR)
-//-       // ===========================
-//-       h4.mt-4.mb-3.text-primary Profesional
-
-//-       .mb-3
-//-         label.form-label Buscar médico:
-//-         input#buscarMedico.form-control(
-//-           type="text"
-//-           placeholder="Escriba nombre o apellido"
-//-           autocomplete="off"
-//-         )
-
-//-       .mb-3
-//-         label.form-label Médico:
-//-         select#medicoSelect.form-select(required)
-//-           option(value="") Seleccione un médico
-
-//-       .mb-4
-//-         label.form-label Especialidad:
-//-         select#especialidadSelect.form-select(name="id_especialidad" required)
-//-           option(value="") Seleccione una especialidad
-
-//-       // ===========================
-//-       // SUCURSAL
-//-       // ===========================
-//-       .mb-3
-//-         label.form-label(for="id_sucursal") Sucursal:
-//-         select.form-select(name="id_sucursal" required)
-//-           option(value="") Seleccione una sucursal
-//-           option(value="1") Clínica Argentina – San Luis
-//-           option(value="2") Clínica España – Juana Koslay
-
-//-       // ===========================
-//-       // CLASIFICACIÓN
-//-       // ===========================
-//-       .mb-4
-//-         label.form-label(for="id_clasificacion") Clasificación:
-//-         select.form-select(name="id_clasificacion" required)
-//-           option(value="") Seleccione una clasificación
-//-           option(value="1") Normal
-//-           option(value="2") Especial
-//-           option(value="3") VIP
-
-//-       // BOTÓN
-//-       .text-center.mt-4
-//-         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
-
-//-   // ===========================
-//-   // JAVASCRIPT
-//-   // ===========================
-//-   //- script.
-//-   //-   const inputBuscar = document.getElementById('buscarMedico');
-//-   //-   const medicoSelect = document.getElementById('medicoSelect');
-//-   //-   const especialidadSelect = document.getElementById('especialidadSelect');
-
-//-   //-   let timeout = null;
-
-//-   //-   inputBuscar.addEventListener('input', () => {
-//-   //-     clearTimeout(timeout);
-
-//-   //-     timeout = setTimeout(async () => {
-//-   //-       const texto = inputBuscar.value.trim();
-//-   //-       if (texto.length < 2) return;
-
-//-   //-       const res = await fetch(`/api/medicos/buscar?q=${texto}`);
-//-   //-       const medicos = await res.json();
-
-//-   //-       medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
-//-   //-       especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-//-   //-       medicos.forEach(m => {
-//-   //-         medicoSelect.innerHTML += `
-//-   //-           <option value="${m.id_medico}">
-//-   //-             ${m.nombre} ${m.apellido}
-//-   //-           </option>`;
-//-   //-       });
-//-   //-     }, 300);
-//-   //-   });
-
-//-   //-   medicoSelect.addEventListener('change', async () => {
-//-   //-     const idMedico = medicoSelect.value;
-//-   //-     if (!idMedico) return;
-
-//-   //-     const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
-//-   //-     const especialidades = await res.json();
-
-//-   //-     especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-//-   //-     if (especialidades.length === 0) {
-//-   //-       especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
-//-   //-       return;
-//-   //-     }
-
-//-   //-     especialidades.forEach(e => {
-//-   //-       especialidadSelect.innerHTML += `
-//-   //-         <option value="${e.id}">
-//-   //-           ${e.nombre}
-//-   //-         </option>`;
-//-   //-     });
-//-   //-   });
-//-   script.
-//-     const inputBuscar = document.getElementById('buscarMedico');
-//-     const medicoSelect = document.getElementById('medicoSelect');
-//-     const especialidadSelect = document.getElementById('especialidadSelect');
-
-//-     let timeout;
-
-//-     inputBuscar.addEventListener('input', () => {
-//-       clearTimeout(timeout);
-
-//-       timeout = setTimeout(async () => {
-//-         const texto = inputBuscar.value.trim();
-
-//-         if (texto.length < 2) {
-//-           medicoSelect.innerHTML = '<option value="">Escriba al menos 2 letras</option>';
-//-           return;
-//-         }
-
-//-         try {
-//-           const res = await fetch(`/api/medicos/buscar?q=${encodeURIComponent(texto)}`);
-//-           if (!res.ok) throw new Error('Error en búsqueda');
-
-//-           const medicos = await res.json();
-
-//-           medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
-//-           especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-//-           if (medicos.length === 0) {
-//-             medicoSelect.innerHTML += '<option value="">Sin resultados</option>';
-//-             return;
-//-           }
-
-//-           medicos.forEach(m => {
-//-             medicoSelect.innerHTML += `
-//-               <option value="${m.id_medico}">
-//-                 ${m.nombre} ${m.apellido}
-//-               </option>`;
-//-           });
-//-         } catch (err) {
-//-           console.error(err);
-//-           medicoSelect.innerHTML = '<option value="">Error al buscar</option>';
-//-         }
-//-       }, 300);
-//-     });
-
-//-     medicoSelect.addEventListener('change', async () => {
-//-       const idMedico = medicoSelect.value;
-//-       if (!idMedico) return;
-
-//-       try {
-//-         const res = await fetch(`/api/medicos/${idMedico}/especialidades`);
-//-         if (!res.ok) throw new Error('Error al traer especialidades');
-
-//-         const especialidades = await res.json();
-
-//-         especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-//-         if (especialidades.length === 0) {
-//-           especialidadSelect.innerHTML += '<option value="">Sin especialidades activas</option>';
-//-           return;
-//-         }
-
-//-         especialidades.forEach(e => {
-//-           especialidadSelect.innerHTML += `
-//-             <option value="${e.id}">
-//-               ${e.nombre}
-//-             </option>`;
-//-         });
-//-       } catch (err) {
-//-         console.error(err);
-//-         especialidadSelect.innerHTML = '<option value="">Error al cargar</option>';
-//-       }
-//-     });
-
-//-   script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
-
 extends ../layout
 
 block contenido
   .container.mt-5
     h2.text-center.mb-4 Crear Nueva Agenda
 
+    // ============================
+    // ALERTA DE ERROR GENERAL
+    // ============================
     if error
       .alert.alert-danger.text-center.mb-4= error
 
-    form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light")
+    form(action="/agendas" method="POST" class="shadow p-4 rounded bg-light needs-validation" novalidate)
 
       h4.mb-3.text-primary Fechas de la Agenda
 
       .row
         .col-md-6.mb-3
-          label.form-label Desde:
-          input.form-control(type="date" name="fecha_creacion" required)
+          label.form-label(for="fecha_creacion")
+            | Desde:
+            if erroresCampos && erroresCampos.fecha_creacion
+              span.text-danger *
+          input.form-control(
+            type="date"
+            name="fecha_creacion"
+            id="fecha_creacion"
+            value=old.fecha_creacion || ''
+            class=(erroresCampos && erroresCampos.fecha_creacion ? 'is-invalid' : '')
+            required
+          )
 
         .col-md-6.mb-3
-          label.form-label Hasta:
-          input.form-control(type="date" name="fecha_fin" required)
+          label.form-label(for="fecha_fin")
+            | Hasta:
+            if erroresCampos && erroresCampos.fecha_fin
+              span.text-danger *
+          input.form-control(
+            type="date"
+            name="fecha_fin"
+            id="fecha_fin"
+            value=old.fecha_fin || ''
+            class=(erroresCampos && erroresCampos.fecha_fin ? 'is-invalid' : '')
+            required
+          )
 
       h4.mt-4.mb-3.text-primary Horarios
 
       .row
         .col-md-6.mb-3
-          label.form-label Hora Inicio:
-          input.form-control(type="time" name="hora_inicio" required)
+          label.form-label(for="hora_inicio")
+            | Hora Inicio:
+            if erroresCampos && erroresCampos.hora_inicio
+              span.text-danger *
+          input.form-control(
+            type="time"
+            name="hora_inicio"
+            id="hora_inicio"
+            value=old.hora_inicio || ''
+            class=(erroresCampos && erroresCampos.hora_inicio ? 'is-invalid' : '')
+            required
+          )
 
         .col-md-6.mb-3
-          label.form-label Hora Fin:
-          input.form-control(type="time" name="hora_fin" required)
+          label.form-label(for="hora_fin")
+            | Hora Fin:
+            if erroresCampos && erroresCampos.hora_fin
+              span.text-danger *
+          input.form-control(
+            type="time"
+            name="hora_fin"
+            id="hora_fin"
+            value=old.hora_fin || ''
+            class=(erroresCampos && erroresCampos.hora_fin ? 'is-invalid' : '')
+            required
+          )
 
       .row
+     
         .col-md-6.mb-3
-          label.form-label Duración del Turno (min):
-          input.form-control(type="number" min="5" max="120" step="5" name="duracion_turnos" required)
+          label.form-label(for="duracion_turnos")
+            | Duración del Turno (min):
+            if erroresCampos && erroresCampos.duracion_turnos
+              span.text-danger *
+          select.form-select(
+            name="duracion_turnos"
+            id="duracion_turnos"
+            required
+            class=(erroresCampos && erroresCampos.duracion_turnos ? 'is-invalid' : '')
+          )
+            option(value="") Seleccione duración
+            each d in [15,20,25,30,35,40,45,50,60]
+              option(
+                value=d
+                selected=(old.duracion_turnos == d)
+              ) #{d} minutos
+
 
         .col-md-6.mb-3
-          label.form-label Límite de Sobreturnos:
-          input.form-control(type="number" min="0" name="limite_sobreturnos" required)
+          label.form-label(for="limite_sobreturnos")
+            | Límite de Sobreturnos:
+            if erroresCampos && erroresCampos.limite_sobreturnos
+              span.text-danger *
+          input.form-control(
+            type="number"
+            min="0"
+            name="limite_sobreturnos"
+            id="limite_sobreturnos"
+            value=old.limite_sobreturnos || ''
+            class=(erroresCampos && erroresCampos.limite_sobreturnos ? 'is-invalid' : '')
+            required
+          )
 
       h4.mt-4.mb-3.text-primary Profesional
 
       .mb-3
-        label.form-label Buscar médico:
+        label.form-label(for="buscarMedico")
+          | Buscar médico:
+          if erroresCampos && erroresCampos.id_medico
+            span.text-danger *
         input#buscarMedico.form-control(
           type="text"
           placeholder="Escriba nombre o apellido"
           autocomplete="off"
+          value=old.buscarMedico || ''
         )
 
       .mb-3
-        label.form-label Médico:
-        select#medicoSelect.form-select(name="id_medico" required)
+        label.form-label(for="id_medico")
+          | Médico:
+          if erroresCampos && erroresCampos.id_medico
+            span.text-danger *
+        select#medicoSelect.form-select(
+          name="id_medico"
+          required
+          class=(erroresCampos && erroresCampos.id_medico ? 'is-invalid' : '')
+        )
           option(value="") Seleccione un médico
+          if old.id_medico
+            option(value=old.id_medico selected)= old.medicoNombre || 'Seleccionado'
 
       .mb-4
-        label.form-label Especialidad:
-        select#especialidadSelect.form-select(name="id_especialidad" required)
+        label.form-label(for="id_especialidad")
+          | Especialidad:
+          if erroresCampos && erroresCampos.id_especialidad
+            span.text-danger *
+        select#especialidadSelect.form-select(
+          name="id_especialidad"
+          required
+          class=(erroresCampos && erroresCampos.id_especialidad ? 'is-invalid' : '')
+        )
           option(value="") Seleccione una especialidad
+          if old.id_especialidad
+            option(value=old.id_especialidad selected)= old.especialidadNombre || 'Seleccionada'
 
       .mb-3
-        label.form-label Sucursal:
-        select.form-select(name="id_sucursal" required)
+        label.form-label(for="id_sucursal")
+          | Sucursal:
+          if erroresCampos && erroresCampos.id_sucursal
+            span.text-danger *
+        select.form-select(
+          name="id_sucursal"
+          required
+          class=(erroresCampos && erroresCampos.id_sucursal ? 'is-invalid' : '')
+        )
           option(value="") Seleccione una sucursal
-          option(value="1") Clínica Argentina – San Luis
-          option(value="2") Clínica España – Juana Koslay
+          option(value="1" selected=(old.id_sucursal==1)) Clínica Argentina – San Luis
+          option(value="2" selected=(old.id_sucursal==2)) Clínica España – Juana Koslay
 
       .mb-4
-        label.form-label Clasificación:
-        select.form-select(name="id_clasificacion" required)
+        label.form-label(for="id_clasificacion")
+          | Clasificación:
+          if erroresCampos && erroresCampos.id_clasificacion
+            span.text-danger *
+        select.form-select(
+          name="id_clasificacion"
+          required
+          class=(erroresCampos && erroresCampos.id_clasificacion ? 'is-invalid' : '')
+        )
           option(value="") Seleccione una clasificación
-          option(value="1") Normal
-          option(value="2") Especial
-          option(value="3") VIP
+          option(value="1" selected=(old.id_clasificacion==1)) Normal
+          option(value="2" selected=(old.id_clasificacion==2)) Especial
+          option(value="3" selected=(old.id_clasificacion==3)) VIP
 
       .text-center.mt-4
         button.btn.btn-success.btn-lg(type="submit") Crear Agenda
@@ -420,6 +203,7 @@ block contenido
 
           if (texto.length < 2) {
             medicoSelect.innerHTML = '<option value="">Escriba al menos 2 letras</option>';
+            especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
             return;
           }
 
@@ -435,10 +219,7 @@ block contenido
           }
 
           medicos.forEach(m => {
-            medicoSelect.innerHTML += `
-              <option value="${m.id_medico}">
-                ${m.nombre} ${m.apellido}
-              </option>`;
+            medicoSelect.innerHTML += `<option value="${m.id_medico}">${m.nombre} ${m.apellido}</option>`;
           });
         }, 300);
       });
@@ -458,13 +239,9 @@ block contenido
         }
 
         especialidades.forEach(e => {
-          especialidadSelect.innerHTML += `
-            <option value="${e.id}">
-              ${e.nombre}
-            </option>`;
+          especialidadSelect.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
         });
       });
     });
 
   script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
-
