@@ -1,6 +1,6 @@
 const createConnection = require('../config/configDb');
 const { update } = require('../controllers/agendasControllers');
-//const Usuario = require('./usuariosModels'); // clase padre
+
 
 class Agenda {
     constructor(id, fecha_creacion, fecha_fin, hora_inicio, hora_fin, duracion_turnos, limite_sobreturnos, matricula, id_sucursal, id_clasificacion) {
@@ -66,7 +66,7 @@ class Agenda {
                 ON m.id_persona = p.id
 
             -- ============================
-            -- ESPECIALIDAD (DIRECTA)
+            -- ESPECIALIDAD
             -- ============================
             LEFT JOIN especialidades e 
                 ON e.id = a.id_especialidad
@@ -161,27 +161,6 @@ class Agenda {
         }
     }
 
-
-    // static async getAgendaById(id) {
-    //     console.log('Models: get by id')
-    //     let conn
-    //     try {
-    //         conn = await createConnection()
-    //         const [agenda] = await conn.query(`
-    //                 SELECT a.id, a.limite_sobreturnos, a.fecha_creacion, a.fecha_fin, a.hora_inicio, a.hora_fin, a.duracion_turnos, a.matricula, s.nombre sucursal, c.nombre clasificacion 
-    //                 FROM agendas a 
-    //                 JOIN sucursales s ON a.id_sucursal = s.id 
-    //                 JOIN clasificaciones c ON a.id_clasificacion = c.id 
-    //                 WHERE a.id = ?;
-    //             `, [id])
-    //         return agenda
-    //     } catch (error) {
-    //         console.error('Error al traer la agenda by id', error)
-    //         throw new Error('Error al traer agenda desde el modeo')
-    //     } finally {
-    //         if (conn) conn.end()
-    //     }
-    // }
 
 
     //insertar agenda

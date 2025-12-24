@@ -1,246 +1,11 @@
-//- //- html 
-//- //-     head 
-//- //-         meta(charset="UTF-8")
-//- //-         title Consultorio Médico
-//- //-         link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
-//- //-         rel="stylesheet",
-//- //-         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH",
-//- //-         crossorigin="anonymous")
-//- //-         link(rel='stylesheet', type='text/css', href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css')
-//- //-         link(rel='stylesheet', type='text/css', href='/css/style.css') 
-//- //-         link(rel="stylesheet" href="/css/style.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous")
-//- //-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
-//- //-         script(src='https://code.jquery.com/jquery-3.5.1.js')
-//- //-         script(src='https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js')
-//- //-         script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
-//- //-         script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
-//- //-         style.
-//- //-             body {
-//- //-                 display: flex;
-//- //-                 min-height: 100vh;
-//- //-                 font-family: 'Arial, sans-serif';
-//- //-                 background-color: #f0f8ff;
-//- //-             } 
-//- //-             .sidebar {
-//- //-                 width: 250px;
-//- //-                 background-color: #2e8b57; /* Verde oscuro pastel */
-//- //-                 padding: 20px;
-//- //-                 border-radius: 20px;
-//- //-                 color: white;
-//- //-                 position: fixed;
-//- //-                 top: 0;
-//- //-                 bottom: 0;
-//- //-                 overflow-y: hidden; /* Eliminar barra de scroll */
-//- //-                 border-top-left-radius: 10px;
-//- //-                 border-bottom-left-radius: 10px;
-//- //-             }
-//- //-             .sidebar .logo {
-//- //-                 text-align: center;
-//- //-                 margin-bottom: 20px;
-//- //-             }
-//- //-             .sidebar .logo img {
-//- //-                 max-width: 100%;
-//- //-                 border-radius: 50%;
-//- //-             }
-//- //-             .sidebar h1 {
-//- //-                 font-weight: bold;
-//- //-                 color: goldenrod;
-//- //-             }
-//- //-             .sidebar nav ul {
-//- //-                 list-style: none;
-//- //-                 padding: 0;
-//- //-             }
-//- //-             .sidebar nav ul li {
-//- //-                 margin: 10px 0;
-               
-//- //-             }
-//- //-             .sidebar nav ul li a {
-//- //-                 color: white;
-//- //-                 text-decoration: none;
-//- //-                 padding: 10px;
-//- //-                 display: block;
-//- //-                 border-radius: 5px;
-//- //-                 transition: background-color 0.3s;
-//- //-                 font-size: 18px;
-                
-//- //-             }
-//- //-             .sidebar nav ul li a:hover,
-//- //-             .sidebar nav ul li a.active {
-//- //-                 background-color: #f0f8ff; /* Blanco medio verde */
-//- //-                 color: #2e8b57; /* Verde oscuro pastel */
-//- //-                 border: goldenrod solid 1px
-//- //-             }
-//- //-             .content {
-//- //-                 flex: 1;
-//- //-                 padding: 20px;
-//- //-                 margin-left: 270px; /* Espacio para el sidebar */
-//- //-             }
-//- //-             .contact-info {
-//- //-                 margin-top: 20px;
-//- //-                 font-size: 0.9em;
-//- //-                 color: white;
-//- //-             }
-//- //-     body
-//- //-         .sidebar
-//- //-             .logo
-//- //-                 img(src="/images/logo.png", alt="Logo del Hospital")
-//- //-                 h1 Consultorio Médico
-//- //-             nav
-//- //-                 ul
-//- //-                     li: a(href="/" class="actie") Inicio
-//- //-                     li: a(href="/Agendas") Agendas
-//- //-                     li: a(href="/medicos") Médicos
-//- //-                     li: a(href="/pacientes") Pacientes
-//- //-                     li: a(href="/especialidades") Especialidades
-//- //-                     li: a(href="/obrassociales") Obras Sociales
-                    
-//- //-             .contact-info
-//- //-                 p Contacto: (123) 456-7890 | info@consultorio.com
-//- //-         .content
-//- //-             block contenido
-//- //-         script.
-//- //-             $(document).ready(function() {
-//- //-                 $('#example').DataTable({
-//- //-                     "language": {
-//- //-                         "url": "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json"
-//- //-                     }
-//- //-                 });
-//- //-             });
 
 
-//- html 
-//-     head 
-//-         meta(charset="UTF-8")
-//-         title Consultorio Médico
 
-//-         // BOOTSTRAP
-//-         link(
-//-             href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-//-             rel="stylesheet"
-//-             integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-//-             crossorigin="anonymous"
-//-         )
-
-//-         // DATATABLES
-//-         link(rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css")
-
-//-         // TU CSS
-//-         link(rel="stylesheet" href="/css/style.css")
-
-//-         // ICONOS BOOTSTRAP
-//-         link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
-
-//-         // 🔥 NECESARIO PARA TUS ICONOS FA-SOLID
-//-         link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css")
-
-//-         // SCRIPTS
-//-         script(src="https://code.jquery.com/jquery-3.5.1.js")
-//-         script(src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js")
-//-         script(
-//-             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-//-             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-//-             crossorigin="anonymous"
-//-         )
-//-         script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
-
-//-         style.
-//-             body {
-//-                 display: flex;
-//-                 min-height: 100vh;
-//-                 font-family: 'Arial, sans-serif';
-//-                 background-color: #f0f8ff;
-//-             } 
-//-             .sidebar {
-//-                 width: 250px;
-//-                 background-color: #2e8b57;
-//-                 padding: 20px;
-//-                 border-radius: 20px;
-//-                 color: white;
-//-                 position: fixed;
-//-                 top: 0;
-//-                 bottom: 0;
-//-                 overflow-y: hidden;
-//-                 border-top-left-radius: 10px;
-//-                 border-bottom-left-radius: 10px;
-//-             }
-//-             .sidebar .logo {
-//-                 text-align: center;
-//-                 margin-bottom: 20px;
-//-             }
-//-             .sidebar .logo img {
-//-                 max-width: 100%;
-//-                 border-radius: 50%;
-//-             }
-//-             .sidebar h1 {
-//-                 font-weight: bold;
-//-                 color: goldenrod;
-//-             }
-//-             .sidebar nav ul {
-//-                 list-style: none;
-//-                 padding: 0;
-//-             }
-//-             .sidebar nav ul li {
-//-                 margin: 10px 0;
-//-             }
-//-             .sidebar nav ul li a {
-//-                 color: white;
-//-                 text-decoration: none;
-//-                 padding: 10px;
-//-                 display: block;
-//-                 border-radius: 5px;
-//-                 transition: background-color 0.3s;
-//-                 font-size: 18px;
-//-             }
-//-             .sidebar nav ul li a:hover,
-//-             .sidebar nav ul li a.active {
-//-                 background-color: #f0f8ff;
-//-                 color: #2e8b57;
-//-                 border: goldenrod solid 1px;
-//-             }
-//-             .content {
-//-                 flex: 1;
-//-                 padding: 20px;
-//-                 margin-left: 270px;
-//-             }
-//-             .contact-info {
-//-                 margin-top: 20px;
-//-                 font-size: 0.9em;
-//-                 color: white;
-//-             }
-
-//-     body
-//-         .sidebar
-//-             .logo
-//-                 img(src="/images/logo.png", alt="Logo del Hospital")
-//-                 h1 Consultorio Médico
-//-             nav
-//-                 ul
-//-                     li: a(href="/" class="active1") Inicio
-//-                     li: a(href="/Agendas") Agendas
-//-                     li: a(href="/medicos") Médicos
-//-                     li: a(href="/pacientes") Pacientes
-//-                     li: a(href="/especialidades") Especialidades
-//-                     li: a(href="/obrassociales") Obras Sociales
-                    
-//-             .contact-info
-//-                 p Contacto: (123) 456-7890 | info@consultorio.com
-
-//-         .content
-//-             block contenido
-
-//-         script.
-//-             $(document).ready(function() {
-//-                 $('#example').DataTable({
-//-                     "language": {
-//-                         "url": "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json"
-//-                     }
-//-                 });
-//-             });
-
-//- html
+//- doctype html
+//- html(lang="es")
 //-     head
 //-         meta(charset="UTF-8")
+//-         meta(name="viewport" content="width=device-width, initial-scale=1.0")
 //-         title Consultorio Médico
 
 //-         // ---------------- BOOTSTRAP ----------------
@@ -267,6 +32,12 @@
 //-             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 //-         )
 
+//-         // ---------------- GOOGLE FONT ----------------
+//-         link(
+//-             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+//-             rel="stylesheet"
+//-         )
+
 //-         // ---------------- CSS PROPIO ----------------
 //-         link(rel="stylesheet" href="/css/style.css")
 
@@ -285,15 +56,16 @@
 //-             body {
 //-                 display: flex;
 //-                 min-height: 100vh;
-//-                 font-family: Arial, sans-serif;
+//-                 margin: 0;
+//-                 font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 //-                 background-color: #f0f8ff;
 //-             }
 
 //-             /* ---------- SIDEBAR ---------- */
 //-             .sidebar {
 //-                 width: 250px;
-//-                 background-color: #2e8b57;
-//-                 padding: 20px;
+//-                 background-color: #5e5d5dff;
+//-                 padding: 22px;
 //-                 color: white;
 //-                 position: fixed;
 //-                 top: 0;
@@ -302,40 +74,43 @@
 
 //-             .sidebar .logo {
 //-                 text-align: center;
-//-                 margin-bottom: 20px;
+//-                 margin-bottom: 40px;
 //-             }
 
 //-             .sidebar .logo img {
-//-                 max-width: 100px;
+//-                 width: 90px;
 //-                 border-radius: 50%;
+//-                 margin-bottom: 10px;
 //-             }
 
 //-             .sidebar h1 {
-//-                 font-size: 22px;
-//-                 font-weight: bold;
+//-                 font-size: 25px;
+//-                 font-weight: 700;
 //-                 color: goldenrod;
-//-                 margin-top: 10px;
+//-                 margin: 0;
 //-             }
 
 //-             .sidebar nav ul {
 //-                 list-style: none;
 //-                 padding: 0;
+//-                 margin: 20px 0 0;
 //-             }
 
 //-             .sidebar nav ul li {
-//-                 margin: 8px 0;
+//-                 margin: 6px 0;
 //-             }
 
 //-             .sidebar nav ul li a {
 //-                 color: white;
 //-                 text-decoration: none;
-//-                 padding: 10px;
+//-                 padding: 10px 12px;
 //-                 display: flex;
 //-                 align-items: center;
 //-                 gap: 10px;
 //-                 border-radius: 6px;
-//-                 font-size: 16px;
-//-                 transition: all 0.3s;
+//-                 font-size: 20px;
+//-                 font-weight: 500;
+//-                 transition: background-color 0.25s, color 0.25s;
 //-             }
 
 //-             .sidebar nav ul li a:hover,
@@ -350,11 +125,12 @@
 //-                 flex: 1;
 //-                 padding: 25px;
 //-                 margin-left: 270px;
+//-                 min-height: 100vh;
 //-             }
 
 //-             .contact-info {
 //-                 margin-top: 30px;
-//-                 font-size: 0.85em;
+//-                 font-size: 13px;
 //-                 color: #e0f2e9;
 //-             }
 
@@ -403,197 +179,446 @@
 //-         // ---------------- DATATABLES GLOBAL ----------------
 //-         script.
 //-             $(document).ready(function () {
-//-                 if ($('#example').length) {
-//-                     $('#example').DataTable({
-//-                         language: {
-//-                             url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json'
-//-                         }
-//-                     });
-//-                 }
+//-                 $('#example, #tablaMedicos, #tablaPacientes').DataTable({
+//-                     language: {
+//-                         url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json'
+//-                     }
+//-                 });
 //-             });
 
 
 doctype html
 html(lang="es")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport" content="width=device-width, initial-scale=1.0")
-        title Consultorio Médico
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Consultorio Médico
 
-        // ---------------- BOOTSTRAP ----------------
-        link(
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-            crossorigin="anonymous"
-        )
+    // ---------------- BOOTSTRAP ----------------
+    link(
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    )
 
-        // ---------------- DATATABLES ----------------
-        link(
-            rel="stylesheet"
-            href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css"
-        )
+    // ---------------- DATATABLES ----------------
+    link(
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css"
+    )
 
-        // ---------------- ICONOS ----------------
-        link(
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-        )
-        link(
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        )
+    // ---------------- ICONOS ----------------
+    link(
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    )
+    link(
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    )
 
-        // ---------------- GOOGLE FONT ----------------
-        link(
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-        )
+    // ---------------- GOOGLE FONT ----------------
+    link(
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    )
 
-        // ---------------- CSS PROPIO ----------------
-        link(rel="stylesheet" href="/css/style.css")
+    // ---------------- CSS PROPIO ----------------
+    link(rel="stylesheet" href="/css/style.css")
 
-        // ---------------- SCRIPTS ----------------
-        script(src="https://code.jquery.com/jquery-3.5.1.js")
-        script(src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js")
-        script(
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-            crossorigin="anonymous"
-        )
-        script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+    // ---------------- SCRIPTS ----------------
+    script(src="https://code.jquery.com/jquery-3.5.1.js")
+    script(src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js")
+    script(
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    )
+    script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
 
-        // ---------------- ESTILOS BASE ----------------
-        style.
-            body {
-                display: flex;
-                min-height: 100vh;
-                margin: 0;
-                font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-                background-color: #f0f8ff;
-            }
+    // ---------------- ESTILOS BASE MEJORADOS ----------------
+    style.
+      :root {
+        --primary-color: #0a3d62;
+        --secondary-color: #1e7f5c;
+        --accent-color: goldenrod;
+        --bg-color: #f0f8ff;
+        --text-light: #ffffff;
+        --text-dark: #2e2e2e;
+      }
 
-            /* ---------- SIDEBAR ---------- */
-            .sidebar {
-                width: 250px;
-                background-color: #2e8b57;
-                padding: 22px;
-                color: white;
-                position: fixed;
-                top: 0;
-                bottom: 0;
-            }
+      body {
+        display: flex;
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-dark);
+      }
 
-            .sidebar .logo {
-                text-align: center;
-                margin-bottom: 25px;
-            }
+      /* ---------- SIDEBAR ---------- */
+      .sidebar {
+        width: 260px;
+        background-color: var(--primary-color);
+        padding: 28px 22px;
+        color: var(--text-light);
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
 
-            .sidebar .logo img {
-                width: 90px;
-                border-radius: 50%;
-                margin-bottom: 10px;
-            }
+      .sidebar .logo {
+        text-align: center;
+        margin-bottom: 40px;
+      }
 
-            .sidebar h1 {
-                font-size: 25px;
-                font-weight: 700;
-                color: goldenrod;
-                margin: 0;
-            }
+      .sidebar .logo img {
+        width: 90px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+        border: 2px solid var(--accent-color);
+      }
 
-            .sidebar nav ul {
-                list-style: none;
-                padding: 0;
-                margin: 20px 0 0;
-            }
+      .sidebar h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin: 0;
+      }
 
-            .sidebar nav ul li {
-                margin: 6px 0;
-            }
+      .sidebar nav ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+      }
 
-            .sidebar nav ul li a {
-                color: white;
-                text-decoration: none;
-                padding: 10px 12px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                border-radius: 6px;
-                font-size: 20px;
-                font-weight: 500;
-                transition: background-color 0.25s, color 0.25s;
-            }
+      .sidebar nav ul li {
+        margin: 10px 0;
+      }
 
-            .sidebar nav ul li a:hover,
-            .sidebar nav ul li a.active {
-                background-color: #f0f8ff;
-                color: #2e8b57;
-                border: 1px solid goldenrod;
-            }
+      .sidebar nav ul li a {
+        color: var(--text-light);
+        text-decoration: none;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
 
-            /* ---------- CONTENIDO ---------- */
-            .content {
-                flex: 1;
-                padding: 25px;
-                margin-left: 270px;
-                min-height: 100vh;
-            }
+      .sidebar nav ul li a:hover,
+      .sidebar nav ul li a.active {
+        background-color: var(--text-light);
+        color: var(--secondary-color);
+        font-weight: 600;
+      }
 
-            .contact-info {
-                margin-top: 30px;
-                font-size: 13px;
-                color: #e0f2e9;
-            }
+      .contact-info {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 40px;
+      }
 
-    body
-        // ---------------- SIDEBAR ----------------
-        .sidebar
-            .logo
-                img(src="/images/logo.png" alt="Logo del Hospital")
-                h1 Consultorio Médico
+      /* ---------- CONTENIDO ---------- */
+      .content {
+        flex: 1;
+        padding: 35px 30px;
+        margin-left: 260px;
+        min-height: 100vh;
+      }
 
-            nav
-                ul
-                    li
-                        a(href="/")
-                            i.fa-solid.fa-house
-                            |  Inicio
-                    li
-                        a(href="/agendas")
-                            i.fa-solid.fa-calendar-days
-                            |  Agendas
-                    li
-                        a(href="/medicos")
-                            i.fa-solid.fa-user-doctor
-                            |  Médicos
-                    li
-                        a(href="/pacientes")
-                            i.fa-solid.fa-user
-                            |  Pacientes
-                    li
-                        a(href="/especialidades")
-                            i.fa-solid.fa-stethoscope
-                            |  Especialidades
-                    li
-                        a(href="/obrassociales")
-                            i.fa-solid.fa-hospital
-                            |  Obras Sociales
+      /* ---------- BOTONES Y TARJETAS ---------- */
+      .btn-primary-custom {
+        background-color: var(--secondary-color);
+        color: var(--text-light);
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 16px;
+        border: none;
+        transition: background-color 0.3s ease;
+      }
 
-            .contact-info
-                p 📞 (123) 456-7890
-                p ✉ info@consultorio.com
+      .btn-primary-custom:hover {
+        background-color: #166b4d;
+        color: var(--text-light);
+      }
 
-        // ---------------- CONTENIDO DINÁMICO ----------------
-        .content
-            block contenido
+      .card-custom {
+        border-radius: 14px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        padding: 20px;
+        background-color: #ffffff;
+        margin-bottom: 20px;
+      }
 
-        // ---------------- DATATABLES GLOBAL ----------------
-        script.
-            $(document).ready(function () {
-                $('#example, #tablaMedicos, #tablaPacientes').DataTable({
-                    language: {
-                        url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json'
-                    }
-                });
-            });
+  body
+    // ---------------- SIDEBAR ----------------
+    .sidebar
+      .logo
+        img(src="/images/logo.png" alt="Logo del Hospital")
+        h1 Consultorio Médico
+
+      nav
+        ul
+          li
+            a(href="/" class=(page==='inicio' ? 'active' : ''))
+              i.fa-solid.fa-house
+              |  Inicio
+          li
+            a(href="/agendas" class=(page==='agendas' ? 'active' : ''))
+              i.fa-solid.fa-calendar-days
+              |  Agendas
+          li
+            a(href="/medicos" class=(page==='medicos' ? 'active' : ''))
+              i.fa-solid.fa-user-doctor
+              |  Médicos
+          li
+            a(href="/pacientes" class=(page==='pacientes' ? 'active' : ''))
+              i.fa-solid.fa-user
+              |  Pacientes
+          li
+            a(href="/especialidades" class=(page==='especialidades' ? 'active' : ''))
+              i.fa-solid.fa-stethoscope
+              |  Especialidades
+          li
+            a(href="/obrassociales" class=(page==='obras' ? 'active' : ''))
+              i.fa-solid.fa-hospital
+              |  Obras Sociales
+
+      .contact-info
+        p 📞 (123) 456-7890
+        p ✉ info@consultorio.com
+
+    // ---------------- CONTENIDO DINÁMICO ----------------
+    .content
+      block contenido
+
+    // ---------------- DATATABLES GLOBAL ----------------
+    script.
+      $(document).ready(function () {
+        $('#example, #tablaMedicos, #tablaPacientes').DataTable({
+          language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json'
+          }
+        });
+      });
+
+
+
+
+
+
+
+//- doctype html
+//- html(lang="es")
+//-   head
+//-     meta(charset="UTF-8")
+//-     meta(name="viewport" content="width=device-width, initial-scale=1.0")
+//-     title Consultorio Médico
+
+//-     // ---------------- BOOTSTRAP ----------------
+//-     link(
+//-       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+//-       rel="stylesheet"
+//-     )
+
+//-     // ---------------- DATATABLES ----------------
+//-     link(
+//-       rel="stylesheet"
+//-       href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css"
+//-     )
+
+//-     // ---------------- ICONOS ----------------
+//-     link(
+//-       rel="stylesheet"
+//-       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+//-     )
+
+//-     // ---------------- GOOGLE FONT ----------------
+//-     link(
+//-       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+//-       rel="stylesheet"
+//-     )
+
+//-     // ---------------- CSS PROPIO ----------------
+//-     link(rel="stylesheet" href="/css/style.css")
+
+//-     // ---------------- SCRIPTS ----------------
+//-     script(src="https://code.jquery.com/jquery-3.5.1.js")
+//-     script(src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js")
+//-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+//-     script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+
+//-     // ---------------- ESTILOS ----------------
+//-     style.
+//-       :root {
+//-         --primary-color: #0a3d62;
+//-         --secondary-color: #1e7f5c;
+//-         --accent-color: goldenrod;
+//-         --bg-color: #f0f8ff;
+//-         --text-light: #ffffff;
+//-         --text-dark: #2e2e2e;
+//-       }
+
+//-       body {
+//-         display: flex;
+//-         min-height: 100vh;
+//-         margin: 0;
+//-         font-family: 'Inter', sans-serif;
+//-         background-color: var(--bg-color);
+//-         color: var(--text-dark);
+//-       }
+
+//-       /* ---------- SIDEBAR TRANSPARENTE ---------- */
+//-       .sidebar {
+//-         width: 260px;
+//-         background-color: rgba(10, 61, 98, 0.85); /* azul semi-transparente */
+//-         backdrop-filter: blur(8px); /* efecto vidrio */
+//-         padding: 28px 22px;
+//-         color: var(--text-light);
+//-         position: fixed;
+//-         top: 0;
+//-         bottom: 0;
+//-         display: flex;
+//-         flex-direction: column;
+//-         justify-content: space-between;
+//-         border-right: 1px solid rgba(255,255,255,0.1);
+//-       }
+
+//-       .sidebar .logo {
+//-         text-align: center;
+//-         margin-bottom: 40px;
+//-       }
+
+//-       .sidebar .logo img {
+//-         width: 90px;
+//-         border-radius: 50%;
+//-         margin-bottom: 10px;
+//-         border: 2px solid var(--accent-color);
+//-       }
+
+//-       .sidebar h1 {
+//-         font-size: 26px;
+//-         font-weight: 700;
+//-         color: var(--accent-color);
+//-         margin: 0;
+//-       }
+
+//-       .sidebar nav ul {
+//-         list-style: none;
+//-         padding: 0;
+//-         margin-top: 20px;
+//-       }
+
+//-       .sidebar nav ul li {
+//-         margin: 10px 0;
+//-       }
+
+//-       .sidebar nav ul li a {
+//-         color: var(--text-light);
+//-         text-decoration: none;
+//-         padding: 12px 14px;
+//-         display: flex;
+//-         align-items: center;
+//-         gap: 12px;
+//-         border-radius: 8px;
+//-         font-size: 18px;
+//-         font-weight: 500;
+//-         transition: all 0.3s ease;
+//-       }
+
+//-       .sidebar nav ul li a:hover,
+//-       .sidebar nav ul li a.active {
+//-         background-color: rgba(255,255,255,0.9);
+//-         color: var(--secondary-color);
+//-         font-weight: 600;
+//-       }
+
+//-       .contact-info {
+//-         font-size: 14px;
+//-         color: rgba(255, 255, 255, 0.8);
+//-         margin-top: 40px;
+//-       }
+
+//-       /* ---------- CONTENIDO ---------- */
+//-       .content {
+//-         flex: 1;
+//-         padding: 35px 30px;
+//-         margin-left: 260px;
+//-         min-height: 100vh;
+//-       }
+
+//-       /* ---------- BOTONES ---------- */
+//-       .btn-primary-custom {
+//-         background-color: var(--secondary-color);
+//-         color: var(--text-light);
+//-         border-radius: 8px;
+//-         font-weight: 600;
+//-         padding: 8px 16px;
+//-         border: none;
+//-         transition: background-color 0.3s ease;
+//-       }
+
+//-       .btn-primary-custom:hover {
+//-         background-color: #166b4d;
+//-         color: var(--text-light);
+//-       }
+  
+//-   body
+//-     // ---------------- SIDEBAR ----------------
+//-     .sidebar
+//-       .logo
+//-         img(src="/images/logo.png" alt="Logo del Hospital")
+//-         h1 Consultorio Médico
+
+//-       nav
+//-         ul
+//-           li
+//-             a(href="/" class=(page==='inicio' ? 'active' : ''))
+//-               i.fa-solid.fa-house
+//-               |  Inicio
+//-           li
+//-             a(href="/agendas" class=(page==='agendas' ? 'active' : ''))
+//-               i.fa-solid.fa-calendar-days
+//-               |  Agendas
+//-           li
+//-             a(href="/medicos" class=(page==='medicos' ? 'active' : ''))
+//-               i.fa-solid.fa-user-doctor
+//-               |  Médicos
+//-           li
+//-             a(href="/pacientes" class=(page==='pacientes' ? 'active' : ''))
+//-               i.fa-solid.fa-user
+//-               |  Pacientes
+//-           li
+//-             a(href="/especialidades" class=(page==='especialidades' ? 'active' : ''))
+//-               i.fa-solid.fa-stethoscope
+//-               |  Especialidades
+//-           li
+//-             a(href="/obrassociales" class=(page==='obras' ? 'active' : ''))
+//-               i.fa-solid.fa-hospital
+//-               |  Obras Sociales
+
+//-       .contact-info
+//-         p 📞 (123) 456-7890
+//-         p ✉ info@consultorio.com
+
+//-     // ---------------- CONTENIDO DINÁMICO ----------------
+//-     .content
+//-       block contenido
+
+//-     // ---------------- DATATABLES GLOBAL ----------------
+//-     script.
+//-       $(document).ready(function () {
+//-         $('#example, #tablaMedicos, #tablaPacientes').DataTable({
+//-           language: {
+//-             url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json'
+//-           }
+//-         });
+//-       });

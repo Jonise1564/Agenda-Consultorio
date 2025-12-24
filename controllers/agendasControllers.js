@@ -131,7 +131,7 @@ class AgendasController {
 
             // Si hay errores, retornar todos juntos
             if (Object.keys(erroresCampos).length > 0) {
-                return res.render('agendas/crear', { old: body, erroresCampos, error: 'Revise los campos en rojo' });
+                return res.render('agendas/crear', { old: body, erroresCampos, error: 'Debe completar los campos obligatorios' });
             }
 
             // ========================

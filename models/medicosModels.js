@@ -276,6 +276,35 @@ class Medico {
             if (conn) conn.end();
         }
     }
+    // static async getProfesionalesParaAgendas() {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+
+    //         const [rows] = await conn.query(`
+    //         SELECT 
+    //             m.matricula,
+    //             p.nombre,
+    //             p.apellido,
+    //             GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS Especialidades
+    //         FROM medicos m
+    //         INNER JOIN personas p ON p.id = m.id_persona
+    //         LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico
+    //         LEFT JOIN especialidades e ON e.id = me.id_especialidad
+    //         WHERE m.estado = '1'
+    //         GROUP BY m.matricula, p.nombre, p.apellido
+    //     `);
+
+    //         return rows;
+
+    //     } catch (error) {
+    //         throw error;
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
+
     static async getProfesionalesParaAgendas() {
         let conn;
         try {
@@ -283,17 +312,15 @@ class Medico {
 
             const [rows] = await conn.query(`
             SELECT 
+                m.id_medico,              
                 m.matricula,
                 p.nombre,
-                p.apellido,
-                GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS Especialidades
+                p.apellido
             FROM medicos m
             INNER JOIN personas p ON p.id = m.id_persona
-            LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico
-            LEFT JOIN especialidades e ON e.id = me.id_especialidad
             WHERE m.estado = '1'
-            GROUP BY m.matricula, p.nombre, p.apellido
-        `);
+            ORDER BY p.apellido, p.nombre
+    `);
 
             return rows;
 
@@ -336,28 +363,28 @@ class Medico {
         conn.end();
     }
 
-//     static async function buscarPorNombre(texto) {
-//     const [rows] = await db.query(`
-//         SELECT m.id_medico, p.nombre, p.apellido
-//         FROM medicos m
-//         JOIN personas p ON p.id = m.id_persona
-//         WHERE p.nombre LIKE ? OR p.apellido LIKE ?
-//         AND m.estado = 1
-//         LIMIT 10
-//     `, [`%${texto}%`, `%${texto}%`]);
+    //     static async function buscarPorNombre(texto) {
+    //     const [rows] = await db.query(`
+    //         SELECT m.id_medico, p.nombre, p.apellido
+    //         FROM medicos m
+    //         JOIN personas p ON p.id = m.id_persona
+    //         WHERE p.nombre LIKE ? OR p.apellido LIKE ?
+    //         AND m.estado = 1
+    //         LIMIT 10
+    //     `, [`%${texto}%`, `%${texto}%`]);
 
-//     return rows;
-// }
+    //     return rows;
+    // }
 
     // ============================================================
-// BUSCAR MÉDICOS POR NOMBRE / APELLIDO (PARA AGENDA)
-// ============================================================
-static async buscarPorNombre(texto) {
-    let conn;
-    try {
-        conn = await createConnection();
+    // BUSCAR MÉDICOS POR NOMBRE / APELLIDO (PARA AGENDA)
+    // ============================================================
+    static async buscarPorNombre(texto) {
+        let conn;
+        try {
+            conn = await createConnection();
 
-        const [rows] = await conn.query(`
+            const [rows] = await conn.query(`
             SELECT
                 m.id_medico,
                 p.nombre,
@@ -370,14 +397,14 @@ static async buscarPorNombre(texto) {
             LIMIT 20
         `, [`%${texto}%`, `%${texto}%`]);
 
-        return rows;
+            return rows;
 
-    } catch (error) {
-        throw error;
-    } finally {
-        if (conn) conn.end();
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
 
