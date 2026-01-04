@@ -287,7 +287,7 @@ class Agenda {
         }
     }
 
-     //VERIFICAR SOLAPAMIENTO AL CREAR
+    //VERIFICAR SOLAPAMIENTO AL CREAR
     static async existeSolapamiento({
         fecha_creacion,
         fecha_fin,
@@ -330,19 +330,19 @@ class Agenda {
 
     //VERIFICAR SOLAPAMIENTO EN EL UPDATE
     static async existeSolapamientoUpdate({
-    id_agenda,
-    fecha_creacion,
-    fecha_fin,
-    hora_inicio,
-    hora_fin,
-    id_medico,
-    id_especialidad
-}) {
-    let conn;
-    try {
-        conn = await createConnection();
+        id_agenda,
+        fecha_creacion,
+        fecha_fin,
+        hora_inicio,
+        hora_fin,
+        id_medico,
+        id_especialidad
+    }) {
+        let conn;
+        try {
+            conn = await createConnection();
 
-        const [rows] = await conn.query(`
+            const [rows] = await conn.query(`
             SELECT 1
             FROM agendas
             WHERE id <> ?
@@ -356,20 +356,113 @@ class Agenda {
               )
             LIMIT 1
         `, [
-            id_agenda,
-            id_medico,
-            id_especialidad,
-            fecha_fin,
-            fecha_creacion,
-            hora_inicio,
-            hora_fin
-        ]);
+                id_agenda,
+                id_medico,
+                id_especialidad,
+                fecha_fin,
+                fecha_creacion,
+                hora_inicio,
+                hora_fin
+            ]);
 
-        return rows.length > 0;
-    } finally {
-        if (conn) conn.end();
+            return rows.length > 0;
+        } finally {
+            if (conn) conn.end();
+        }
     }
+
+
+
+    // =====================================================
+    // OBTENER AGENDA POR MÉDICO + ESPECIALIDAD + FECHA
+    // =====================================================
+    static async obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+
+            const [rows] = await conn.query(`
+            SELECT 
+                a.id,
+                a.hora_inicio,
+                a.hora_fin,
+                a.duracion_turnos,
+                a.limite_sobreturnos
+            FROM agendas a
+            WHERE a.id_medico = ?
+              AND a.id_especialidad = ?
+              AND ? BETWEEN a.fecha_creacion AND a.fecha_fin
+            LIMIT 1
+        `, [id_medico, id_especialidad, fecha]);
+
+            return rows;
+
+        } catch (error) {
+            console.error('Error obteniendo agenda por médico y fecha:', error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    // =====================================================
+// OBTENER OTRAS FECHAS DISPONIBLES PARA UN MÉDICO
+// =====================================================
+// static async obtenerOtrasFechasDisponibles(id_medico, fechaActual) {
+//     let conn;
+//     try {
+//         conn = await createConnection();
+
+//         const [rows] = await conn.query(`
+//             SELECT DISTINCT fecha
+//             FROM (
+//                 SELECT DATE_ADD(a.fecha_creacion, INTERVAL seq DAY) AS fecha
+//                 FROM agendas a
+//                 JOIN seq_0_to_365 seq
+//                   ON DATE_ADD(a.fecha_creacion, INTERVAL seq DAY) <= a.fecha_fin
+//                 WHERE a.id_medico = ?
+//             ) fechas
+//             WHERE fecha <> ?
+//             ORDER BY fecha
+//             LIMIT 7
+//         `, [id_medico, fechaActual]);
+
+//         return rows.map(f => ({
+//             label: f.fecha.toLocaleDateString('es-AR'),
+//             valor: f.fecha.toISOString().split('T')[0]
+//         }));
+
+//     } catch (error) {
+//         console.error('Error obteniendo otras fechas disponibles:', error);
+//         throw error;
+//     } finally {
+//         if (conn) conn.end();
+//     }
+// }
+
+static async obtenerOtrasFechasDisponibles(id_medico, fechaActual) {
+  try {
+    const [rows] = await db.query(`
+      SELECT DISTINCT fecha
+      FROM agendas
+      WHERE id_medico = ?
+        AND fecha >= ?
+      ORDER BY fecha
+      LIMIT 7
+    `, [id_medico, fechaActual]);
+
+    return rows.map(r => ({
+      valor: r.fecha,
+      label: r.fecha
+    }));
+
+  } catch (error) {
+    console.error('Error obteniendo otras fechas disponibles:', error);
+    return [];
+  }
 }
+
+
 
 
 }

@@ -282,154 +282,1790 @@
 //-             });
 //-         });
 
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+//-         .filter-box {
+//-             background: #fff;
+//-             padding: 15px;
+//-             border-radius: 10px;
+//-             margin-bottom: 20px;
+//-             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 10px;
+//-         }
+//-         .icon-reservar {
+//-             color: #2e7d32;
+//-         }
+//-         .icon-delete {
+//-             color: #c62828;
+//-         }
+
+//-         /* ============================
+//-            COLORES POR ESTADO 
+//-         ============================ */
+//-         tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-         tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
+//-         tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-         tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-         tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-         tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-         tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
+//-         tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+
+//-         tr:hover {
+//-             filter: brightness(0.95);
+//-         }
+
+//-     .page-container
+
+//-         // ---------------- BOTÓN VOLVER ----------------
+//-         .mb-3
+//-             a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-         // ---------------- NOMBRE DEL MÉDICO ----------------
+//-         if turnos && turnos.length > 0
+//-             - const medicoNombre = turnos[0].medico_nombre || "Doctor"
+//-             - const medicoApellido = turnos[0].medico_apellido || ""
+//-             h3.center-text Turnos del Dr/a. #{medicoNombre} #{medicoApellido}
+//-         else
+//-             h3.center-text Turnos del Doctor
+
+//-         // ---------------- FILTRO MEJORADO ----------------
+//-         .filter-box
+//-             label(for="estado" style="font-weight: bold;") Filtrar por estado
+//-             select(name="estado" id="estado" class="form-select mt-2")
+//-                 option(value="") Ver todos
+//-                 option(value="Libre") Libre
+//-                 option(value="Reservado") Reservado
+//-                 option(value="Confirmado") Confirmado
+//-                 option(value="Cancelado") Cancelado
+//-                 option(value="Ausente") Ausente
+//-                 option(value="Presente") Presente
+//-                 option(value="En Consulta") En Consulta
+//-                 option(value="Atendido") Atendido
+//-                 option(value="No Disponible") No Disponible  
+
+//-         br
+
+//-         // ---------------- TABLA DE TURNOS ----------------
+//-         table#tablaTurnos.table.table-striped.table-bordered.table-hover
+//-             thead(class="table-dark")
+//-                 tr 
+//-                     th Fecha
+//-                     th Hora
+//-                     th Motivo
+//-                     th Estado 
+//-                     th Orden
+//-                     th Paciente
+//-                     th DNI
+//-                     th Acciones                
+//-             tbody 
+//-                 each turno in turnos
+//-                     tr(data-estado=turno.estado)
+//-                         td= turno.fecha_formateada
+//-                         td= `${turno.hora_inicio} hs`
+//-                         td= turno.motivo || "Vacío"
+//-                         td= turno.estado
+//-                         td= turno.orden
+//-                         td= turno.ppaciente_nombre || 'Vacío'
+//-                         td= turno.dni || 'Vacío'
+//-                         td.actions
+//-                             // Botón reservado más claro
+//-                             a.btn.btn-sm.btn-success(href=`/turnos/reservar/${turno.id}` title="Reservar o editar turno")
+//-                                 i.fa-solid.fa-calendar-check
+//-                                 |  Reservar
+                            
+//-                             // Botón eliminar
+//-                             button.btn.btn-sm.btn-danger(title="Eliminar" onclick=`confirmDelete(${turno.id})`)
+//-                                 i.fa-solid.fa-trash
+
+//-     // ---------------- SCRIPTS ----------------
+//-     script.
+//-         function confirmDelete(id) {
+//-             Swal.fire({
+//-                 title: '¿Eliminar turno?',
+//-                 text: "No podrás revertir esto",
+//-                 icon: 'warning',
+//-                 showCancelButton: true,
+//-                 confirmButtonColor: '#3085d6',
+//-                 cancelButtonColor: '#d33',
+//-                 confirmButtonText: 'Sí, eliminar'
+//-             }).then((result) => {
+//-                 if (result.isConfirmed) deleteTurno(id);
+//-             });
+//-         }
+
+//-         function deleteTurno(id) {
+//-             fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-                 .then(res => {
+//-                     if (!res.ok) throw new Error();
+//-                     Swal.fire('Eliminado', 'El turno ha sido eliminado.', 'success')
+//-                         .then(() => location.reload());
+//-                 })
+//-                 .catch(() => Swal.fire('Error', 'Hubo un problema eliminando el turno.', 'error'));
+//-         }
+
+//-         // Filtro
+//-         document.getElementById("estado").addEventListener("change", function () {
+//-             const estado = this.value;
+//-             document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
+//-                 if (!estado || row.dataset.estado === estado)
+//-                     row.style.display = "";
+//-                 else
+//-                     row.style.display = "none";
+//-             });
+//-         });
+
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+//-         .filter-box {
+//-             background: #fff;
+//-             padding: 15px;
+//-             border-radius: 10px;
+//-             margin-bottom: 20px;
+//-             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 10px;
+//-         }
+
+//-         /* ============================
+//-            COLORES POR ESTADO 
+//-         ============================ */
+//-         tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-         tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
+//-         tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-         tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-         tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-         tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-         tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
+//-         tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+
+//-         tr:hover {
+//-             filter: brightness(0.95);
+//-         }
+
+//-     .page-container
+
+//-         // -------- BOTÓN VOLVER --------
+//-         .mb-3
+//-             a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-         // -------- NOMBRE DEL MÉDICO --------
+//-         if turnos && turnos.length > 0
+//-             - const medicoNombre = turnos[0].medico_nombre || "Doctor"
+//-             - const medicoApellido = turnos[0].medico_apellido || ""
+//-             h3.center-text Turnos del Dr/a. #{medicoApellido} #{medicoNombre} 
+//-         else
+//-             h3.center-text Turnos del Doctor
+
+//-         // -------- FILTRO --------
+//-         .filter-box
+//-             label(for="estado" style="font-weight: bold;") Filtrar por estado
+//-             select#estado.form-select.mt-2
+//-                 option(value="") Ver todos
+//-                 option(value="Libre") Libre
+//-                 option(value="Reservado") Reservado
+//-                 option(value="Confirmado") Confirmado
+//-                 option(value="Cancelado") Cancelado
+//-                 option(value="Ausente") Ausente
+//-                 option(value="Presente") Presente
+//-                 option(value="En Consulta") En Consulta
+//-                 option(value="Atendido") Atendido
+//-                 option(value="No Disponible") No Disponible  
+
+//-         br
+
+//-         // -------- TABLA DE TURNOS --------
+//-         table#tablaTurnos.table.table-striped.table-bordered.table-hover
+//-             thead.table-dark
+//-                 tr 
+//-                     th Fecha
+//-                     th Hora
+//-                     th Motivo
+//-                     th Estado 
+//-                     th Orden
+//-                     th Paciente
+//-                     th DNI
+//-                     th Acciones                
+
+//-             tbody 
+//-                 each turno in turnos
+//-                     tr(data-estado=turno.estado)
+//-                         td= turno.fecha_formateada
+//-                         td= `${turno.hora_inicio} hs`
+//-                         td= turno.motivo || 'Vacío'
+//-                         td= turno.estado
+//-                         td= turno.orden
+
+//-                         // Paciente: Apellido + Nombre
+//-                         td
+//-                             if turno.paciente_apellido && turno.paciente_nombre
+//-                                 |#{turno.paciente_apellido} #{turno.paciente_nombre}
+//-                             else
+//-                                 | Vacío
+
+//-                         td= turno.dni || 'Vacío'
+
+//-                         td.actions
+//-                             a.btn.btn-sm.btn-success(
+//-                                 href=`/turnos/reservar/${turno.id}`
+//-                                 title="Reservar o editar turno"
+//-                             )
+//-                                 i.fa-solid.fa-calendar-check
+//-                                 |  Reservar
+                            
+//-                             button.btn.btn-sm.btn-danger(
+//-                                 title="Eliminar"
+//-                                 onclick=`confirmDelete(${turno.id})`
+//-                             )
+//-                                 i.fa-solid.fa-trash
+
+//-     // -------- SCRIPTS --------
+//-     script.
+//-         function confirmDelete(id) {
+//-             Swal.fire({
+//-                 title: '¿Eliminar turno?',
+//-                 text: 'No podrás revertir esto',
+//-                 icon: 'warning',
+//-                 showCancelButton: true,
+//-                 confirmButtonColor: '#3085d6',
+//-                 cancelButtonColor: '#d33',
+//-                 confirmButtonText: 'Sí, eliminar'
+//-             }).then((result) => {
+//-                 if (result.isConfirmed) deleteTurno(id);
+//-             });
+//-         }
+
+//-         function deleteTurno(id) {
+//-             fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-                 .then(res => {
+//-                     if (!res.ok) throw new Error();
+//-                     Swal.fire('Eliminado', 'El turno ha sido eliminado.', 'success')
+//-                         .then(() => location.reload());
+//-                 })
+//-                 .catch(() => Swal.fire('Error', 'Hubo un problema eliminando el turno.', 'error'));
+//-         }
+
+//-         // Filtro por estado
+//-         document.getElementById('estado').addEventListener('change', function () {
+//-             const estado = this.value;
+//-             document.querySelectorAll('#tablaTurnos tbody tr').forEach(row => {
+//-                 row.style.display = (!estado || row.dataset.estado === estado) ? '' : 'none';
+//-             });
+//-         });
+
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 26px;
+//-             font-weight: bold;
+//-         }
+
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+
+//-         .filter-box {
+//-             background: #fff;
+//-             padding: 15px;
+//-             border-radius: 10px;
+//-             margin-bottom: 20px;
+//-             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-         }
+
+//-         .actions i {
+//-             font-size: 18px;
+//-             cursor: pointer;
+//-             margin-right: 8px;
+//-         }
+
+//-         /* ===========================
+//-            COLORES POR ESTADO
+//-         ============================ */
+//-         tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-         tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
+//-         tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-         tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-         tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-         tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-         tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
+//-         tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+
+//-     .page-container
+
+//-         // ---------------- VOLVER ----------------
+//-         .mb-3
+//-             a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-         // ---------------- TITULO ----------------
+//-         if turnos && turnos.length > 0
+//-             - const medicoNombre = turnos[0].medico_nombre || "Doctor"
+//-             - const medicoApellido = turnos[0].medico_apellido || ""
+//-             h3.center-text Turnos del Dr/a. #{medicoApellido} #{medicoNombre} 
+//-         else
+//-             h3.center-text Turnos del Doctor
+
+//-         // ===================== FILTROS =====================
+//-         .filter-box
+//-             h3 Filtros
+//-             br
+//-             .row.g-3
+//-                 .col-md-2
+//-                     label.form-label Fecha
+//-                     input.form-control(type="date" id="f-fecha")
+
+//-                 .col-md-2
+//-                     label.form-label Hora
+//-                     input.form-control(type="time" id="f-hora")
+
+//-                 .col-md-2
+//-                     label.form-label Estado
+//-                     select.form-select(id="f-estado")
+//-                         option(value="") Todos
+//-                         option Libre
+//-                         option Reservado
+//-                         option Confirmado
+//-                         option Cancelado
+//-                         option Ausente
+//-                         option Presente
+//-                         option En Consulta
+//-                         option Atendido
+//-                         option No Disponible
+
+//-                 .col-md-2
+//-                     label.form-label Orden
+//-                     input.form-control(type="number" id="f-orden")
+
+//-                 .col-md-2
+//-                     label.form-label Paciente
+//-                     input.form-control(type="text" id="f-paciente" placeholder="Nombre")
+
+//-                 .col-md-2
+//-                     label.form-label DNI
+//-                     input.form-control(type="text" id="f-dni")
+
+//-             .mt-3.text-end
+//-                 button.btn.btn-primary(onclick="applyFilters()")
+//-                     i.fa-solid.fa-filter
+//-                     |  Filtrar
+//-                 button.btn.btn-secondary.ms-2(onclick="clearFilters()")
+//-                     i.fa-solid.fa-eraser
+//-                     |  Limpiar
+
+//-         // ===================== TABLA =====================
+//-         table#tablaTurnos.table.table-striped.table-bordered.table-hover
+//-             thead.table-dark
+//-                 tr
+//-                     th Fecha
+//-                     th Hora
+//-                     th Motivo
+//-                     th Estado
+//-                     th Orden
+//-                     th Paciente
+//-                     th DNI
+//-                     th Acciones
+
+//-             tbody
+//-                 each turno in turnos
+//-                     tr(
+//-                         data-fecha=turno.fecha_formateada
+//-                         data-hora=turno.hora_inicio
+//-                         data-estado=turno.estado
+//-                         data-orden=turno.orden
+//-                         data-paciente=turno.paciente_nombre
+//-                         data-dni=turno.dni
+//-                         data-motivo=turno.motivo
+//-                     )
+//-                         td= turno.fecha_formateada
+//-                         td= `${turno.hora_inicio} hs`
+//-                         td= turno.motivo || '—'
+//-                         td= turno.estado
+//-                         td= turno.orden
+//-                         td= turno.paciente_nombre || '—'
+//-                         td= turno.dni || '—'
+//-                         td.actions
+//-                             if turno.estado !== 'Confirmado'
+//-                                 a.btn.btn-sm.btn-success(href=`/turnos/reservar/${turno.id}` title="Reservar turno")
+//-                                     i.fa-solid.fa-calendar-check
+//-                                     |  Reservar
+//-                             else
+//-                                 span.text-muted —
+
+//-                             button.btn.btn-sm.btn-danger.ms-2(title="Eliminar" onclick=`confirmDelete(${turno.id})`)
+//-                                 i.fa-solid.fa-trash
+
+//-     // ===================== SCRIPTS =====================
+//-     script.
+//-         function applyFilters() {
+//-             const fecha    = document.getElementById('f-fecha').value;
+//-             const hora     = document.getElementById('f-hora').value;
+//-             const estado   = document.getElementById('f-estado').value;
+//-             const orden    = document.getElementById('f-orden').value;
+//-             const paciente = document.getElementById('f-paciente').value.toLowerCase();
+//-             const dni      = document.getElementById('f-dni').value;
+
+//-             document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
+//-                 const match =
+//-                     (!fecha || row.dataset.fecha === fecha) &&
+//-                     (!hora || row.dataset.hora === hora) &&
+//-                     (!estado || row.dataset.estado === estado) &&
+//-                     (!orden || row.dataset.orden === orden) &&
+//-                     (!paciente || (row.dataset.paciente || '').toLowerCase().includes(paciente)) &&
+//-                     (!dni || row.dataset.dni === dni);
+
+//-                 row.style.display = match ? "" : "none";
+//-             });
+//-         }
+
+//-         function clearFilters() {
+//-             document.querySelectorAll('.filter-box input, .filter-box select')
+//-                 .forEach(el => el.value = "");
+//-             applyFilters();
+//-         }
+
+//-         function confirmDelete(id) {
+//-             Swal.fire({
+//-                 title: '¿Eliminar turno?',
+//-                 text: 'No podrás revertir esto',
+//-                 icon: 'warning',
+//-                 showCancelButton: true,
+//-                 confirmButtonText: 'Sí, eliminar',
+//-                 cancelButtonText: 'Cancelar'
+//-             }).then((result) => {
+//-                 if (result.isConfirmed) {
+//-                     fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-                         .then(() => location.reload());
+//-                 }
+//-             });
+//-         }
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body {
+//-       background-color: #eef5ff;
+//-       font-family: Arial, sans-serif;
+//-     }
+
+//-     .center-text {
+//-       text-align: center;
+//-       margin-bottom: 20px;
+//-       font-size: 26px;
+//-       font-weight: bold;
+//-     }
+
+//-     .page-container {
+//-       padding: 20px;
+//-     }
+
+//-     .filter-box {
+//-       background: #fff;
+//-       padding: 15px;
+//-       border-radius: 10px;
+//-       margin-bottom: 20px;
+//-       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-     }
+
+//-     .actions i {
+//-       font-size: 18px;
+//-       cursor: pointer;
+//-       margin-right: 8px;
+//-     }
+
+//-     tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-     tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
+//-     tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-     tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-     tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-     tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-     tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
+//-     tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+
+//-   .page-container
+
+//-     // ---------------- VOLVER ----------------
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     // ---------------- TITULO ----------------
+//-     if turnos && turnos.length > 0
+//-       - const medicoNombre = turnos[0].medico_nombre || "Doctor"
+//-       - const medicoApellido = turnos[0].medico_apellido || ""
+//-       h3.center-text Turnos del Dr/a. #{medicoApellido} #{medicoNombre}
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     // ===================== FILTROS =====================
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label.form-label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+
+//-         .col-md-2
+//-           label.form-label Hora
+//-           input.form-control(type="time" id="f-hora")
+
+//-         .col-md-2
+//-           label.form-label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             option Libre
+//-             option Reservado
+//-             option Confirmado
+//-             option Cancelado
+//-             option Ausente
+//-             option Presente
+//-             option En Consulta
+//-             option Atendido
+//-             option No Disponible
+
+//-         .col-md-2
+//-           label.form-label Orden
+//-           input.form-control(type="number" id="f-orden")
+
+//-         .col-md-2
+//-           label.form-label Paciente
+//-           input.form-control(type="text" id="f-paciente" placeholder="Nombre")
+
+//-         .col-md-2
+//-           label.form-label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()")
+//-           i.fa-solid.fa-filter
+//-           |  Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()")
+//-           i.fa-solid.fa-eraser
+//-           |  Limpiar
+
+//-     // ===================== TABLA =====================
+//-     table#tablaTurnos.table.table-striped.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=turno.paciente_nombre
+//-             data-dni=turno.dni
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= `${turno.hora_inicio.slice(0,5)} hs`
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+//-             td= turno.paciente_nombre || '—'
+
+//-             td
+//-                 if turno.paciente_apellido && turno.paciente_nombre
+//-                     |#{turno.paciente_apellido} #{turno.paciente_nombre}
+//-                 else
+//-                     | —
+                     
+
+
+
+//-             td= turno.dni || '—'
+//-             td.actions
+//-               if turno.estado !== 'Confirmado'
+//-                 a.btn.btn-sm.btn-success(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check
+//-                   |  Reservar
+//-               else
+//-                 span.text-muted —
+
+//-               button.btn.btn-sm.btn-danger.ms-2(
+//-                 title="Eliminar"
+//-                 onclick=`confirmDelete(${turno.id})`
+//-               )
+//-                 i.fa-solid.fa-trash
+
+//-   // ===================== SCRIPTS =====================
+//-   script.
+//-     function applyFilters() {
+//-       const fecha    = document.getElementById('f-fecha').value;
+//-       const hora     = document.getElementById('f-hora').value;
+//-       const estado   = document.getElementById('f-estado').value;
+//-       const orden    = document.getElementById('f-orden').value;
+//-       const paciente = document.getElementById('f-paciente').value.toLowerCase();
+//-       const dni      = document.getElementById('f-dni').value;
+
+//-       document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
+//-         const match =
+//-           (!fecha || row.dataset.fecha === fecha) &&
+//-           (!hora || row.dataset.hora === hora) &&
+//-           (!estado || row.dataset.estado === estado) &&
+//-           (!orden || row.dataset.orden === orden) &&
+//-           (!paciente || (row.dataset.paciente || '').toLowerCase().includes(paciente)) &&
+//-           (!dni || row.dataset.dni === dni);
+
+//-         row.style.display = match ? "" : "none";
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select')
+//-         .forEach(el => el.value = "");
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Eliminar turno?',
+//-         text: 'No podrás revertir esto',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonText: 'Sí, eliminar',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then(result => {
+//-         if (result.isConfirmed) {
+//-           fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-             .then(() => location.reload());
+//-         }
+//-       });
+//-     }
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body {
+//-       background-color: #eef5ff;
+//-       font-family: Arial, sans-serif;
+//-     }
+
+//-     .center-text {
+//-       text-align: center;
+//-       margin-bottom: 20px;
+//-       font-size: 26px;
+//-       font-weight: bold;
+//-     }
+
+//-     .page-container {
+//-       padding: 20px;
+//-     }
+
+//-     .filter-box {
+//-       background: #fff;
+//-       padding: 15px;
+//-       border-radius: 10px;
+//-       margin-bottom: 20px;
+//-       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-     }
+
+//-     .actions i {
+//-       font-size: 18px;
+//-       cursor: pointer;
+//-       margin-right: 8px;
+//-     }
+
+//-     tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-     tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
+//-     tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-     tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-     tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-     tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-     tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
+//-     tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+
+//-   .page-container
+
+//-     // ---------------- VOLVER ----------------
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     // ---------------- TITULO ----------------
+//-     if turnos && turnos.length > 0
+//-       - const medicoNombre = turnos[0].medico_nombre || "Doctor"
+//-       - const medicoApellido = turnos[0].medico_apellido || ""
+//-       h3.center-text Turnos del Dr/a. #{medicoApellido} #{medicoNombre}
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     // ===================== FILTROS =====================
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label.form-label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+
+//-         .col-md-2
+//-           label.form-label Hora
+//-           input.form-control(type="time" id="f-hora")
+
+//-         .col-md-2
+//-           label.form-label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             option Libre
+//-             option Reservado
+//-             option Confirmado
+//-             option Cancelado
+//-             option Ausente
+//-             option Presente
+//-             option En Consulta
+//-             option Atendido
+//-             option No Disponible
+
+//-         .col-md-2
+//-           label.form-label Orden
+//-           input.form-control(type="number" id="f-orden")
+
+//-         .col-md-2
+//-           label.form-label Paciente
+//-           input.form-control(type="text" id="f-paciente" placeholder="Nombre")
+
+//-         .col-md-2
+//-           label.form-label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()")
+//-           i.fa-solid.fa-filter
+//-           |  Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()")
+//-           i.fa-solid.fa-eraser
+//-           |  Limpiar
+
+//-     // ===================== TABLA =====================
+//-     table#tablaTurnos.table.table-striped.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=`${turno.paciente_apellido || ''} ${turno.paciente_nombre || ''}`.trim()
+//-             data-dni=turno.dni
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= `${turno.hora_inicio.slice(0,5)} hs`
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+
+//-             // -------- PACIENTE --------
+//-             td
+//-               if turno.paciente_apellido || turno.paciente_nombre
+//-                 | #{turno.paciente_apellido || ''} #{turno.paciente_nombre || ''}
+//-               else
+//-                 | —
+
+//-             td= turno.dni || '—'
+
+//-             // -------- ACCIONES --------
+//-             td.actions
+//-               if turno.estado !== 'Confirmado'
+//-                 a.btn.btn-sm.btn-success(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check
+//-                   |  Reservar
+//-               else
+//-                 span.text-muted —
+
+//-               button.btn.btn-sm.btn-danger.ms-2(
+//-                 title="Eliminar"
+//-                 onclick=`confirmDelete(${turno.id})`
+//-               )
+//-                 i.fa-solid.fa-trash
+
+//-   // ===================== SCRIPTS =====================
+//-   script.
+//-     function applyFilters() {
+//-       const fecha    = document.getElementById('f-fecha').value;
+//-       const hora     = document.getElementById('f-hora').value;
+//-       const estado   = document.getElementById('f-estado').value;
+//-       const orden    = document.getElementById('f-orden').value;
+//-       const paciente = document.getElementById('f-paciente').value.toLowerCase();
+//-       const dni      = document.getElementById('f-dni').value;
+
+//-       document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
+//-         const match =
+//-           (!fecha || row.dataset.fecha === fecha) &&
+//-           (!hora || row.dataset.hora === hora) &&
+//-           (!estado || row.dataset.estado === estado) &&
+//-           (!orden || row.dataset.orden === orden) &&
+//-           (!paciente || (row.dataset.paciente || '').toLowerCase().includes(paciente)) &&
+//-           (!dni || row.dataset.dni === dni);
+
+//-         row.style.display = match ? "" : "none";
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select')
+//-         .forEach(el => el.value = "");
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Eliminar turno?',
+//-         text: 'No podrás revertir esto',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonText: 'Sí, eliminar',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then(result => {
+//-         if (result.isConfirmed) {
+//-           fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-             .then(() => location.reload());
+//-         }
+//-       });
+//-     }
+
+
+
+
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body {
+//-       background-color: #eef5ff;
+//-       font-family: Arial, sans-serif;
+//-     }
+
+//-     .center-text {
+//-       text-align: center;
+//-       margin-bottom: 20px;
+//-       font-size: 26px;
+//-       font-weight: bold;
+//-     }
+
+//-     .page-container {
+//-       padding: 20px;
+//-     }
+
+//-     .filter-box {
+//-       background: #fff;
+//-       padding: 15px;
+//-       border-radius: 10px;
+//-       margin-bottom: 20px;
+//-       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-     }
+
+//-     .actions {
+//-       white-space: nowrap;
+//-       text-align: center;
+//-     }
+
+//-     tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-     tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
+//-     tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-     tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-     tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-     tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-     tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
+//-     tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+
+//-   .page-container
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     if turnos && turnos.length
+//-       - const medicoNombre = turnos[0].medico_nombre || "Doctor"
+//-       - const medicoApellido = turnos[0].medico_apellido || ""
+//-       h3.center-text Turnos del Dr/a. #{medicoApellido} #{medicoNombre}
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label.form-label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+
+//-         .col-md-2
+//-           label.form-label Hora
+//-           input.form-control(type="time" id="f-hora")
+
+//-         .col-md-2
+//-           label.form-label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             option Libre
+//-             option Sobreturno
+//-             option Reservado
+//-             option Confirmado
+//-             option Cancelado
+//-             option Ausente
+//-             option Presente
+//-             option En Consulta
+//-             option Atendido
+
+//-         .col-md-2
+//-           label.form-label Orden
+//-           input.form-control(type="number" id="f-orden")
+
+//-         .col-md-2
+//-           label.form-label Paciente
+//-           input.form-control(type="text" id="f-paciente")
+
+//-         .col-md-2
+//-           label.form-label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()")
+//-           i.fa-solid.fa-filter
+//-           |  Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()")
+//-           i.fa-solid.fa-eraser
+//-           |  Limpiar
+
+//-     table#tablaTurnos.table.table-striped.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=turno.paciente_nombre
+//-             data-dni=turno.dni
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= `${turno.hora_inicio.slice(0,5)} hs`
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+//-             td
+//-               if turno.paciente_apellido && turno.paciente_nombre
+//-                 | #{turno.paciente_apellido} #{turno.paciente_nombre}
+//-               else
+//-                 | —
+//-             td= turno.dni || '—'
+
+//-             td.actions
+//-               if turno.estado === 'Libre' || turno.estado === 'Sobreturno'
+//-                 a.btn.btn-sm.btn-success(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check
+//-               else
+//-                 a.btn.btn-sm.btn-primary(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Editar turno"
+//-                 )
+//-                   i.fa-solid.fa-pen-to-square
+
+//-               button.btn.btn-sm.btn-danger.ms-2(
+//-                 title="Eliminar"
+//-                 onclick=`confirmDelete(${turno.id})`
+//-               )
+//-                 i.fa-solid.fa-trash
+
+//-   script.
+//-     function applyFilters() {
+//-       const fecha    = document.getElementById('f-fecha').value;
+//-       const hora     = document.getElementById('f-hora').value;
+//-       const estado   = document.getElementById('f-estado').value;
+//-       const orden    = document.getElementById('f-orden').value;
+//-       const paciente = document.getElementById('f-paciente').value.toLowerCase();
+//-       const dni      = document.getElementById('f-dni').value;
+
+//-       document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
+//-         const match =
+//-           (!fecha || row.dataset.fecha === fecha) &&
+//-           (!hora || row.dataset.hora === hora) &&
+//-           (!estado || row.dataset.estado === estado) &&
+//-           (!orden || row.dataset.orden === orden) &&
+//-           (!paciente || (row.dataset.paciente || '').toLowerCase().includes(paciente)) &&
+//-           (!dni || row.dataset.dni === dni);
+
+//-         row.style.display = match ? "" : "none";
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select')
+//-         .forEach(el => el.value = "");
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Eliminar turno?',
+//-         text: 'No podrás revertir esto',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonText: 'Sí, eliminar',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then(result => {
+//-         if (result.isConfirmed) {
+//-           fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-             .then(() => location.reload());
+//-         }
+//-       });
+//-     }
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body {
+//-       background-color: #eef5ff;
+//-       font-family: Arial, sans-serif;
+//-     }
+
+//-     .center-text {
+//-       text-align: center;
+//-       margin-bottom: 20px;
+//-       font-size: 26px;
+//-       font-weight: bold;
+//-     }
+
+//-     .page-container {
+//-       padding: 20px;
+//-     }
+
+//-     .filter-box {
+//-       background: #fff;
+//-       padding: 15px;
+//-       border-radius: 10px;
+//-       margin-bottom: 20px;
+//-       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-     }
+
+//-     td.actions {
+//-       white-space: nowrap;
+//-       text-align: center;
+//-       vertical-align: middle;
+//-     }
+
+//-     td.actions .btn {
+//-       margin: 0 3px;
+//-     }
+
+//-     tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-     tr[data-estado="Reservada"]    { background-color: #fff4c2 !important; }
+//-     tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-     tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-     tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-     tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-     tr[data-estado="En consulta"]  { background-color: #e4d7ff !important; }
+//-     tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+//-     tr[data-estado="No disponible"]{ background-color: #eeeeee !important; }
+
+//-   .page-container
+
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     if turnos && turnos.length
+//-       h3.center-text Turnos del Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+
+//-         .col-md-2
+//-           label Hora
+//-           input.form-control(type="time" id="f-hora")
+
+//-         .col-md-2
+//-           label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             each e in ['No disponible','Libre','Reservada','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
+//-               option= e
+
+//-         .col-md-2
+//-           label Orden
+//-           input.form-control(type="number" id="f-orden")
+
+//-         .col-md-2
+//-           label Paciente
+//-           input.form-control(type="text" id="f-paciente")
+
+//-         .col-md-2
+//-           label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()") Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()") Limpiar
+
+//-     table#tablaTurnos.table.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=turno.paciente_nombre || ''
+//-             data-dni=turno.dni || ''
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= turno.hora_inicio.slice(0,5)
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+//-             td= turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}` : '—'
+//-             td= turno.dni || '—'
+
+//-             td.actions
+//-               if turno.estado === 'Libre'|| 'Sobreturno'
+//-                 a.btn.btn-success.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check.fa-lg
+
+//-               else if turno.estado === 'Reservada' || turno.estado === 'Confirmado'
+//-                 a.btn.btn-primary.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Editar turno"
+//-                 )
+//-                   i.fa-solid.fa-pen-to-square.fa-lg
+
+//-               else
+//-                 span.text-muted —
+
+//-               if turno.estado === 'Libre' || turno.estado === 'No disponible'
+//-                 button.btn.btn-danger.btn-sm(
+//-                   title="Eliminar"
+//-                   onclick=`confirmDelete(${turno.id})`
+//-                 )
+//-                   i.fa-solid.fa-trash.fa-lg
+
+//-   script.
+//-     function applyFilters() {
+//-       const f = id => document.getElementById(id).value;
+//-       document.querySelectorAll('#tablaTurnos tbody tr').forEach(row => {
+//-         const match =
+//-           (!f('f-fecha') || row.dataset.fecha === f('f-fecha')) &&
+//-           (!f('f-hora') || row.dataset.hora === f('f-hora')) &&
+//-           (!f('f-estado') || row.dataset.estado === f('f-estado')) &&
+//-           (!f('f-orden') || row.dataset.orden === f('f-orden')) &&
+//-           (!f('f-paciente') || row.dataset.paciente.toLowerCase().includes(f('f-paciente').toLowerCase())) &&
+//-           (!f('f-dni') || row.dataset.dni === f('f-dni'));
+//-         row.style.display = match ? '' : 'none';
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select')
+//-         .forEach(e => e.value = '');
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Eliminar turno?',
+//-         icon: 'warning',
+//-         showCancelButton: true
+//-       }).then(r => {
+//-         if (r.isConfirmed) {
+//-           fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-             .then(() => location.reload());
+//-         }
+//-       });
+//-     }
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body {
+//-       background-color: #eef5ff;
+//-       font-family: Arial, sans-serif;
+//-     }
+
+//-     .center-text {
+//-       text-align: center;
+//-       margin-bottom: 20px;
+//-       font-size: 26px;
+//-       font-weight: bold;
+//-     }
+
+//-     .page-container {
+//-       padding: 20px;
+//-     }
+
+//-     .filter-box {
+//-       background: #fff;
+//-       padding: 15px;
+//-       border-radius: 10px;
+//-       margin-bottom: 20px;
+//-       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//-     }
+
+//-     td.actions {
+//-       white-space: nowrap;
+//-       text-align: center;
+//-       vertical-align: middle;
+//-     }
+
+//-     td.actions .btn {
+//-       margin: 0 4px;
+//-     }
+
+//-     tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
+//-     tr[data-estado="Reservada"]    { background-color: #fff4c2 !important; }
+//-     tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
+//-     tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
+//-     tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
+//-     tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
+//-     tr[data-estado="En consulta"]  { background-color: #e4d7ff !important; }
+//-     tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
+//-     tr[data-estado="No disponible"]{ background-color: #eeeeee !important; }
+
+//-   .page-container
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     if turnos && turnos.length
+//-       h3.center-text Turnos del Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+//-         .col-md-2
+//-           label Hora
+//-           input.form-control(type="time" id="f-hora")
+//-         .col-md-2
+//-           label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             each e in ['No disponible','Libre','Reservada','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
+//-               option= e
+//-         .col-md-2
+//-           label Orden
+//-           input.form-control(type="number" id="f-orden")
+//-         .col-md-2
+//-           label Paciente
+//-           input.form-control(type="text" id="f-paciente")
+//-         .col-md-2
+//-           label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()") Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()") Limpiar
+
+//-     table#tablaTurnos.table.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=turno.paciente_nombre || ''
+//-             data-dni=turno.dni || ''
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= turno.hora_inicio.slice(0,5)
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+//-             td= turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}` : '—'
+//-             td= turno.dni || '—'
+
+//-             td.actions
+//-               // ---------- RESERVAR ----------
+//-               if turno.estado === 'Libre'
+//-                 a.btn.btn-success.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check.fa-lg
+
+//-               // ---------- EDITAR ----------
+//-               if turno.estado !== 'No disponible'
+//-                 a.btn.btn-primary.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Editar turno"
+//-                 )
+//-                   i.fa-solid.fa-pen-to-square.fa-lg
+
+//-               // ---------- ELIMINAR (SIEMPRE) ----------
+//-               button.btn.btn-danger.btn-sm(
+//-                 title="Eliminar turno"
+//-                 onclick=`confirmDelete(${turno.id})`
+//-               )
+//-                 i.fa-solid.fa-trash.fa-lg
+
+//-   script.
+//-     function applyFilters() {
+//-       const v = id => document.getElementById(id).value;
+//-       document.querySelectorAll('#tablaTurnos tbody tr').forEach(row => {
+//-         const ok =
+//-           (!v('f-fecha') || row.dataset.fecha === v('f-fecha')) &&
+//-           (!v('f-hora') || row.dataset.hora === v('f-hora')) &&
+//-           (!v('f-estado') || row.dataset.estado === v('f-estado')) &&
+//-           (!v('f-orden') || row.dataset.orden === v('f-orden')) &&
+//-           (!v('f-paciente') || row.dataset.paciente.toLowerCase().includes(v('f-paciente').toLowerCase())) &&
+//-           (!v('f-dni') || row.dataset.dni === v('f-dni'));
+//-         row.style.display = ok ? '' : 'none';
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select')
+//-         .forEach(e => e.value = '');
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Eliminar turno?',
+//-         text: 'Esta acción no se puede deshacer',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonText: 'Eliminar',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then(r => {
+//-         if (r.isConfirmed) {
+//-           fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-             .then(() => location.reload());
+//-         }
+//-       });
+//-     }
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body { background-color:#eef5ff; font-family:Arial,sans-serif; }
+//-     .center-text { text-align:center; margin-bottom:20px; font-size:26px; font-weight:bold; }
+//-     .page-container { padding:20px; }
+//-     .filter-box { background:#fff; padding:15px; border-radius:10px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+
+//-     td.actions { white-space:nowrap; text-align:center; vertical-align:middle; }
+//-     td.actions .btn { margin:0 4px; }
+
+//-     tr[data-estado="Libre"] { background:#d0f8ce!important; }
+//-     tr[data-estado="Reservada"] { background:#fff4c2!important; }
+//-     tr[data-estado="Confirmado"] { background:#bbe1ff!important; }
+//-     tr[data-estado="Cancelado"] { background:#ffd6d6!important; }
+//-     tr[data-estado="Ausente"] { background:#e8d3f8!important; }
+//-     tr[data-estado="Presente"] { background:#d6dbff!important; }
+//-     tr[data-estado="En consulta"] { background:#e4d7ff!important; }
+//-     tr[data-estado="Atendido"] { background:#c8f3f4!important; }
+//-     tr[data-estado="No disponible"] { background:#eeeeee!important; }
+
+//-   .page-container
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     if turnos && turnos.length
+//-       h3.center-text Turnos del Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     // ===================== FILTROS =====================
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+//-         .col-md-2
+//-           label Hora
+//-           input.form-control(type="time" id="f-hora")
+//-         .col-md-2
+//-           label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             each e in ['No disponible','Libre','Sobreturno','Reservada','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
+//-               option= e
+//-         .col-md-2
+//-           label Orden
+//-           input.form-control(type="number" id="f-orden")
+//-         .col-md-2
+//-           label Paciente
+//-           input.form-control(type="text" id="f-paciente")
+//-         .col-md-2
+//-           label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()") Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()") Limpiar
+
+//-     // ===================== TABLA =====================
+//-     table#tablaTurnos.table.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=turno.paciente_nombre || ''
+//-             data-dni=turno.dni || ''
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= turno.hora_inicio.slice(0,5)
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+//-             td= turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}` : '—'
+//-             td= turno.dni || '—'
+
+//-             td.actions
+//-               //  RESERVAR → SOLO Libre o Sobreturno       
+
+//-               if ['Libre','Sobreturno'].includes(turno.estado)
+//-                 a.btn.btn-success.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check.fa-lg
+//-                 - const estado = (turno.estado || '').trim().toLowerCase()
+//-               //  EDITAR → TODOS MENOS No disponible, Libre y Sobreturno
+//-               if !['No disponible','Libre','Sobreturno'].includes(turno.estado)
+//-                 a.btn.btn-primary.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Editar turno"
+//-                 )
+//-                   i.fa-solid.fa-pen-to-square.fa-lg
+
+//-               //  ELIMINAR → SIEMPRE
+//-               button.btn.btn-danger.btn-sm(
+//-                 title="Eliminar turno"
+//-                 onclick=`confirmDelete(${turno.id})`
+//-               )
+//-                 i.fa-solid.fa-trash.fa-lg
+
+//-   // ===================== SCRIPTS =====================
+//-   script.
+//-     function applyFilters() {
+//-       const v=id=>document.getElementById(id).value;
+//-       document.querySelectorAll('#tablaTurnos tbody tr').forEach(row=>{
+//-         const ok =
+//-           (!v('f-fecha') || row.dataset.fecha===v('f-fecha')) &&
+//-           (!v('f-hora') || row.dataset.hora===v('f-hora')) &&
+//-           (!v('f-estado') || row.dataset.estado===v('f-estado')) &&
+//-           (!v('f-orden') || row.dataset.orden===v('f-orden')) &&
+//-           (!v('f-paciente') || row.dataset.paciente.toLowerCase().includes(v('f-paciente').toLowerCase())) &&
+//-           (!v('f-dni') || row.dataset.dni===v('f-dni'));
+//-         row.style.display = ok ? '' : 'none';
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select').forEach(e=>e.value='');
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title:'¿Eliminar turno?',
+//-         text:'Esta acción no se puede deshacer',
+//-         icon:'warning',
+//-         showCancelButton:true,
+//-         confirmButtonText:'Eliminar',
+//-         cancelButtonText:'Cancelar'
+//-       }).then(r=>{
+//-         if(r.isConfirmed){
+//-           fetch(`/turnos/${id}`,{method:'DELETE'})
+//-             .then(()=>location.reload());
+//-         }
+//-       });
+//-     }
+
+
+
+
 extends ../layout
 
 block contenido
-    style.
-        body {
-            background-color: #eef5ff;
-            font-family: Arial, sans-serif;
+  style.
+    body { background-color:#eef5ff; font-family:Arial,sans-serif; }
+    .center-text { text-align:center; margin-bottom:20px; font-size:26px; font-weight:bold; }
+    .page-container { padding:20px; }
+    .filter-box { background:#fff; padding:15px; border-radius:10px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+
+    td.actions { white-space:nowrap; text-align:center; vertical-align:middle; }
+    td.actions .btn { margin:0 4px; }
+
+
+
+  .page-container
+    .mb-3
+      a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+    if turnos && turnos.length
+      h3.center-text Turnos del Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
+    else
+      h3.center-text Turnos del Doctor
+
+    // ===================== FILTROS =====================
+    .filter-box
+      h4 Filtros
+      .row.g-3
+        .col-md-2
+          label Fecha
+          input.form-control(type="date" id="f-fecha")
+        .col-md-2
+          label Hora
+          input.form-control(type="time" id="f-hora")
+        .col-md-2
+          label Estado
+          select.form-select(id="f-estado")
+            option(value="") Todos
+            each e in ['No disponible','Libre','Sobreturno','Reservada','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
+              option= e
+        .col-md-2
+          label Orden
+          input.form-control(type="number" id="f-orden")
+        .col-md-2
+          label Paciente
+          input.form-control(type="text" id="f-paciente")
+        .col-md-2
+          label DNI
+          input.form-control(type="text" id="f-dni")
+
+      .mt-3.text-end
+        button.btn.btn-primary(onclick="applyFilters()") Filtrar
+        button.btn.btn-secondary.ms-2(onclick="clearFilters()") Limpiar
+
+    // ===================== TABLA =====================
+    table#tablaTurnos.table.table-bordered.table-hover
+      thead.table-dark
+        tr
+          th Fecha
+          th Hora
+          th Motivo
+          th Estado
+          th Orden
+          th Paciente
+          th DNI
+          th Acciones
+
+      tbody
+        each turno in turnos
+          tr(
+            data-fecha=turno.fecha_iso
+            data-hora=turno.hora_inicio.slice(0,5)
+            data-estado=turno.estado
+            data-orden=turno.orden
+            data-paciente=turno.paciente_nombre || ''
+            data-dni=turno.dni || ''
+          )
+            td= turno.fecha_formateada
+            td= turno.hora_inicio.slice(0,5)
+            td= turno.motivo || '—'
+            td= turno.estado
+            td= turno.orden
+            td= turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}` : '—'
+            td= turno.dni || '—'
+
+            td.actions
+              - const estado = (turno.estado || '').trim().toLowerCase()
+
+              // 📅 RESERVAR → SOLO Libre o Sobreturno
+              if ['libre','sobreturno'].includes(estado)
+                a.btn.btn-success.btn-sm(
+                  href=`/turnos/reservar/${turno.id}`
+                  title="Reservar turno"
+                )
+                  i.fa-solid.fa-calendar-check.fa-lg
+
+              // ✏️ EDITAR → TODOS MENOS No disponible, Libre y Sobreturno
+              if !['no disponible','libre','sobreturno'].includes(estado)
+                a.btn.btn-primary.btn-sm(
+                  href=`/turnos/reservar/${turno.id}`
+                  title="Editar turno"
+                )
+                  i.fa-solid.fa-pen-to-square.fa-lg
+
+              // 🗑 ELIMINAR → SIEMPRE
+              button.btn.btn-danger.btn-sm(
+                title="Eliminar turno"
+                onclick=`confirmDelete(${turno.id})`
+              )
+                i.fa-solid.fa-trash.fa-lg
+
+  // ===================== SCRIPTS =====================
+  script.
+    function applyFilters() {
+      const v = id => document.getElementById(id).value;
+      document.querySelectorAll('#tablaTurnos tbody tr').forEach(row => {
+        const ok =
+          (!v('f-fecha') || row.dataset.fecha === v('f-fecha')) &&
+          (!v('f-hora') || row.dataset.hora === v('f-hora')) &&
+          (!v('f-estado') || row.dataset.estado === v('f-estado')) &&
+          (!v('f-orden') || row.dataset.orden === v('f-orden')) &&
+          (!v('f-paciente') || row.dataset.paciente.toLowerCase().includes(v('f-paciente').toLowerCase())) &&
+          (!v('f-dni') || row.dataset.dni === v('f-dni'));
+        row.style.display = ok ? '' : 'none';
+      });
+    }
+
+    function clearFilters() {
+      document.querySelectorAll('.filter-box input, .filter-box select')
+        .forEach(e => e.value = '');
+      applyFilters();
+    }
+
+    function confirmDelete(id) {
+      Swal.fire({
+        title: '¿Eliminar turno?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then(r => {
+        if (r.isConfirmed) {
+          fetch(`/turnos/${id}`, { method: 'DELETE' })
+            .then(() => location.reload());
         }
-        .center-text {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .page-container {
-            padding: 20px;
-        }
-        .filter-box {
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .actions i {
-            font-size: 20px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .icon-reservar {
-            color: #2e7d32;
-        }
-        .icon-delete {
-            color: #c62828;
-        }
-
-        /* ============================
-           COLORES POR ESTADO (mejorados)
-        ============================ */
-        tr[data-estado="Libre"]        { background-color: #d0f8ce !important; }
-        tr[data-estado="Reservado"]    { background-color: #fff4c2 !important; }
-        tr[data-estado="Confirmado"]   { background-color: #bbe1ff !important; }
-        tr[data-estado="Cancelado"]    { background-color: #ffd6d6 !important; }
-        tr[data-estado="Ausente"]      { background-color: #e8d3f8 !important; }
-        tr[data-estado="Presente"]     { background-color: #d6dbff !important; }
-        tr[data-estado="En Consulta"]  { background-color: #e4d7ff !important; }
-        tr[data-estado="Atendido"]     { background-color: #c8f3f4 !important; }
-
-        tr:hover {
-            filter: brightness(0.95);
-        }
-
-    .page-container
-
-        // ---------------- BOTÓN VOLVER ----------------
-        .mb-3
-            a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
-
-        // ---------------- NOMBRE DEL MÉDICO ----------------
-        if turnos && turnos.length > 0
-            - const medicoNombre = turnos[0].nombre_medico || "Doctor"
-            - const medicoApellido = turnos[0].apellido_medico || ""
-            h3.center-text Turnos del Dr/a. #{medicoNombre} #{medicoApellido}
-        else
-            h3.center-text Turnos del Doctor
-
-        // ---------------- FILTRO MEJORADO ----------------
-        .filter-box
-            label(for="estado" style="font-weight: bold;") Filtrar por estado
-            select(name="estado" id="estado" class="form-select mt-2")
-                option(value="") Ver todos
-                option(value="Libre") Libre
-                option(value="Reservado") Reservado
-                option(value="Confirmado") Confirmado
-                option(value="Cancelado") Cancelado
-                option(value="Ausente") Ausente
-                option(value="Presente") Presente
-                option(value="En Consulta") En Consulta
-                option(value="Atendido") Atendido
-                option(value="No Disponible") No Disponible  
-
-        br
-
-        // ---------------- TABLA DE TURNOS ----------------
-        table#tablaTurnos.table.table-striped.table-bordered.table-hover
-            thead(class="table-dark")
-                tr 
-                    th Fecha
-                    th Hora
-                    th Motivo
-                    th Estado 
-                    th Orden
-                    th Paciente
-                    th DNI
-                    th Acciones                
-            tbody 
-                each turno in turnos
-                    tr(data-estado=turno.estado)
-                        td= turno.fecha_formateada
-                        td= `${turno.hora_inicio} hs`
-                        td= turno.motivo || "Vacío"
-                        td= turno.estado
-                        td= turno.orden
-                        td= turno.paciente_nombre || 'Vacío'
-                        td= turno.dni || 'Vacío'
-                        td.actions
-                            // Botón reservado más claro
-                            a.btn.btn-sm.btn-success(href=`/turnos/reservar/${turno.id}` title="Reservar o editar turno")
-                                i.fa-solid.fa-calendar-check
-                                |  Reservar
-                            
-                            // Botón eliminar
-                            button.btn.btn-sm.btn-danger(title="Eliminar" onclick=`confirmDelete(${turno.id})`)
-                                i.fa-solid.fa-trash
-
-    // ---------------- SCRIPTS ----------------
-    script.
-        function confirmDelete(id) {
-            Swal.fire({
-                title: '¿Eliminar turno?',
-                text: "No podrás revertir esto",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, eliminar'
-            }).then((result) => {
-                if (result.isConfirmed) deleteTurno(id);
-            });
-        }
-
-        function deleteTurno(id) {
-            fetch(`/turnos/${id}`, { method: 'DELETE' })
-                .then(res => {
-                    if (!res.ok) throw new Error();
-                    Swal.fire('Eliminado', 'El turno ha sido eliminado.', 'success')
-                        .then(() => location.reload());
-                })
-                .catch(() => Swal.fire('Error', 'Hubo un problema eliminando el turno.', 'error'));
-        }
-
-        // Filtro
-        document.getElementById("estado").addEventListener("change", function () {
-            const estado = this.value;
-            document.querySelectorAll("#tablaTurnos tbody tr").forEach(row => {
-                if (!estado || row.dataset.estado === estado)
-                    row.style.display = "";
-                else
-                    row.style.display = "none";
-            });
-        });
+      });
+    }

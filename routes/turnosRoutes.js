@@ -9,7 +9,7 @@ router.post("/reservar/:id", TurnosController.reservar);
 // ELIMINAR turno
 router.delete("/:id", TurnosController.delete);
 
-// LISTAR turnos (siempre la última porque es la más genérica)
+// LISTAR turnos 
 router.get("/:id", TurnosController.get);
 
 module.exports = router;

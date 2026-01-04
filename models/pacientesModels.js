@@ -110,7 +110,7 @@ class Paciente {
             const id_paciente = pacienteRes.insertId;
 
             // ================================
-            // 4. TELÉFONOS (OPCIONAL)
+            //  TELÉFONOS (OPCIONAL)
             // ================================
             if (telefonos.length) {
                 const valores = telefonos.map(t => [id_persona, t]);

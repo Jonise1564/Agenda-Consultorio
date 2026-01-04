@@ -53,78 +53,316 @@ class MedicosController {
     // ================================================================
     // CREAR
     // ================================================================
+    // async store(req, res, next) {
+    //     try {
+    //         const {
+    //             dni, nombre, apellido, nacimiento,
+    //             email, password, repeatPassword,
+    //             especialidades, telefonos, matricula
+    //         } = req.body;
+
+    //         if (password !== repeatPassword) {
+    //             return res.status(400).send('Las contraseñas no coinciden');
+    //         }
+
+    //         const parsed = validateMedicos({
+    //             dni,
+    //             nombre,
+    //             apellido,
+    //             fechaNacimiento: new Date(nacimiento),
+    //             email,
+    //             password,
+    //             especialidades,
+    //             telefonos
+    //         });
+
+    //         if (!parsed.success) {
+    //             return res.status(422).json(parsed.error.issues);
+    //         }
+
+    //         const personaExistente = await Persona.getByDni(dni);
+    //         if (personaExistente) {
+    //             return res.status(409).send('DNI ya existente');
+    //         }
+
+    //         const persona = await Persona.create({
+    //             dni,
+    //             nombre,
+    //             apellido,
+    //             nacimiento: parsed.data.fechaNacimiento.toISOString().split('T')[0],
+    //             email
+    //         });
+
+    //         const usuario = await Usuario.create({
+    //             email,
+    //             password,
+    //             id_persona: persona.id,
+    //             id_rol: 2
+    //         });
+
+    //         const medicoId = await Medico.crear({
+    //             id_persona: persona.id,
+    //             id_usuario: usuario.id,
+    //             estado: 1,
+    //             matricula
+    //         });
+
+    //         if (especialidades?.length) {
+    //             for (const idEsp of especialidades) {
+    //                 await Especialidad.asignarAMedico(medicoId, idEsp);
+    //             }
+    //         }
+
+    //         if (telefonos?.length) {
+    //             for (const tel of telefonos) {
+    //                 await Persona.addTelefono(persona.id, tel);
+    //             }
+    //         }
+
+    //         res.redirect('/medicos?nombreStore=1');
+
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
+
+
+    // async store(req, res, next) {
+    //     try {
+    //         const {
+    //             dni,
+    //             nombre,
+    //             apellido,
+    //             nacimiento,
+    //             email,
+    //             password,
+    //             repeatPassword,
+    //             matricula,
+    //             especialidades,
+    //             telefonos
+    //         } = req.body;
+
+    //         // ===============================
+    //         // VALIDACIONES BÁSICAS
+    //         // ===============================
+    //         if (password !== repeatPassword) {
+    //             return res.status(400).send('Las contraseñas no coinciden');
+    //         }
+
+    //         const parsed = validateMedicos({
+    //             dni,
+    //             nombre,
+    //             apellido,
+    //             fechaNacimiento: new Date(nacimiento),
+    //             email,
+    //             password,
+    //             especialidades,
+    //             telefonos
+    //         });
+
+    //         if (!parsed.success) {
+    //             return res.status(422).json(parsed.error.issues);
+    //         }
+
+    //         // ===============================
+    //         // DNI ÚNICO
+    //         // ===============================
+    //         const personaExistente = await Persona.getByDni(dni);
+    //         if (personaExistente) {
+    //             return res.status(409).send('DNI ya existente');
+    //         }
+
+    //         // ===============================
+    //         // CREAR PERSONA
+    //         // ===============================
+    //         const persona = await Persona.create({
+    //             dni,
+    //             nombre,
+    //             apellido,
+    //             nacimiento: parsed.data.fechaNacimiento
+    //                 .toISOString()
+    //                 .split('T')[0]
+    //         });
+
+    //         // ===============================
+    //         // CREAR USUARIO
+    //         // ===============================
+    //         const saltRounds = 10;
+    //         const hashedPassword = await bcrypt.hash(password.trim(), saltRounds);
+
+    //         const usuario = await Usuario.create({
+    //             email: email.trim(),
+    //             password: hashedPassword,
+    //             id_persona: persona.id,
+    //             id_rol: 2 // médico
+    //         });
+
+    //         // ===============================
+    //         // CREAR MÉDICO
+    //         // ===============================
+    //         const medicoId = await Medico.crear({
+    //             id_persona: persona.id,
+    //             id_usuario: usuario.id,
+    //             estado: 1,
+    //             matricula
+    //         });
+
+    //         // ===============================
+    //         // ESPECIALIDADES (MISMA LÓGICA QUE UPDATE)
+    //         // ===============================
+    //         const especialidadesArray = Array.isArray(especialidades)
+    //             ? especialidades
+    //             : especialidades
+    //                 ? [especialidades]
+    //                 : [];
+
+    //         for (const idEsp of especialidadesArray) {
+    //             await Especialidad.asignarAMedico(medicoId, idEsp);
+    //         }
+
+    //         // ===============================
+    //         // TELÉFONOS (MISMA LÓGICA QUE UPDATE)
+    //         // ===============================
+    //         const telefonosArray = Array.isArray(telefonos)
+    //             ? telefonos
+    //             : typeof telefonos === 'string'
+    //                 ? [telefonos]
+    //                 : [];
+
+    //         const telefonosLimpios = telefonosArray
+    //             .map(t => t?.trim())
+    //             .filter(Boolean);
+
+    //         for (const tel of telefonosLimpios) {
+    //             await Persona.addTelefono(persona.id, tel);
+    //         }
+
+    //         // ===============================
+    //         // REDIRECT OK
+    //         // ===============================
+    //         res.redirect('/medicos?nombreStore=1');
+
+    //     } catch (err) {
+    //         console.error('Error al crear médico:', err);
+    //         next(err);
+    //     }
+    // }
+
+
     async store(req, res, next) {
-        try {
-            const {
-                dni, nombre, apellido, nacimiento,
-                email, password, repeatPassword,
-                especialidades, telefonos, matricula
-            } = req.body;
+    try {
+        const {
+            dni,
+            nombre,
+            apellido,
+            nacimiento,
+            email,
+            password,
+            repeatPassword,
+            matricula,
+            especialidades,
+            telefonos
+        } = req.body;
 
-            if (password !== repeatPassword) {
-                return res.status(400).send('Las contraseñas no coinciden');
-            }
+        // ===============================
+        // NORMALIZAR ARRAYS (ANTES DE VALIDAR)
+        // ===============================
+        const especialidadesArray = Array.isArray(especialidades)
+            ? especialidades
+            : especialidades ? [especialidades] : [];
 
-            const parsed = validateMedicos({
-                dni,
-                nombre,
-                apellido,
-                fechaNacimiento: new Date(nacimiento),
-                email,
-                password,
-                especialidades,
-                telefonos
-            });
+        const telefonosArray = Array.isArray(telefonos)
+            ? telefonos
+            : telefonos ? [telefonos] : [];
 
-            if (!parsed.success) {
-                return res.status(422).json(parsed.error.issues);
-            }
+        // ===============================
+        // VALIDACIÓN ZOD
+        // ===============================
+        const parsed = validateMedicos({
+            dni,
+            nombre,
+            apellido,
+            fechaNacimiento: new Date(nacimiento),
+            email,
+            password,
+            repeatPassword,     // 🔑 FALTABA
+            matricula,          // 🔑 FALTABA
+            especialidades: especialidadesArray,
+            telefonos: telefonosArray
+        });
 
-            const personaExistente = await Persona.getByDni(dni);
-            if (personaExistente) {
-                return res.status(409).send('DNI ya existente');
-            }
-
-            const persona = await Persona.create({
-                dni,
-                nombre,
-                apellido,
-                nacimiento: parsed.data.fechaNacimiento.toISOString().split('T')[0],
-                email
-            });
-
-            const usuario = await Usuario.create({
-                email,
-                password,
-                id_persona: persona.id,
-                id_rol: 2
-            });
-
-            const medicoId = await Medico.crear({
-                id_persona: persona.id,
-                id_usuario: usuario.id,
-                estado: 1,
-                matricula
-            });
-
-            if (especialidades?.length) {
-                for (const idEsp of especialidades) {
-                    await Especialidad.asignarAMedico(medicoId, idEsp);
-                }
-            }
-
-            if (telefonos?.length) {
-                for (const tel of telefonos) {
-                    await Persona.addTelefono(persona.id, tel);
-                }
-            }
-
-            res.redirect('/medicos?nombreStore=1');
-
-        } catch (err) {
-            next(err);
+        if (!parsed.success) {
+            return res.status(422).json(parsed.error.issues);
         }
+
+        // ===============================
+        // DNI ÚNICO
+        // ===============================
+        const personaExistente = await Persona.getByDni(dni);
+        if (personaExistente) {
+            return res.status(409).send('DNI ya existente');
+        }
+
+        // ===============================
+        // CREAR PERSONA
+        // ===============================
+        const persona = await Persona.create({
+            dni,
+            nombre,
+            apellido,
+            nacimiento: parsed.data.fechaNacimiento
+                .toISOString()
+                .split('T')[0]
+        });
+
+        // ===============================
+        // CREAR USUARIO
+        // ===============================
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(parsed.data.password, saltRounds);
+
+        const usuario = await Usuario.create({
+            email: parsed.data.email,
+            password: hashedPassword,
+            id_persona: persona.id,
+            id_rol: 2
+        });
+
+        // ===============================
+        // CREAR MÉDICO
+        // ===============================
+        const medicoId = await Medico.crear({
+            id_persona: persona.id,
+            id_usuario: usuario.id,
+            estado: 1,
+            matricula: parsed.data.matricula
+        });
+
+        // ===============================
+        // ESPECIALIDADES
+        // ===============================
+        for (const idEsp of parsed.data.especialidades) {
+            await Especialidad.asignarAMedico(medicoId, idEsp);
+        }
+
+        // ===============================
+        // TELÉFONOS
+        // ===============================
+        for (const tel of parsed.data.telefonos) {
+            await Persona.addTelefono(persona.id, tel);
+        }
+
+        // ===============================
+        // REDIRECT OK
+        // ===============================
+        res.redirect('/medicos?nombreStore=1');
+
+    } catch (err) {
+        console.error('Error al crear médico:', err);
+        next(err);
     }
+}
+
 
     // ================================================================
     // EDITAR (FORM)
@@ -212,7 +450,7 @@ class MedicosController {
             } = req.body;
 
             // ===============================
-            // 1️⃣ OBTENER MÉDICO
+            // OBTENER MÉDICO
             // ===============================
             const medico = await Medico.obtenerPorId(id_medico);
             if (!medico) {
@@ -220,7 +458,7 @@ class MedicosController {
             }
 
             // ===============================
-            // 2️⃣ PERSONA
+            // PERSONA
             // ===============================
             await Persona.updatePersona(medico.id_persona, {
                 nombre,
@@ -248,14 +486,14 @@ class MedicosController {
             }
 
             // ===============================
-            // 4️⃣ MÉDICO (MATRÍCULA)
+            // MÉDICO (MATRÍCULA)
             // ===============================
             if (matricula) {
                 await Medico.updateMatricula(id_medico, matricula);
             }
 
             // ===============================
-            // 5️⃣ ESPECIALIDADES SOLO SI HUBO CAMBIOS)
+            // ESPECIALIDADES
             // ===============================
             if (especialidades_modificadas === '1') {
 
@@ -303,9 +541,6 @@ class MedicosController {
 
             }
 
-            // ===============================
-            // 7️⃣ OK
-            // ===============================
             res.redirect('/medicos?nombreUpdate=1');
 
         } catch (error) {
@@ -331,7 +566,7 @@ class MedicosController {
         res.redirect('/medicos?nombreActivo=1');
     }
     // ================================================================
-    // API - BUSCADOR ON DEMAND
+    // BUSCADOR ON DEMAND
     // ================================================================
 
     // 🔎 Buscar médicos por nombre/apellido
@@ -365,6 +600,7 @@ class MedicosController {
             res.status(500).json([]);
         }
     }
+
 
 
 

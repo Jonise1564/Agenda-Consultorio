@@ -1,59 +1,92 @@
+// const express = require('express');
+// const MedicosRouter = express.Router()
+// const MedicosControllers = require('../controllers/medicosControllers');
+
+// // Index
+// MedicosRouter.get('/', MedicosControllers.get);
+
+// // Vista crear
+// MedicosRouter.get('/create', MedicosControllers.getCreateForm);
+
+// // Guardar médico
+// MedicosRouter.post('/', MedicosControllers.store);
+
+// // Vista editar
+// MedicosRouter.get('/edit/:id_medico', MedicosControllers.edit);
+
+// // Actualizar médico
+// MedicosRouter.post('/update/:id_medico', MedicosControllers.update);
+
+
+// // Activar / inactivar médico
+// MedicosRouter.post('/inactivar/:id_medico', MedicosControllers.inactivar);
+// MedicosRouter.post('/activar/:id_medico', MedicosControllers.activar);
+
+// // Buscar Medico
+// MedicosRouter.get('/buscar', MedicosControllers.buscar);
+
+// // Especialidades activas del médico
+// MedicosRouter.get('/:id_medico/especialidades', MedicosControllers.especialidadesActivas);
+
+
+
+// module.exports = MedicosRouter;
+
+
 const express = require('express');
-const MedicosRouter = express.Router()
+const MedicosRouter = express.Router();
 const MedicosControllers = require('../controllers/medicosControllers');
 
-// Index
+// ===================================================
+// LISTAR MÉDICOS
+// GET /medicos
+// ===================================================
 MedicosRouter.get('/', MedicosControllers.get);
 
-// Vista crear
+// ===================================================
+// FORM CREAR MÉDICO
+// GET /medicos/create
+// ===================================================
 MedicosRouter.get('/create', MedicosControllers.getCreateForm);
 
-// Guardar médico
+// ===================================================
+// CREAR MÉDICO
+// POST /medicos
+// ===================================================
 MedicosRouter.post('/', MedicosControllers.store);
 
-// Vista editar
-// MedicosRouter.get('/edit/:dni', MedicosControllers.edit);
-//MedicosRouter.get('/edit/:id_medico', MedicosController.edit);
+// ===================================================
+// FORM EDITAR MÉDICO
+// GET /medicos/edit/:id_medico
+// ===================================================
 MedicosRouter.get('/edit/:id_medico', MedicosControllers.edit);
 
-// Actualizar médico
+// ===================================================
+// ACTUALIZAR MÉDICO
+// POST /medicos/update/:id_medico
+// ===================================================
 MedicosRouter.post('/update/:id_medico', MedicosControllers.update);
 
-// MedicosRouter.post('/update/:dni', MedicosControllers.update);
-
-// Activar / inactivar médico
-// MedicosRouter.post('/activar/:dni', MedicosControllers.activar);
-// MedicosRouter.post('/inactivar/:dni', MedicosControllers.inactivar);
+// ===================================================
+// INACTIVAR / ACTIVAR
+// POST /medicos/inactivar/:id_medico
+// POST /medicos/activar/:id_medico
+// ===================================================
 MedicosRouter.post('/inactivar/:id_medico', MedicosControllers.inactivar);
 MedicosRouter.post('/activar/:id_medico', MedicosControllers.activar);
 
-
-
-
-
-
-
-// Especialidades del médico
-// MedicosRouter.get('/editarEsp/:dni', MedicosControllers.editarEspecialidades);
-
-// MedicosRouter.post('/activarEsp/:Id', MedicosControllers.activarEspecialidad);
-// MedicosRouter.post('/inactivarEsp/:Id', MedicosControllers.inactivarEspecialidad);
-// Buscar médicos
+// ===================================================
+// BUSCADOR AJAX
+// GET /medicos/buscar?q=
+// ===================================================
 MedicosRouter.get('/buscar', MedicosControllers.buscar);
 
-// Especialidades activas del médico
+// ===================================================
+// ESPECIALIDADES ACTIVAS DEL MÉDICO
+// GET /medicos/:id_medico/especialidades
+// ===================================================
 MedicosRouter.get('/:id_medico/especialidades', MedicosControllers.especialidadesActivas);
 
-
-// ==============================
-// API - BUSCADOR ON DEMAND
-// ==============================
-
-    // // Buscar médicos
-    // MedicosRouter.get('/api/buscar', MedicosControllers.buscar);
-
-    // // Especialidades activas del médico
-    // MedicosRouter.get('/api/:id_medico/especialidades', MedicosControllers.especialidadesActivas);
-
 module.exports = MedicosRouter;
+
 

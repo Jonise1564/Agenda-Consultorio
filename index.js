@@ -17,6 +17,8 @@ const PacientesRouter = require('./routes/pacientesRoutes')
 const AgendasRouter = require('./routes/agendasRoutes')
 const TurnosRouter = require('./routes/turnosRoutes');
 const obrasSocialesRouter = require('./routes/obrassocialesRoutes');
+ const SecretariaRouter = require('./routes/secretariaRoutes'); 
+
 
 
 const Especialidad = require('./models/especialidadesModels');
@@ -59,6 +61,9 @@ app.use('/agendas', AgendasRouter)
 app.use('/turnos', TurnosRouter)
 //Gestion obras sociales
 app.use('/obrassociales', obrasSocialesRouter)
+//Panel secretaria
+ app.use('/secretaria', SecretariaRouter);
+
   
 app.listen(PORT, () => {
     console.log(`Server listening on port http://localhost:${PORT}`)

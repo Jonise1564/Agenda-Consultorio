@@ -118,62 +118,167 @@ class Medico {
 
 
 
-    static async crear(data) {
-        let conn;
-        try {
-            conn = await createConnection();
-            await conn.beginTransaction();
+    // static async crear(data) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         await conn.beginTransaction();
 
-            // Extraer y validar datos
-            const {
-                dni,
-                nombre,
-                apellido,
-                nacimiento,
-                telefonoAlternativo,
-                email,
-                password,
-                repeatPassword,
-                id_rol,
-                estado,
-                matricula,
-                especialidades = []
-            } = data;
+    //         // Extraer y validar datos
+    //         const {
+    //             dni,
+    //             nombre,
+    //             apellido,
+    //             nacimiento,
+    //             telefonoAlternativo,
+    //             email,
+    //             password,
+    //             repeatPassword,
+    //             id_rol,
+    //             estado,
+    //             matricula,
+    //             especialidades = []
+    //         } = data;
 
-            // Validaciones
-            if (!dni || !nombre || !apellido || !nacimiento || !telefonoAlternativo ||
-                !email || !password || !repeatPassword || !id_rol || !estado || !matricula) {
-                throw new Error("Todos los campos obligatorios deben ser completados");
-            }
+    //         // Validaciones
+    //         if (!dni || !nombre || !apellido || !nacimiento || !telefonoAlternativo ||
+    //             !email || !password || !repeatPassword || !id_rol || !estado || !matricula) {
+    //             throw new Error("Todos los campos obligatorios deben ser completados");
+    //         }
 
-            if (password !== repeatPassword) {
-                throw new Error("Las contraseñas no coinciden");
-            }
+    //         if (password !== repeatPassword) {
+    //             throw new Error("Las contraseñas no coinciden");
+    //         }
 
-            // Convertir especialidades a array si es necesario
-            const especialidadesArray = Array.isArray(especialidades)
-                ? especialidades
-                : [especialidades].filter(Boolean);
+    //         // Convertir especialidades a array si es necesario
+    //         const especialidadesArray = Array.isArray(especialidades)
+    //             ? especialidades
+    //             : [especialidades].filter(Boolean);
 
-            if (especialidadesArray.length === 0) {
-                throw new Error("Debe seleccionar al menos una especialidad");
-            }
+    //         if (especialidadesArray.length === 0) {
+    //             throw new Error("Debe seleccionar al menos una especialidad");
+    //         }
 
-            // Resto de tu código original...
-            const [personaResult] = await conn.query(`
-            INSERT INTO personas (dni, nombre, apellido, nacimiento, telefono, email)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [String(dni), nombre, apellido, nacimiento, String(telefonoAlternativo), email]);
+    //         // Resto de tu código original...
+    //         const [personaResult] = await conn.query(`
+    //         INSERT INTO personas (dni, nombre, apellido, nacimiento, telefono, email)
+    //         VALUES (?, ?, ?, ?, ?, ?)
+    //     `, [String(dni), nombre, apellido, nacimiento, String(telefonoAlternativo), email]);
 
-            // ... resto del código
+    //         // ... resto del código
 
-        } catch (error) {
-            if (conn) await conn.rollback();
-            throw error;
-        } finally {
-            if (conn) conn.end();
+    //     } catch (error) {
+    //         if (conn) await conn.rollback();
+    //         throw error;
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
+
+    static async crear({
+    dni,
+    nombre,
+    apellido,
+    nacimiento,
+    telefonoAlternativo,
+    email,
+    password,
+    repeatPassword,
+    id_rol,
+    estado,
+    matricula,
+    especialidades = []
+}) {
+    let conn;
+
+    try {
+        conn = await createConnection();
+        await conn.beginTransaction();
+
+        // ============================
+        // VALIDACIONES
+        // ============================
+        if (
+            !dni || !nombre || !apellido || !nacimiento ||
+            !telefonoAlternativo || !email ||
+            !password || !repeatPassword ||
+            !id_rol || estado === undefined || !matricula
+        ) {
+            throw new Error('Todos los campos obligatorios deben ser completados');
         }
+
+        if (password !== repeatPassword) {
+            throw new Error('Las contraseñas no coinciden');
+        }
+
+        const especialidadesArray = Array.isArray(especialidades)
+            ? especialidades
+            : [especialidades];
+
+        if (especialidadesArray.length === 0) {
+            throw new Error('Debe seleccionar al menos una especialidad');
+        }
+
+        // ============================
+        // PERSONA
+        // ============================
+        const [personaResult] = await conn.query(`
+            INSERT INTO personas (dni, nombre, apellido, nacimiento)
+            VALUES (?, ?, ?, ?)
+        `, [String(dni), nombre, apellido, nacimiento]);
+
+        const id_persona = personaResult.insertId;
+
+        // Teléfono principal
+        await conn.query(`
+            INSERT INTO telefonos (id_persona, numero)
+            VALUES (?, ?)
+        `, [id_persona, String(telefonoAlternativo)]);
+
+        // ============================
+        // USUARIO
+        // ============================
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const [usuarioResult] = await conn.query(`
+            INSERT INTO usuarios (email, password, id_rol, estado)
+            VALUES (?, ?, ?, 1)
+        `, [email, passwordHash, id_rol]);
+
+        const id_usuario = usuarioResult.insertId;
+
+        // ============================
+        // MÉDICO
+        // ============================
+        const [medicoResult] = await conn.query(`
+            INSERT INTO medicos (id_persona, id_usuario, estado, matricula)
+            VALUES (?, ?, ?, ?)
+        `, [id_persona, id_usuario, estado, matricula]);
+
+        const id_medico = medicoResult.insertId;
+
+        // ============================
+        // ESPECIALIDADES (igual que update)
+        // ============================
+        for (const id_especialidad of especialidadesArray) {
+            await conn.query(`
+                INSERT INTO medico_especialidad (id_medico, id_especialidad, matricula)
+                VALUES (?, ?, ?)
+            `, [id_medico, id_especialidad, matricula]);
+        }
+
+        await conn.commit();
+        return id_medico;
+
+    } catch (error) {
+        if (conn) await conn.rollback();
+        throw error;
+
+    } finally {
+        if (conn) conn.end();
     }
+}
 
 
     // ============================================================

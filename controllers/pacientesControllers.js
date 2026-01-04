@@ -284,7 +284,7 @@ class PacientesController {
     }
 
     // ===========================================
-    // BUSCAR PACIENTES (AJAX)
+    // BUSCAR PACIENTES
     // ===========================================
 
     async search(req, res, next) {

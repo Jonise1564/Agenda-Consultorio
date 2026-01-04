@@ -1,0 +1,349 @@
+//- extends layout
+
+//- block contenido
+//-   // =====================================================
+//-   // BARRA SUPERIOR
+//-   // =====================================================
+//-   .d-flex.justify-content-between.align-items-center.mb-4
+//-     .d-flex.align-items-center.gap-3
+//-       h2.mb-0 Agendas Médicas
+//-       span.badge.bg-secondary Sucursal Central
+//-     .d-flex.align-items-center.gap-4
+//-       span.text-muted
+//-         i.fa-regular.fa-calendar
+//-         |  #{new Date().toLocaleDateString()}
+//-       span
+//-         i.fa-solid.fa-user
+//-         |  Secretaria / Admisión
+
+//-   // =====================================================
+//-   // CUERPO PRINCIPAL
+//-   // =====================================================
+//-   .row
+//-     // ================== AGENDA / CALENDARIO ==================
+//-     .col-md-9
+//-       .card-custom
+//-         .d-flex.justify-content-between.align-items-center.mb-3
+//-           h4.mb-0 Agenda del día
+//-           .btn-group
+//-             button.btn.btn-outline-secondary.btn-sm Día
+//-             button.btn.btn-outline-secondary.btn-sm Semana
+
+//-         table.table.table-bordered.align-middle.text-center
+//-           thead.table-light
+//-             tr
+//-               th Hora
+//-               th Estado
+//-               th Paciente
+//-               th Acción
+//-           tbody
+//-             tr
+//-               td 08:00
+//-               td.text-success Libre
+//-               td -
+//-               td
+//-                 button.btn.btn-sm.btn-primary-custom(
+//-                   data-bs-toggle="modal"
+//-                   data-bs-target="#modalAgendar"
+//-                 )
+//-                   i.fa-solid.fa-plus
+//-                   |  Agendar
+
+//-             tr
+//-               td 08:30
+//-               td.text-warning Reservado
+//-               td Juan Pérez
+//-               td
+//-                 button.btn.btn-sm.btn-outline-primary
+//-                   i.fa-solid.fa-eye
+//-                   |  Ver
+
+//-             tr
+//-               td 09:00
+//-               td.text-info Confirmado
+//-               td Ana López
+//-               td
+//-                 button.btn.btn-sm.btn-outline-primary
+//-                   i.fa-solid.fa-eye
+//-                   |  Ver
+
+//-             tr.table-secondary
+//-               td 09:30
+//-               td No disponible
+//-               td -
+//-               td -
+
+//-     // ================== PANEL LATERAL ==================
+//-     .col-md-3
+//-       .card-custom
+//-         h5.mb-3 Turno seleccionado
+//-         p.text-muted Seleccione un turno de la agenda
+
+//-         hr
+
+//-         .d-grid.gap-2
+//-           button.btn.btn-success.btn-sm(
+//-             data-bs-toggle="modal"
+//-             data-bs-target="#modalConfirmar"
+//-           )
+//-             i.fa-solid.fa-check
+//-             |  Confirmar
+
+//-           button.btn.btn-warning.btn-sm
+//-             i.fa-solid.fa-user-check
+//-             |  Presente
+
+//-           button.btn.btn-info.btn-sm
+//-             i.fa-solid.fa-stethoscope
+//-             |  En consulta
+
+//-           button.btn.btn-primary.btn-sm
+//-             i.fa-solid.fa-clipboard-check
+//-             |  Atendido
+
+//-           button.btn.btn-danger.btn-sm(
+//-             data-bs-toggle="modal"
+//-             data-bs-target="#modalCancelar"
+//-           )
+//-             i.fa-solid.fa-xmark
+//-             |  Cancelar / Ausente
+
+//-   // =====================================================
+//-   // MODALES
+//-   // =====================================================
+
+//-   // ---------- MODAL AGENDAR TURNO ----------
+//-   #modalAgendar.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content
+//-         .modal-header
+//-           h5.modal-title Agendar turno
+//-           button.btn-close(data-bs-dismiss="modal")
+//-         .modal-body
+//-           label.form-label Paciente
+//-           input.form-control(type="text" placeholder="Buscar por DNI o nombre")
+
+//-           label.form-label.mt-3 Clasificación
+//-           select.form-select
+//-             option Normal
+//-             option Especial
+//-             option VIP
+
+//-           label.form-label.mt-3 Motivo de consulta
+//-           textarea.form-control(rows="2")
+
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Cancelar
+//-           button.btn.btn-primary-custom Reservar turno
+
+//-   // ---------- MODAL CONFIRMAR TURNO ----------
+//-   #modalConfirmar.modal.fade(tabindex="-1")
+//-     .modal-dialog.modal-sm
+//-       .modal-content
+//-         .modal-header
+//-           h5.modal-title Confirmar turno
+//-           button.btn-close(data-bs-dismiss="modal")
+//-         .modal-body
+//-           p ¿Desea confirmar este turno?
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") No
+//-           button.btn.btn-success Confirmar
+
+//-   // ---------- MODAL CANCELAR TURNO ----------
+//-   #modalCancelar.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content
+//-         .modal-header
+//-           h5.modal-title Cancelar turno
+//-           button.btn-close(data-bs-dismiss="modal")
+//-         .modal-body
+//-           label.form-label Motivo de cancelación
+//-           textarea.form-control(rows="3")
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Volver
+//-           button.btn.btn-danger Cancelar turno
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-     .container.mt-4
+
+//-         h2.text-center.mb-4 📅 Agendar Turnos
+
+//-         // ===================== FILTROS =====================
+//-         .card.mb-4
+//-             .card-body
+//-                 h5.card-title Filtros de búsqueda
+
+//-                 form#formFiltros.row.g-3(method="GET" action="/secretaria/agendas")
+
+//-                     .col-md-3
+//-                         label.form-label Sucursal
+//-                         select.form-select(name="sucursal")
+//-                             option(value="") Todas
+//-                             each s in sucursales
+//-                                 option(value=s.id) #{s.nombre}
+
+//-                     .col-md-3
+//-                         label.form-label Especialidad
+//-                         select.form-select(name="especialidad")
+//-                             option(value="") Todas
+//-                             each e in especialidades
+//-                                 option(value=e.id) #{e.nombre}
+
+//-                     .col-md-3
+//-                         label.form-label Médico
+//-                         select.form-select(name="medico")
+//-                             option(value="") Todos
+//-                             each m in medicos
+//-                                 option(value=m.id) #{m.apellido} #{m.nombre}
+
+//-                     .col-md-3
+//-                         label.form-label Clasificación del turno
+//-                         select.form-select(name="clasificacion")
+//-                             option(value="") Todas
+//-                             option(value="Consulta")
+//-                             option(value="Control")
+//-                             option(value="Urgente")
+//-                             option(value="Estudio")
+
+//-                     .col-md-3
+//-                         label.form-label Fecha
+//-                         input.form-control(type="date" name="fecha")
+
+//-                     .col-md-12.text-end
+//-                         button.btn.btn-primary(type="submit") 🔍 Buscar agendas
+
+//-         // ===================== RESULTADOS =====================
+//-         if agendas && agendas.length > 0
+//-             h4.mb-3 Horarios disponibles
+
+//-             each agenda in agendas
+//-                 .card.mb-3
+//-                     .card-header
+//-                         strong #{agenda.medico_apellido} #{agenda.medico_nombre}
+//-                         |  — #{agenda.especialidad} — #{agenda.sucursal}
+
+//-                     .card-body
+//-                         table.table.table-sm.table-bordered
+//-                             thead.table-light
+//-                                 tr
+//-                                     th Hora
+//-                                     th Estado
+//-                                     th Acción
+//-                             tbody
+//-                                 each turno in agenda.turnos
+//-                                     tr
+//-                                         td #{turno.hora_inicio}
+//-                                         td
+//-                                             if turno.estado === 'Libre'
+//-                                                 span.badge.bg-success Libre
+//-                                             else
+//-                                                 span.badge.bg-secondary #{turno.estado}
+
+//-                                         td
+//-                                             if turno.estado === 'Libre'
+//-                                                 a.btn.btn-sm.btn-success(
+//-                                                     href=`/secretaria/turnos/agendar/${turno.id}`
+//-                                                 ) Agendar
+//-                                             else
+//-                                                 span.text-muted No disponible
+//-         else
+//-             p.text-muted.text-center No hay horarios disponibles con los filtros seleccionados.
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-     .container.mt-4
+//-         h3.mb-4 📝 Agendar Turno
+
+//-         .card
+//-             .card-body
+//-                 p
+//-                     strong Fecha:
+//-                     |  #{turno.fecha_formateada}
+//-                 p
+//-                     strong Hora:
+//-                     |  #{turno.hora_inicio} hs
+//-                 p
+//-                     strong Médico:
+//-                     |  #{turno.medico_apellido} #{turno.medico_nombre}
+
+//-                 hr
+
+//-                 form(method="POST" action=`/secretaria/agendar-turno/${turno.id}`)
+
+//-                     .mb-3
+//-                         label.form-label Paciente
+//-                         select.form-select(name="id_paciente" required)
+//-                             option(value="") Seleccione un paciente
+//-                             each p in pacientes
+//-                                 option(
+//-                                     value=p.id_paciente
+//-                                     selected=(turno.id_paciente==p.id_paciente)
+//-                                 )
+//-                                     | #{p.apellido} #{p.nombre} — DNI #{p.dni}
+
+//-                     .mb-3
+//-                         label.form-label Clasificación / Motivo
+//-                         input.form-control(
+//-                             type="text"
+//-                             name="motivo"
+//-                             value=turno.motivo
+//-                         )
+
+//-                     input(type="hidden" name="estado" value="Reservado")
+//-                     input(type="hidden" name="id_agenda" value=turno.id_agenda)
+
+//-                     .text-end
+//-                         a.btn.btn-secondary(href="/secretaria/buscar-agendas") Cancelar
+//-                         button.btn.btn-success(type="submit")
+//-                             i.fa-solid.fa-check
+//-                             |  Confirmar turno
+
+
+
+
+
+extends ../layout
+
+block contenido
+    h3 Agendar turno
+
+    p Fecha: #{turno.fecha}
+    p Hora: #{turno.hora_inicio}
+
+    form(method="POST")
+        label DNI del paciente
+        input#dni.form-control(type="text")
+
+        button.btn.btn-secondary.mt-2(type="button" onclick="buscarPaciente()")
+            Buscar
+
+        input(type="hidden" name="id_paciente" id="id_paciente")
+
+        div#resultado.mt-3
+
+        button.btn.btn-success.mt-3(type="submit") Confirmar turno
+
+    script.
+        function buscarPaciente() {
+            const dni = document.getElementById('dni').value;
+
+            fetch(`/secretaria/pacientes/buscar?dni=${dni}`)
+                .then(res => res.json())
+                .then(p => {
+                    if (!p) {
+                        document.getElementById('resultado').innerHTML = 'No encontrado';
+                        return;
+                    }
+                    document.getElementById('id_paciente').value = p.id_paciente;
+                    document.getElementById('resultado').innerHTML =
+                        p.apellido + ' ' + p.nombre;
+                });
+        }

@@ -1,0 +1,96 @@
+//- extends ../layout
+
+//- block contenido
+//-     .container.mt-4
+//-         h3.mb-4 🔍 Buscar Agendas
+
+//-         form(method="GET" action="/secretaria/buscar-agendas")
+//-             .row.g-3
+//-                 .col-md-3
+//-                     label.form-label Sucursal
+//-                     select.form-select(name="id_sucursal")
+//-                         option(value="") Todas
+//-                         each s in sucursales
+//-                             option(value=s.id selected=(filtros.id_sucursal==s.id)) #{s.nombre}
+
+//-                 .col-md-3
+//-                     label.form-label Especialidad
+//-                     select.form-select(name="id_especialidad")
+//-                         option(value="") Todas
+//-                         each e in especialidades
+//-                             option(value=e.id selected=(filtros.id_especialidad==e.id)) #{e.nombre}
+
+//-                 .col-md-3
+//-                     label.form-label Médico
+//-                     select.form-select(name="id_medico")
+//-                         option(value="") Todos
+//-                         each m in medicos
+//-                             option(value=m.id_medico selected=(filtros.id_medico==m.id_medico))
+//-                                 | #{m.apellido} #{m.nombre}
+
+//-                 .col-md-3
+//-                     label.form-label Fecha
+//-                     input.form-control(type="date" name="fecha" value=filtros.fecha)
+
+//-                 .col-md-12.text-end
+//-                     button.btn.btn-primary(type="submit")
+//-                         i.fa-solid.fa-magnifying-glass
+//-                         |  Buscar
+
+//-         hr
+
+//-         if agendas && agendas.length
+//-             each agenda in agendas
+//-                 .card.mb-3
+//-                     .card-header
+//-                         strong #{agenda.medico_apellido} #{agenda.medico_nombre}
+//-                         |  — #{agenda.especialidad} — #{agenda.sucursal}
+
+//-                     .card-body
+//-                         table.table.table-sm.table-bordered
+//-                             thead.table-light
+//-                                 tr
+//-                                     th Hora
+//-                                     th Estado
+//-                                     th Acción
+//-                             tbody
+//-                                 each turno in agenda.turnos
+//-                                     tr
+//-                                         td #{turno.hora_inicio}
+//-                                         td
+//-                                             if turno.estado === 'Libre'
+//-                                                 span.badge.bg-success Libre
+//-                                             else
+//-                                                 span.badge.bg-secondary #{turno.estado}
+
+//-                                         td
+//-                                             if turno.estado === 'Libre'
+//-                                                 a.btn.btn-sm.btn-success(
+//-                                                     href=`/secretaria/agendar-turno/${turno.id}`
+//-                                                 ) Agendar
+//-                                             else
+//-                                                 span.text-muted —
+//-         else
+//-             p.text-muted.text-center No hay agendas disponibles con los filtros seleccionados.
+
+
+
+
+
+extends ../layout
+
+block contenido
+    h3 Agendas disponibles
+
+    each agenda in agendas
+        h5 #{agenda.medico_apellido} #{agenda.medico_nombre}
+
+        table.table
+            each turno in agenda.turnos
+                if turno.estado === 'Libre'
+                    tr
+                        td #{turno.hora_inicio}
+                        td
+                            a.btn.btn-success(
+                                href=`/secretaria/turnos/agendar/${turno.id}`
+                            ) Agendar

@@ -209,7 +209,7 @@ class AgendasController {
     }
 
 
-    
+
     async update(req, res, next) {
         try {
             const { id } = req.params;
@@ -347,6 +347,28 @@ class AgendasController {
             next(error);
         }
     }
+
+
+    // =========================
+    // BUSCAR TURNOS DISPONIBLES
+    // =========================
+    async buscarTurnos(req, res) {
+        try {
+            const { doctor, fecha, tipoConsulta } = req.body;
+
+            // ⚠️ por ahora solo renderizamos la vista sin lógica
+            return res.render('secretaria/index', {
+                doctorSeleccionado: doctor,
+                fechaSeleccionada: fecha,
+                tipoConsulta
+            });
+
+        } catch (error) {
+            console.error('Error buscarTurnos:', error);
+            res.status(500).send('Error al buscar turnos');
+        }
+    }
+
 }
 
 module.exports = new AgendasController();
