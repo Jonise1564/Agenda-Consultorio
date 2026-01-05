@@ -408,38 +408,6 @@ class Agenda {
     // =====================================================
 // OBTENER OTRAS FECHAS DISPONIBLES PARA UN MÉDICO
 // =====================================================
-// static async obtenerOtrasFechasDisponibles(id_medico, fechaActual) {
-//     let conn;
-//     try {
-//         conn = await createConnection();
-
-//         const [rows] = await conn.query(`
-//             SELECT DISTINCT fecha
-//             FROM (
-//                 SELECT DATE_ADD(a.fecha_creacion, INTERVAL seq DAY) AS fecha
-//                 FROM agendas a
-//                 JOIN seq_0_to_365 seq
-//                   ON DATE_ADD(a.fecha_creacion, INTERVAL seq DAY) <= a.fecha_fin
-//                 WHERE a.id_medico = ?
-//             ) fechas
-//             WHERE fecha <> ?
-//             ORDER BY fecha
-//             LIMIT 7
-//         `, [id_medico, fechaActual]);
-
-//         return rows.map(f => ({
-//             label: f.fecha.toLocaleDateString('es-AR'),
-//             valor: f.fecha.toISOString().split('T')[0]
-//         }));
-
-//     } catch (error) {
-//         console.error('Error obteniendo otras fechas disponibles:', error);
-//         throw error;
-//     } finally {
-//         if (conn) conn.end();
-//     }
-// }
-
 static async obtenerOtrasFechasDisponibles(id_medico, fechaActual) {
   try {
     const [rows] = await db.query(`

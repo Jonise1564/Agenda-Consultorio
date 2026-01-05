@@ -15,38 +15,6 @@ class Turno {
     // ============================================
     // GET ALL TURNOS DE UNA AGENDA
     // ============================================
-    // static async getAll(id_agenda) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         const [turnos] = await conn.query(`
-    //         SELECT 
-    //                 t.*,
-    //                 p.nombre AS paciente_nombre,
-    //                 p.dni AS paciente_dni,
-    //                 m.id_medico,
-    //                 mp.nombre AS nombre_medico,
-    //                 mp.apellido AS apellido_medico
-    //             FROM turnos t
-    //             LEFT JOIN pacientes pa ON t.id_paciente = pa.id
-    //             LEFT JOIN personas p ON pa.id_persona = p.id
-    //             INNER JOIN agendas a ON t.id_agenda = a.id
-    //             INNER JOIN medicos m ON a.matricula = m.matricula
-    //             INNER JOIN personas mp ON m.id_persona = mp.id
-    //             WHERE t.id_agenda = ?
-    //             ORDER BY t.fecha, t.hora_inicio;
-
-    //         `, [id_agenda]);
-
-    //         return turnos;
-
-    //     } catch (error) {
-    //         console.error('Error fetching turnos:', error);
-    //         throw new Error('Error al traer turnos desde el modelo');
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
     static async getAll(id_agenda) {
         let conn;
         try {
@@ -220,23 +188,23 @@ class Turno {
     }
     // =====================================================
     // OBTENER HORARIOS OCUPADOS POR MÉDICO Y FECHA
-    // =====================================================
-    static async obtenerHorariosOcupados(id_medico, fecha) {
+    // =====================================================    
+    static async obtenerHorariosOcupados(id_agenda, fecha) {
         let conn;
         try {
             conn = await createConnection();
 
             const [rows] = await conn.query(`
-            SELECT 
-                t.hora_inicio
-            FROM turnos t
-            INNER JOIN agendas a ON t.id_agenda = a.id
-            WHERE a.id_medico = ?
-              AND t.fecha = ?
-              AND t.estado IN ('pendiente', 'Reservado')
-        `, [id_medico, fecha]);
+         SELECT 
+            DATE_FORMAT(hora_inicio, '%H:%i') AS hora
+        FROM turnos
+        WHERE id_agenda = ?
+            AND fecha = ?
+            AND estado IN ('Reservado', 'Confirmado', 'Pendiente', 'En Consulta')
+    `, [id_agenda, fecha]);
 
-            return rows.map(r => r.hora_inicio);
+            // Devuelve: ['08:00', '08:15', ...]
+            return rows.map(r => r.hora);
 
         } catch (error) {
             console.error('Error obteniendo horarios ocupados:', error);
@@ -246,7 +214,8 @@ class Turno {
         }
     }
 
-    
+
+
     // =========================
     // BUSCAR TURNOS POR MÉDICO Y FECHA
     // =========================
