@@ -1,577 +1,3 @@
-//- //- extends ../layout
-
-//- //- block contenido
-//- //-   .container.mt-5
-//- //-     h2 Crear Nuevo Médico
-//- //-     form(action="/medicos" method="POST")
-//- //-       .mb-3
-//- //-         label(for="dni" class="form-label") DNI
-//- //-         input#dni.form-control(type="number" name="dni" required)
-//- //-       .mb-3
-//- //-         label(for="nombre" class="form-label") Nombre
-//- //-         input#nombre.form-control(type="text" name="nombre" required)
-//- //-       .mb-3
-//- //-         label(for="apellido" class="form-label") Apellido
-//- //-         input#apellido.form-control(type="text" name="apellido" required)
-//- //-       .mb-3
-//- //-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//- //-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-//- //-       .mb-3
-//- //-         label(for="email" class="form-label") Email
-//- //-         input#email.form-control(type="email" name="email" required)
-//- //-       .mb-3
-//- //-         label(for="password" class="form-label") Contraseña
-//- //-         input#password.form-control(type="password" name="password" required)
-//- //-       .mb-3
-//- //-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//- //-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-//- //-       .mb-3
-//- //-         label(for="id_rol" class="form-label") Rol
-//- //-         select#id_rol.form-control(name="id_rol" required)
-//- //-           option(value="2") Profesional
-//- //-       .mb-3
-//- //-         label(for="estado" class="form-label") Estado
-//- //-         select#estado.form-control(name="estado" required)
-//- //-           option(value="3") Seleccione
-//- //-           option(value="1") Activo
-//- //-           option(value="0") Inactivo
-//- //-       .mb-3
-//- //-         label(for="especialidades" class="form-label") Especialidades
-//- //-         select#especialidades.form-control(name="especialidades" required)
-//- //-           option(value="") Seleccione
-//- //-           if especialidades
-//- //-             each especialidad in especialidades
-//- //-               option(value=especialidad.id)= especialidad.nombre
-//- //-           else
-//- //-             option(value="") No hay especialidades disponibles
-//- //-       .mb-3
-//- //-         label(for="matricula" class="form-label") N° Matricula 
-//- //-         input#matricula.form-control(type="number" name="matricula" required)
-//- //-         label(for="telefonos" class="form-label") Teléfono
-//- //-         input#telefonos.form-control(type="text" name="telefonos" required)
-//- //-       button.btn.btn-primary(type="submit") Crear Médico
-//- //-     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-//- //-     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
-//- //-     script(src="/js/medicos.js")
-
-//- //- extends ../layout
-
-//- //- block contenido
-//- //-   .container.mt-5
-//- //-     h2 Crear Nuevo Médico
-
-//- //-     form(action="/medicos" method="POST")
-//- //-       .mb-3
-//- //-         label(for="dni" class="form-label") DNI
-//- //-         input#dni.form-control(type="number" name="dni" required)
-
-//- //-       .mb-3
-//- //-         label(for="nombre" class="form-label") Nombre
-//- //-         input#nombre.form-control(type="text" name="nombre" required)
-
-//- //-       .mb-3
-//- //-         label(for="apellido" class="form-label") Apellido
-//- //-         input#apellido.form-control(type="text" name="apellido" required)
-
-//- //-       .mb-3
-//- //-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//- //-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-
-//- //-       .mb-3
-//- //-         label(for="email" class="form-label") Email
-//- //-         input#email.form-control(type="email" name="email" required)
-
-//- //-       .mb-3
-//- //-         label(for="password" class="form-label") Contraseña
-//- //-         input#password.form-control(type="password" name="password" required)
-
-//- //-       .mb-3
-//- //-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//- //-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-
-//- //-       .mb-3
-//- //-         label(for="id_rol" class="form-label") Rol
-//- //-         select#id_rol.form-control(name="id_rol" required)
-//- //-           option(value="2" selected) Profesional
-
-//- //-       .mb-3
-//- //-         label(for="estado" class="form-label") Estado
-//- //-         select#estado.form-control(name="estado" required)
-//- //-           option(value="3") Seleccione
-//- //-           option(value="1") Activo
-//- //-           option(value="0") Inactivo
-
-//- //-       .mb-3
-//- //-         label(for="especialidades" class="form-label") Especialidades
-//- //-         select#especialidades.form-control(name="especialidades" required)
-//- //-           option(value="") Seleccione
-//- //-           if especialidades && especialidades.length > 0
-//- //-             each especialidad in especialidades
-//- //-               option(value=especialidad.id)= especialidad.nombre
-//- //-           else
-//- //-             option(value="") No hay especialidades disponibles
-
-//- //-       .mb-3
-//- //-         label(for="matricula" class="form-label") N° Matricula
-//- //-         input#matricula.form-control(type="number" name="matricula" required)
-
-//- //-       .mb-3
-//- //-         label(for="telefonos" class="form-label") Teléfono
-//- //-         input#telefonos.form-control(type="text" name="telefonos" required)
-
-//- //-       button.btn.btn-primary(type="submit") Crear Médico
-
-//- //-     // JS de Bootstrap
-//- //-     script(
-//- //-       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-//- //-       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-//- //-       crossorigin="anonymous"
-//- //-     )
-    
-//- //-     // JS propio
-//- //-     script(src="/js/medicos.js")
-
-//- //- extends ../layout
-
-//- //- block contenido
-//- //-   .container.mt-5
-//- //-     h2 Crear Nuevo Médico
-
-//- //-     form(action="/medicos" method="POST")
-//- //-       .mb-3
-//- //-         label(for="dni" class="form-label") DNI
-//- //-         input#dni.form-control(type="number" name="dni" required)
-
-//- //-       .mb-3
-//- //-         label(for="nombre" class="form-label") Nombre
-//- //-         input#nombre.form-control(type="text" name="nombre" required)
-
-//- //-       .mb-3
-//- //-         label(for="apellido" class="form-label") Apellido
-//- //-         input#apellido.form-control(type="text" name="apellido" required)
-
-//- //-       .mb-3
-//- //-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//- //-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-
-//- //-       .mb-3
-//- //-         label(for="email" class="form-label") Email
-//- //-         input#email.form-control(type="email" name="email" required)
-
-//- //-       .mb-3
-//- //-         label(for="password" class="form-label") Contraseña
-//- //-         input#password.form-control(type="password" name="password" required)
-
-//- //-       .mb-3
-//- //-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//- //-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-
-//- //-       .mb-3
-//- //-         label(for="id_rol" class="form-label") Rol
-//- //-         select#id_rol.form-control(name="id_rol" required)
-//- //-           option(value="2" selected) Profesional
-
-//- //-       .mb-3
-//- //-         label(for="estado" class="form-label") Estado
-//- //-         select#estado.form-control(name="estado" required)
-//- //-           option(value="" selected) Seleccione
-//- //-           option(value="1") Activo
-//- //-           option(value="0") Inactivo
-
-//- //-       .mb-3
-//- //-         label(for="especialidades" class="form-label") Especialidades
-//- //-         select#especialidades.form-control(name="especialidades" required)
-//- //-           option(value="" selected) Seleccione
-//- //-           if especialidades && especialidades.length > 0
-//- //-             each especialidad in especialidades
-//- //-               option(value=especialidad.id)= especialidad.nombre
-//- //-           else
-//- //-             option(value="") No hay especialidades disponibles
-
-//- //-       .mb-3
-//- //-         label(for="matricula" class="form-label") N° Matricula
-//- //-         input#matricula.form-control(type="number" name="matricula" required)
-
-//- //-       .mb-3
-//- //-         label(for="telefonoAlternativo" class="form-label") Teléfono Alternativo
-//- //-         input#telefonoAlternativo.form-control(type="text" name="telefonoAlternativo" required)
-
-//- //-       button.btn.btn-primary(type="submit") Crear Médico
-
-//- //-     // JS de Bootstrap
-//- //-     script(
-//- //-       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-//- //-       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-//- //-       crossorigin="anonymous"
-//- //-     )
-    
-//- //-     // JS propio
-//- //-     script(src="/js/medicos.js")
-//- //- extends ../layout
-
-//- //- block contenido
-//- //-   .container.mt-5
-//- //-     h2 Crear Nuevo Médico
-
-//- //-     form(action="/medicos" method="POST")
-//- //-       // Mantén DNI como teléfonoAlternativo (según el mensaje de error)
-//- //-       .mb-3
-//- //-         label(for="dni" class="form-label") DNI
-//- //-         input#dni.form-control(type="number" name="telefonoAlternativo" required)
-//- //-         small.form-text.text-muted 
-//- //-       .mb-3
-//- //-         label(for="nombre" class="form-label") Nombre
-//- //-         input#nombre.form-control(type="text" name="nombre" required)
-
-//- //-       .mb-3
-//- //-         label(for="apellido" class="form-label") Apellido
-//- //-         input#apellido.form-control(type="text" name="apellido" required)
-
-//- //-       .mb-3
-//- //-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//- //-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-
-//- //-       .mb-3
-//- //-         label(for="email" class="form-label") Email
-//- //-         input#email.form-control(type="email" name="email" required)
-
-//- //-       .mb-3
-//- //-         label(for="password" class="form-label") Contraseña
-//- //-         input#password.form-control(type="password" name="password" required)
-
-//- //-       .mb-3
-//- //-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//- //-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-
-//- //-       .mb-3
-//- //-         label(for="id_rol" class="form-label") Rol
-//- //-         select#id_rol.form-control(name="id_rol" required)
-//- //-           option(value="2" selected) Profesional
-
-//- //-       .mb-3
-//- //-         label(for="estado" class="form-label") Estado
-//- //-         select#estado.form-control(name="estado" required)
-//- //-           option(value="" selected) Seleccione
-//- //-           option(value="1") Activo
-//- //-           option(value="0") Inactivo
-
-//- //-       // CAMPO NUEVO: Teléfono principal (obligatorio según el error)
-//- //-       .mb-3
-//- //-         label(for="telefonos" class="form-label") Teléfono Principal
-//- //-         input#telefonos.form-control(type="text" name="telefonos" required placeholder="Ej: 123456789")
-
-//- //-       .mb-3
-//- //-         label(for="especialidades" class="form-label") Especialidades
-//- //-         select#especialidades.form-control(name="especialidades" required)
-//- //-           option(value="" selected) Seleccione
-//- //-           if especialidades && especialidades.length > 0
-//- //-             each especialidad in especialidades
-//- //-               option(value=especialidad.id)= especialidad.nombre
-//- //-           else
-//- //-             option(value="") No hay especialidades disponibles
-
-//- //-       .mb-3
-//- //-         label(for="matricula" class="form-label") N° Matricula
-//- //-         input#matricula.form-control(type="number" name="matricula" required)
-
-//- //-       // Si realmente necesitas un teléfono alternativo, añade este campo adicional
-//- //-       .mb-3
-//- //-         label(for="telefono_alternativo_real" class="form-label") Teléfono Alternativo (Opcional)
-//- //-         input#telefono_alternativo_real.form-control(type="text" name="telefonoAlternativoReal" placeholder="Opcional")
-
-//- //-       button.btn.btn-primary(type="submit") Crear Médico
-
-//- //-     // JS de Bootstrap
-//- //-     script(
-//- //-       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-//- //-       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-//- //-       crossorigin="anonymous"
-//- //-     )
-    
-//- //-     // JS propio
-//- //-     script(src="/js/medicos.js")
-//- extends ../layout
-
-//- block contenido
-//-   .container.mt-5
-//-     h2 Crear Nuevo Médico
-
-//-     form(action="/medicos" method="POST")
-//-       // DNI - campo correcto
-//-       .mb-3
-//-         label(for="dni" class="form-label") DNI
-//-         input#dni.form-control(type="number" name="dni" required)
-//-         small.form-text.text-muted 
-
-//-       // Teléfono Alternativo - campo que menciona el error
-//-       .mb-3
-//-         label(for="telefonoAlternativo" class="form-label") Teléfono
-//-         input#telefonoAlternativo.form-control(type="text" name="telefonoAlternativo" required placeholder="Ej: 123456789")
-
-//-       .mb-3
-//-         label(for="nombre" class="form-label") Nombre
-//-         input#nombre.form-control(type="text" name="nombre" required)
-
-//-       .mb-3
-//-         label(for="apellido" class="form-label") Apellido
-//-         input#apellido.form-control(type="text" name="apellido" required)
-
-//-       .mb-3
-//-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-
-//-       .mb-3
-//-         label(for="email" class="form-label") Email
-//-         input#email.form-control(type="email" name="email" required)
-
-//-       .mb-3
-//-         label(for="password" class="form-label") Contraseña
-//-         input#password.form-control(type="password" name="password" required)
-
-//-       .mb-3
-//-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-
-//-       .mb-3
-//-         label(for="id_rol" class="form-label") Rol
-//-         select#id_rol.form-control(name="id_rol" required)
-//-           option(value="" selected disabled) Seleccione
-//-           option(value="2") Profesional
-//-           // Agrega más opciones según tus roles
-//-           option(value="1") Administrador
-
-//-       .mb-3
-//-         label(for="estado" class="form-label") Estado
-//-         select#estado.form-control(name="estado" required)
-//-           option(value="" selected disabled) Seleccione
-//-           option(value="activo") Activo
-//-           option(value="inactivo") Inactivo
-
-//-       .mb-3
-//-         label(for="especialidades" class="form-label") Especialidades
-//-         select#especialidades.form-control(name="especialidades" multiple required)
-//-           if especialidades && especialidades.length > 0
-//-             each especialidad in especialidades
-//-               option(value=especialidad.id)= especialidad.nombre
-//-           else
-//-             option(value="" disabled) No hay especialidades disponibles
-//-         small.form-text.text-muted Mantén presionada la tecla Ctrl para seleccionar múltiples especialidades
-
-//-       .mb-3
-//-         label(for="matricula" class="form-label") N° Matricula
-//-         input#matricula.form-control(type="text" name="matricula" required)
-
-//-       // Teléfono adicional si necesitas
-//-       .mb-3
-//-         label(for="telefonos" class="form-label") Teléfono Adicional (Opcional)
-//-         input#telefonos.form-control(type="text" name="telefonos" placeholder="Opcional")
-
-//-       button.btn.btn-primary(type="submit") Crear Médico
-
-//-     // JS de Bootstrap
-//-     script(
-//-       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-//-       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-//-       crossorigin="anonymous"
-//-     )
-    
-//-     // JS propio
-//-     script(src="/js/medicos.js")
-
-
-//- extends ../layout
-
-//- block contenido
-//-   .container.mt-5
-//-     h2 Crear Nuevo Médico
-
-//-     form(action="/medicos" method="POST")
-      
-//-       .mb-3
-//-         label(for="dni" class="form-label") DNI
-//-         input#dni.form-control(type="number" name="dni" required)
-
-//-       .mb-3
-//-         label(for="nombre" class="form-label") Nombre
-//-         input#nombre.form-control(type="text" name="nombre" required)
-
-//-       .mb-3
-//-         label(for="apellido" class="form-label") Apellido
-//-         input#apellido.form-control(type="text" name="apellido" required)
-
-//-       .mb-3
-//-         label(for="nacimiento" class="form-label") Fecha de Nacimiento
-//-         input#nacimiento.form-control(type="date" name="nacimiento" required)
-
-//-       .mb-3
-//-         label(for="email" class="form-label") Email
-//-         input#email.form-control(type="email" name="email" required)
-
-//-       .mb-3
-//-         label(for="password" class="form-label") Contraseña
-//-         input#password.form-control(type="password" name="password" required)
-
-//-       .mb-3
-//-         label(for="repeatPassword" class="form-label") Repetir Contraseña
-//-         input#repeatPassword.form-control(type="password" name="repeatPassword" required)
-
-//-       // ===== TELÉFONO (OBLIGATORIO PARA VALIDACIÓN) =====
-//-       .mb-3
-//-         label(for="telefonos" class="form-label") Teléfono
-//-         input#telefonos.form-control(
-//-           type="text"
-//-           name="telefonos"
-//-           required
-//-           placeholder="Ej: 123456789"
-//-         )
-
-//-       // ===== ESPECIALIDADES (MÚLTIPLES) =====
-//-       .mb-3
-//-         label(for="especialidades" class="form-label") Especialidades
-//-         select#especialidades.form-control(name="especialidades" multiple required)
-//-           if especialidades && especialidades.length
-//-             each especialidad in especialidades
-//-               option(value=especialidad.id)= especialidad.nombre
-//-           else
-//-             option(value="" disabled) No hay especialidades disponibles
-//-         small.form-text.text-muted
-//-           | Mantén presionada la tecla Ctrl (Cmd en Mac) para seleccionar varias
-
-//-       .mb-3
-//-         label(for="matricula" class="form-label") Nº Matrícula
-//-         input#matricula.form-control(type="text" name="matricula" required)
-
-//-       button.btn.btn-primary(type="submit") Crear Médico
-
-//-     // Bootstrap
-//-     script(
-//-       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-//-       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-//-       crossorigin="anonymous"
-//-     )
-
-//-     // JS propio
-//-     script(src="/js/medicos.js")
-
-
-//- extends ../layout
-
-//- block contenido
-//-   .container.mt-4.mb-4
-//-     h2.text-center.mb-3 Crear Médico
-
-//-     .mb-3
-//-       a.btn.btn-outline-secondary(href="/medicos")
-//-         i.bi.bi-arrow-left
-//-         |  Volver a Médicos
-
-//-     form(
-//-       action="/medicos"
-//-       method="POST"
-//-       novalidate
-//-     )
-
-//-       // =========================
-//-       // DATOS PERSONALES
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-primary.text-white
-//-           strong Datos Personales
-
-//-         .card-body
-//-           .row.g-3
-//-             .col-md-3
-//-               label.form-label DNI
-//-               input.form-control(type="number" name="dni" required)
-
-//-             .col-md-3
-//-               label.form-label Nombre
-//-               input.form-control(type="text" name="nombre" required)
-
-//-             .col-md-3
-//-               label.form-label Apellido
-//-               input.form-control(type="text" name="apellido" required)
-
-//-             .col-md-3
-//-               label.form-label Fecha Nacimiento
-//-               input.form-control(type="date" name="nacimiento" required)
-
-//-       // =========================
-//-       // USUARIO
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-secondary.text-white
-//-           strong Usuario
-
-//-         .card-body
-//-           .row.g-3
-//-             .col-md-6
-//-               label.form-label Email
-//-               input.form-control(type="email" name="email" required)
-
-//-             .col-md-3
-//-               label.form-label Contraseña
-//-               input.form-control(type="password" name="password" required)
-
-//-             .col-md-3
-//-               label.form-label Repetir contraseña
-//-               input.form-control(type="password" name="repeatPassword" required)
-
-//-       // =========================
-//-       // TELÉFONO
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-dark.text-white
-//-           strong Teléfono
-
-//-         .card-body
-//-           label.form-label Teléfono principal
-//-           input.form-control(
-//-             type="text"
-//-             name="telefonos"
-//-             required
-//-             placeholder="Ej: 123456789"
-//-           )
-
-//-       // =========================
-//-       // ESPECIALIDADES
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-info.text-white
-//-           strong Especialidades
-
-//-         .card-body
-//-           label.form-label Seleccione especialidades
-//-           select.form-select(name="especialidades" multiple required)
-//-             if especialidades && especialidades.length
-//-               each esp in especialidades
-//-                 option(value=esp.id)= esp.nombre
-//-             else
-//-               option(value="" disabled) No hay especialidades disponibles
-
-//-           small.text-muted
-//-             | Mantén presionada la tecla Ctrl (Cmd en Mac) para seleccionar varias
-
-//-       // =========================
-//-       // MATRÍCULA
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-warning
-//-           strong Matrícula
-
-//-         .card-body
-//-           label.form-label Nº Matrícula
-//-           input.form-control(type="text" name="matricula" required)
-
-//-       // =========================
-//-       // GUARDAR
-//-       // =========================
-//-       .d-flex.justify-content-end.mt-3
-//-         button.btn.btn-success.px-4(type="submit")
-//-           i.bi.bi-save
-//-           |  Crear Médico
-
-
 //- extends ../layout
 
 //- block contenido
@@ -583,17 +9,23 @@
 //-         i.bi.bi-arrow-left
 //-         |  Volver a Médicos
 
+//-     // =========================
+//-     // ERRORES BACKEND
+//-     // =========================
+//-     if errores && errores.length
+//-       .alert.alert-danger
+//-         ul.mb-0
+//-           each err in errores
+//-             li= err
+
+//-     // =========================
+//-     // FORMULARIO
+//-     // =========================
 //-     form(
 //-       action="/medicos"
 //-       method="POST"
 //-       novalidate
 //-     )
-
-//-       // =========================
-//-       // FLAGS
-//-       // =========================
-//-       input(type="hidden" name="especialidades_modificadas" value="1")
-//-       input(type="hidden" name="telefonos_modificados" value="1")
 
 //-       // =========================
 //-       // DATOS PERSONALES
@@ -606,23 +38,48 @@
 //-           .row.g-3
 //-             .col-md-3
 //-               label.form-label Nombre
-//-               input.form-control(type="text" name="nombre" required)
+//-               input.form-control(
+//-                 type="text"
+//-                 name="nombre"
+//-                 value=(old && old.nombre ? old.nombre : '')
+//-                 required
+//-               )
 
 //-             .col-md-3
 //-               label.form-label Apellido
-//-               input.form-control(type="text" name="apellido" required)
+//-               input.form-control(
+//-                 type="text"
+//-                 name="apellido"
+//-                 value=(old && old.apellido ? old.apellido : '')
+//-                 required
+//-               )
 
 //-             .col-md-3
 //-               label.form-label DNI
-//-               input.form-control(type="text" name="dni" required)
+//-               input.form-control(
+//-                 type="text"
+//-                 name="dni"
+//-                 value=(old && old.dni ? old.dni : '')
+//-                 required
+//-               )
 
 //-             .col-md-3
 //-               label.form-label Fecha Nacimiento
-//-               input.form-control(type="date" name="nacimiento" required)
+//-               input.form-control(
+//-                 type="date"
+//-                 name="nacimiento"
+//-                 value=(old && old.nacimiento ? old.nacimiento : '')
+//-                 required
+//-               )
 
 //-             .col-md-3
 //-               label.form-label Matrícula
-//-               input.form-control(type="text" name="matricula" required)
+//-               input.form-control(
+//-                 type="text"
+//-                 name="matricula"
+//-                 value=(old && old.matricula ? old.matricula : '')
+//-                 required
+//-               )
 
 //-       // =========================
 //-       // USUARIO
@@ -635,11 +92,28 @@
 //-           .row.g-3
 //-             .col-md-6
 //-               label.form-label Email
-//-               input.form-control(type="email" name="email" required)
+//-               input.form-control(
+//-                 type="email"
+//-                 name="email"
+//-                 value=(old && old.email ? old.email : '')
+//-                 required
+//-               )
 
 //-             .col-md-6
 //-               label.form-label Contraseña
-//-               input.form-control(type="password" name="password" required)
+//-               input.form-control(
+//-                 type="password"
+//-                 name="password"
+//-                 required
+//-               )
+
+//-             .col-md-6
+//-               label.form-label Repetir contraseña
+//-               input.form-control(
+//-                 type="password"
+//-                 name="repeatPassword"
+//-                 required
+//-               )
 
 //-       // =========================
 //-       // TELÉFONOS
@@ -652,7 +126,13 @@
 //-             |  Agregar
 
 //-         .card-body#telefonos-container
-//-           // comienza vacío
+//-           if old && old.telefonos
+//-             - const tels = Array.isArray(old.telefonos) ? old.telefonos : [old.telefonos]
+//-             each tel in tels
+//-               .input-group.mb-2
+//-                 input.form-control(type="text" name="telefonos" value=tel)
+//-                 button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
+//-                   i.bi.bi-trash
 
 //-       // =========================
 //-       // ESPECIALIDADES
@@ -663,6 +143,16 @@
 
 //-         .card-body
 //-           #especialidades-container
+//-             if old && old.especialidades
+//-               - const espOld = Array.isArray(old.especialidades) ? old.especialidades : [old.especialidades]
+//-               each espId in espOld
+//-                 - const esp = especialidades.find(e => String(e.id) === String(espId))
+//-                 if esp
+//-                   .input-group.mb-2
+//-                     input.form-control(readonly value=esp.nombre)
+//-                     input(type="hidden" name="especialidades" value=esp.id)
+//-                     button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
+//-                       i.bi.bi-trash
 
 //-           .row.g-2.mt-2
 //-             .col-md-8
@@ -727,312 +217,93 @@
 //-       select.value = '';
 //-     }
 
-
-
-//- extends ../layout
-
-//- block contenido
-//-   .container.mt-4.mb-4
-//-     h2.text-center.mb-3 Crear Médico
-
-//-     .d-flex.justify-content-between.mb-3
-//-       a.btn.btn-outline-secondary(href="/medicos")
-//-         i.bi.bi-arrow-left
-//-         |  Volver a Médicos
-
-//-     // =========================
-//-     // FORMULARIO
-//-     // =========================
-//-     form(
-//-       action="/medicos"
-//-       method="POST"
-//-       novalidate
-//-     )
-
-//-       // =========================
-//-       // DATOS PERSONALES
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-primary.text-white
-//-           strong Datos Personales
-
-//-         .card-body
-//-           .row.g-3
-//-             .col-md-3
-//-               label.form-label Nombre
-//-               input.form-control(type="text" name="nombre" required)
-
-//-             .col-md-3
-//-               label.form-label Apellido
-//-               input.form-control(type="text" name="apellido" required)
-
-//-             .col-md-3
-//-               label.form-label DNI
-//-               input.form-control(type="text" name="dni" required)
-
-//-             .col-md-3
-//-               label.form-label Fecha Nacimiento
-//-               input.form-control(type="date" name="nacimiento" required)
-
-//-             .col-md-3
-//-               label.form-label Matrícula
-//-               input.form-control(type="text" name="matricula" required)
-
-//-       // =========================
-//-       // USUARIO
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-secondary.text-white
-//-           strong Usuario
-
-//-         .card-body
-//-           .row.g-3
-//-             .col-md-6
-//-               label.form-label Email
-//-               input.form-control(type="email" name="email" required)
-
-//-             .col-md-6
-//-               label.form-label Contraseña
-//-               input.form-control(type="password" name="password" required)
-
-//-             .col-md-6
-//-               label.form-label Repetir contraseña
-//-               input.form-control(type="password" name="repeatPassword" required)
-
-//-       // =========================
-//-       // TELÉFONOS
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-dark.text-white.d-flex.justify-content-between.align-items-center
-//-           strong Teléfonos
-//-           button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()")
-//-             i.bi.bi-plus
-//-             |  Agregar
-
-//-         .card-body#telefonos-container
-//-           // comienza vacío
-
-//-       // =========================
-//-       // ESPECIALIDADES
-//-       // =========================
-//-       .card.mb-3.shadow-sm
-//-         .card-header.bg-info.text-white
-//-           strong Especialidades
-
-//-         .card-body
-//-           #especialidades-container
-
-//-           .row.g-2.mt-2
-//-             .col-md-8
-//-               select.form-select#select-especialidad
-//-                 option(value="") + Agregar especialidad
-//-                 each esp in especialidades
-//-                   option(value=esp.id data-nombre=esp.nombre)= esp.nombre
-
-//-             .col-md-4
-//-               button.btn.btn-outline-primary.w-100(
-//-                 type="button"
-//-                 onclick="agregarEspecialidad()"
-//-               ) Agregar
-
-//-       // =========================
-//-       // GUARDAR
-//-       // =========================
-//-       .d-flex.justify-content-end.mt-3
-//-         button.btn.btn-success.px-4(type="submit")
-//-           i.bi.bi-save
-//-           |  Crear médico
-
-//-   // =========================
-//-   // SCRIPTS
-//-   // =========================
-//-   script.
-//-     function agregarTelefono() {
-//-       const cont = document.getElementById('telefonos-container');
-//-       const div = document.createElement('div');
-//-       div.className = 'input-group mb-2';
-//-       div.innerHTML = `
-//-         <input class="form-control" type="text" name="telefonos">
-//-         <button class="btn btn-outline-danger" type="button">
-//-           <i class="bi bi-trash"></i>
-//-         </button>
-//-       `;
-//-       div.querySelector('button').onclick = () => div.remove();
-//-       cont.appendChild(div);
-//-     }
-
-//-     function agregarEspecialidad() {
-//-       const select = document.getElementById('select-especialidad');
-//-       const id = select.value;
-//-       if (!id) return;
-
-//-       const nombre = select.options[select.selectedIndex].dataset.nombre;
-//-       const cont = document.getElementById('especialidades-container');
-
-//-       if ([...cont.querySelectorAll('input[type="hidden"]')]
-//-         .some(i => i.value === id)) return;
-
-//-       const div = document.createElement('div');
-//-       div.className = 'input-group mb-2';
-//-       div.innerHTML = `
-//-         <input class="form-control" readonly value="${nombre}">
-//-         <input type="hidden" name="especialidades" value="${id}">
-//-         <button class="btn btn-outline-danger" type="button">
-//-           <i class="bi bi-trash"></i>
-//-         </button>
-//-       `;
-//-       div.querySelector('button').onclick = () => div.remove();
-//-       cont.appendChild(div);
-//-       select.value = '';
-//-     }
-
-
-
-
 extends ../layout
 
 block contenido
-  .container.mt-4.mb-4
-    h2.text-center.mb-3 Crear Médico
+  //- Encabezado de página
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h2.m-0
+      i.fa-solid.fa-user-plus.me-2.text-primary
+      | Crear Médico
+    a.btn.btn-outline-secondary.btn-sm(href="/medicos")
+      i.bi.bi-arrow-left.me-1
+      | Volver a Médicos
 
-    .d-flex.justify-content-between.mb-3
-      a.btn.btn-outline-secondary(href="/medicos")
-        i.bi.bi-arrow-left
-        |  Volver a Médicos
+  //- Errores de Backend
+  if errores && errores.length
+    .alert.alert-danger.shadow-sm
+      ul.mb-0
+        each err in errores
+          li= err
 
-    // =========================
-    // ERRORES BACKEND
-    // =========================
-    if errores && errores.length
-      .alert.alert-danger
-        ul.mb-0
-          each err in errores
-            li= err
+  //- Formulario Principal
+  form(action="/medicos" method="POST" novalidate)
+    
+    //- SECCIÓN: DATOS PERSONALES
+    .card-custom
+      h5.mb-3.text-primary
+        i.fa-solid.fa-id-card.me-2
+        | Datos Personales
+      .row.g-3
+        .col-md-4
+          label.form-label Nombre
+          input.form-control(type="text" name="nombre" value=(old && old.nombre ? old.nombre : '') required)
+        .col-md-4
+          label.form-label Apellido
+          input.form-control(type="text" name="apellido" value=(old && old.apellido ? old.apellido : '') required)
+        .col-md-4
+          label.form-label DNI
+          input.form-control(type="text" name="dni" value=(old && old.dni ? old.dni : '') required)
+        .col-md-6
+          label.form-label Fecha de Nacimiento
+          input.form-control(type="date" name="nacimiento" value=(old && old.nacimiento ? old.nacimiento : '') required)
+        .col-md-6
+          label.form-label Matrícula Profesional
+          input.form-control(type="text" name="matricula" value=(old && old.matricula ? old.matricula : '') required)
 
-    // =========================
-    // FORMULARIO
-    // =========================
-    form(
-      action="/medicos"
-      method="POST"
-      novalidate
-    )
+    //- SECCIÓN: CREDENCIALES DE ACCESO
+    .card-custom
+      h5.mb-3.text-secondary
+        i.fa-solid.fa-lock.me-2
+        | Cuenta de Usuario
+      .row.g-3
+        .col-md-12
+          label.form-label Correo Electrónico (Email)
+          input.form-control(type="email" name="email" value=(old && old.email ? old.email : '') required)
+        .col-md-6
+          label.form-label Contraseña
+          input.form-control(type="password" name="password" required)
+        .col-md-6
+          label.form-label Repetir Contraseña
+          input.form-control(type="password" name="repeatPassword" required)
 
-      // =========================
-      // DATOS PERSONALES
-      // =========================
-      .card.mb-3.shadow-sm
-        .card-header.bg-primary.text-white
-          strong Datos Personales
+    .row
+      //- SECCIÓN: TELÉFONOS
+      .col-md-6
+        .card-custom
+          .d-flex.justify-content-between.align-items-center.mb-3
+            h5.m-0.text-dark
+              i.fa-solid.fa-phone.me-2
+              | Teléfonos
+            button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()")
+              i.bi.bi-plus-lg
+          
+          #telefonos-container
+            if old && old.telefonos
+              - const tels = Array.isArray(old.telefonos) ? old.telefonos : [old.telefonos]
+              each tel in tels
+                .input-group.mb-2
+                  input.form-control(type="text" name="telefonos" value=tel)
+                  button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
+                    i.bi.bi-trash
 
-        .card-body
-          .row.g-3
-            .col-md-3
-              label.form-label Nombre
-              input.form-control(
-                type="text"
-                name="nombre"
-                value=(old && old.nombre ? old.nombre : '')
-                required
-              )
-
-            .col-md-3
-              label.form-label Apellido
-              input.form-control(
-                type="text"
-                name="apellido"
-                value=(old && old.apellido ? old.apellido : '')
-                required
-              )
-
-            .col-md-3
-              label.form-label DNI
-              input.form-control(
-                type="text"
-                name="dni"
-                value=(old && old.dni ? old.dni : '')
-                required
-              )
-
-            .col-md-3
-              label.form-label Fecha Nacimiento
-              input.form-control(
-                type="date"
-                name="nacimiento"
-                value=(old && old.nacimiento ? old.nacimiento : '')
-                required
-              )
-
-            .col-md-3
-              label.form-label Matrícula
-              input.form-control(
-                type="text"
-                name="matricula"
-                value=(old && old.matricula ? old.matricula : '')
-                required
-              )
-
-      // =========================
-      // USUARIO
-      // =========================
-      .card.mb-3.shadow-sm
-        .card-header.bg-secondary.text-white
-          strong Usuario
-
-        .card-body
-          .row.g-3
-            .col-md-6
-              label.form-label Email
-              input.form-control(
-                type="email"
-                name="email"
-                value=(old && old.email ? old.email : '')
-                required
-              )
-
-            .col-md-6
-              label.form-label Contraseña
-              input.form-control(
-                type="password"
-                name="password"
-                required
-              )
-
-            .col-md-6
-              label.form-label Repetir contraseña
-              input.form-control(
-                type="password"
-                name="repeatPassword"
-                required
-              )
-
-      // =========================
-      // TELÉFONOS
-      // =========================
-      .card.mb-3.shadow-sm
-        .card-header.bg-dark.text-white.d-flex.justify-content-between.align-items-center
-          strong Teléfonos
-          button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()")
-            i.bi.bi-plus
-            |  Agregar
-
-        .card-body#telefonos-container
-          if old && old.telefonos
-            - const tels = Array.isArray(old.telefonos) ? old.telefonos : [old.telefonos]
-            each tel in tels
-              .input-group.mb-2
-                input.form-control(type="text" name="telefonos" value=tel)
-                button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
-                  i.bi.bi-trash
-
-      // =========================
-      // ESPECIALIDADES
-      // =========================
-      .card.mb-3.shadow-sm
-        .card-header.bg-info.text-white
-          strong Especialidades
-
-        .card-body
+      //- SECCIÓN: ESPECIALIDADES
+      .col-md-6
+        .card-custom
+          h5.mb-3.text-dark
+            i.fa-solid.fa-stethoscope.me-2
+            | Especialidades
+          
           #especialidades-container
             if old && old.especialidades
               - const espOld = Array.isArray(old.especialidades) ? old.especialidades : [old.especialidades]
@@ -1046,36 +317,28 @@ block contenido
                       i.bi.bi-trash
 
           .row.g-2.mt-2
-            .col-md-8
+            .col-8
               select.form-select#select-especialidad
-                option(value="") + Agregar especialidad
+                option(value="") Seleccionar...
                 each esp in especialidades
                   option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+            .col-4
+              button.btn.btn-outline-primary.w-100(type="button" onclick="agregarEspecialidad()") Agregar
 
-            .col-md-4
-              button.btn.btn-outline-primary.w-100(
-                type="button"
-                onclick="agregarEspecialidad()"
-              ) Agregar
+    //- BOTÓN FINAL
+    .d-flex.justify-content-end.mt-4.mb-5
+      button.btn-primary-custom.px-5(type="submit")
+        i.bi.bi-check-circle.me-2
+        | Registrar Médico
 
-      // =========================
-      // GUARDAR
-      // =========================
-      .d-flex.justify-content-end.mt-3
-        button.btn.btn-success.px-4(type="submit")
-          i.bi.bi-save
-          |  Crear médico
-
-  // =========================
-  // SCRIPTS
-  // =========================
+  //- SCRIPTS 
   script.
     function agregarTelefono() {
       const cont = document.getElementById('telefonos-container');
       const div = document.createElement('div');
       div.className = 'input-group mb-2';
       div.innerHTML = `
-        <input class="form-control" type="text" name="telefonos">
+        <input class="form-control" type="text" name="telefonos" placeholder="Ej: +54 9 11...">
         <button class="btn btn-outline-danger" type="button">
           <i class="bi bi-trash"></i>
         </button>
@@ -1107,4 +370,3 @@ block contenido
       cont.appendChild(div);
       select.value = '';
     }
-

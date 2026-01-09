@@ -287,19 +287,35 @@ class PacientesController {
     // BUSCAR PACIENTES
     // ===========================================
 
+    // async search(req, res, next) {
+    //     try {
+    //         const query = req.query.query?.trim();
+    //         if (!query || query.length < 2) return res.json([]);
+
+    //         const resultados = await Paciente.buscarPorNombreODni(query);
+    //         res.json(resultados);
+
+    //     } catch (error) {
+    //         console.error("Error en search:", error);
+    //         res.status(500).json({ error: "Error buscando pacientes" });
+    //     }
+    // }
+
     async search(req, res, next) {
-        try {
-            const query = req.query.query?.trim();
-            if (!query || query.length < 2) return res.json([]);
+    try {
+        // Cambiamos .query por .q para que coincida con el fetch del frontend
+        const query = req.query.q?.trim(); 
+        
+        if (!query || query.length < 2) return res.json([]);
 
-            const resultados = await Paciente.buscarPorNombreODni(query);
-            res.json(resultados);
+        const resultados = await Paciente.buscarPorNombreODni(query);
+        res.json(resultados);
 
-        } catch (error) {
-            console.error("Error en search:", error);
-            res.status(500).json({ error: "Error buscando pacientes" });
-        }
+    } catch (error) {
+        console.error("Error en search:", error);
+        res.status(500).json({ error: "Error buscando pacientes" });
     }
+}
 }
 
 module.exports = new PacientesController();

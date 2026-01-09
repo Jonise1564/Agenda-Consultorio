@@ -1,229 +1,474 @@
 
 
 
+//- extends ../layout
+
+//- block contenido
+//-   a(href="/agendas" class="btn btn-outline-dark mb-3") ← Volver a Agendas
+//-   link(rel="stylesheet" href="/css/style.css")
+
+//-   h1.text-center.mb-4 Editar Agenda
+
+//-   // ============================
+//-   // ALERTA GENERAL
+//-   // ============================
+//-   if error
+//-     .alert.alert-danger.mt-3(role="alert") #{error}
+
+//-   form(
+//-     action=`/agendas/update/${agenda.id}`
+//-     method="POST"
+//-     id="editar-form"
+//-     novalidate
+//-   )
+
+//-     input(type="hidden" name="id" value=agenda.id)
+
+//-     // ============================
+//-     // FECHAS
+//-     // ============================
+//-     .row.g-3.mb-3
+//-       .col-md-6
+//-         label.form-label
+//-           | Fecha de Creación
+//-           if erroresCampos && erroresCampos.fecha_creacion
+//-             span.text-danger *
+//-         input.form-control(
+//-           type="date"
+//-           name="fecha_creacion"
+//-           required
+//-           class=(erroresCampos && erroresCampos.fecha_creacion ? 'is-invalid' : '')
+//-           value=agenda.fecha_creacion ? agenda.fecha_creacion.toISOString().split('T')[0] : ''
+//-         )
+
+//-       .col-md-6
+//-         label.form-label
+//-           | Fecha de Finalización
+//-           if erroresCampos && erroresCampos.fecha_fin
+//-             span.text-danger *
+//-         input.form-control(
+//-           type="date"
+//-           name="fecha_fin"
+//-           required
+//-           class=(erroresCampos && erroresCampos.fecha_fin ? 'is-invalid' : '')
+//-           value=agenda.fecha_fin ? agenda.fecha_fin.toISOString().split('T')[0] : ''
+//-         )
+
+//-     // ============================
+//-     // HORARIOS
+//-     // ============================
+//-     .row.g-3.mb-3
+//-       .col-md-6
+//-         label.form-label
+//-           | Hora Inicio
+//-           if erroresCampos && erroresCampos.hora_inicio
+//-             span.text-danger *
+//-         input.form-control(
+//-           type="time"
+//-           name="hora_inicio"
+//-           required
+//-           class=(erroresCampos && erroresCampos.hora_inicio ? 'is-invalid' : '')
+//-           value=agenda.hora_inicio
+//-         )
+
+//-       .col-md-6
+//-         label.form-label
+//-           | Hora Fin
+//-           if erroresCampos && erroresCampos.hora_fin
+//-             span.text-danger *
+//-         input.form-control(
+//-           type="time"
+//-           name="hora_fin"
+//-           required
+//-           class=(erroresCampos && erroresCampos.hora_fin ? 'is-invalid' : '')
+//-           value=agenda.hora_fin
+//-         )
+
+//-     // ============================
+//-     // TURNOS
+//-     // ============================
+//-     .row.g-3.mb-3
+//-       .col-md-6
+//-         label.form-label
+//-           | Duración del turno
+//-           if erroresCampos && erroresCampos.duracion_turnos
+//-             span.text-danger *
+//-         select.form-select(
+//-           name="duracion_turnos"
+//-           required
+//-           class=(erroresCampos && erroresCampos.duracion_turnos ? 'is-invalid' : '')
+//-         )
+//-           option(value="") Seleccione duración
+//-           each d in [15,20,25,30,35,40,45,50,60]
+//-             option(
+//-               value=d
+//-               selected=(String(d) === String(agenda.duracion_turnos))
+//-             ) #{d} minutos
+
+//-       .col-md-6
+//-         label.form-label
+//-           | Límite de Sobreturnos
+//-           if erroresCampos && erroresCampos.limite_sobreturnos
+//-             span.text-danger *
+//-         input.form-control(
+//-           type="number"
+//-           min="0"
+//-           name="limite_sobreturnos"
+//-           required
+//-           class=(erroresCampos && erroresCampos.limite_sobreturnos ? 'is-invalid' : '')
+//-           value=agenda.limite_sobreturnos
+//-         )
+
+//-     // ============================
+//-     // MÉDICO / ESPECIALIDAD
+//-     // ============================
+//-     .row.g-3.mb-3
+//-       .col-md-6
+//-         label.form-label
+//-           | Médico
+//-           if erroresCampos && erroresCampos.id_medico
+//-             span.text-danger *
+//-         select.form-select#medicoSelect(
+//-           name="id_medico"
+//-           required
+//-           class=(erroresCampos && erroresCampos.id_medico ? 'is-invalid' : '')
+//-         )
+//-           option(value="") Seleccione médico
+//-           each m in medicos
+//-             option(
+//-               value=m.id_medico
+//-               selected=(String(m.id_medico) === String(agenda.id_medico))
+//-             ) #{m.apellido} #{m.nombre}
+
+//-       .col-md-6
+//-         label.form-label
+//-           | Especialidad
+//-           if erroresCampos && erroresCampos.id_especialidad
+//-             span.text-danger *
+//-         select.form-select#especialidadSelect(
+//-           name="id_especialidad"
+//-           required
+//-           class=(erroresCampos && erroresCampos.id_especialidad ? 'is-invalid' : '')
+//-         )
+//-           option(value="") Seleccione especialidad
+//-           each e in especialidades
+//-             option(
+//-               value=e.id
+//-               selected=(String(e.id) === String(agenda.id_especialidad))
+//-             ) #{e.nombre}
+
+//-     // ============================
+//-     // SUCURSAL / CLASIFICACIÓN
+//-     // ============================
+//-     .row.g-3.mb-3
+//-       .col-md-6
+//-         label.form-label
+//-           | Sucursal
+//-           if erroresCampos && erroresCampos.id_sucursal
+//-             span.text-danger *
+//-         select.form-select(
+//-           name="id_sucursal"
+//-           required
+//-           class=(erroresCampos && erroresCampos.id_sucursal ? 'is-invalid' : '')
+//-         )
+//-           option(value="1" selected=(agenda.id_sucursal == 1)) Clínica Argentina
+//-           option(value="2" selected=(agenda.id_sucursal == 2)) Clínica España
+
+//-       .col-md-6
+//-         label.form-label
+//-           | Clasificación
+//-           if erroresCampos && erroresCampos.id_clasificacion
+//-             span.text-danger *
+//-         select.form-select(
+//-           name="id_clasificacion"
+//-           required
+//-           class=(erroresCampos && erroresCampos.id_clasificacion ? 'is-invalid' : '')
+//-         )
+//-           option(value="1" selected=(agenda.id_clasificacion == 1)) Normal
+//-           option(value="2" selected=(agenda.id_clasificacion == 2)) Especial
+//-           option(value="3" selected=(agenda.id_clasificacion == 3)) VIP
+
+//-     .text-end.mt-4
+//-       button.btn.btn-success(type="submit") Guardar Cambios
+
+//-   // ============================
+//-   // JS: CAMBIO DINÁMICO DE ESPECIALIDADES
+//-   // ============================
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const medicoSelect = document.getElementById('medicoSelect');
+//-       const especialidadSelect = document.getElementById('especialidadSelect');
+
+//-       medicoSelect.addEventListener('change', async () => {
+//-         const idMedico = medicoSelect.value;
+
+//-         especialidadSelect.innerHTML =
+//-           '<option value="">Seleccione una especialidad</option>';
+
+//-         if (!idMedico) return;
+
+//-         try {
+//-           const res = await fetch(`/medicos/${idMedico}/especialidades`);
+//-           const especialidades = await res.json();
+
+//-           if (!Array.isArray(especialidades) || especialidades.length === 0) {
+//-             especialidadSelect.innerHTML +=
+//-               '<option value="">Sin especialidades activas</option>';
+//-             return;
+//-           }
+
+//-           especialidades.forEach(e => {
+//-             especialidadSelect.innerHTML +=
+//-               `<option value="${e.id}">${e.nombre}</option>`;
+//-           });
+//-         } catch (err) {
+//-           console.error('Error cargando especialidades', err);
+//-         }
+//-       });
+//-     });
+
+//-   script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+
+
 extends ../layout
 
 block contenido
-  a(href="/agendas" class="btn btn-outline-dark mb-3") ← Volver a Agendas
-  link(rel="stylesheet" href="/css/style.css")
+  .container.mt-5
+    a(href="/agendas" class="btn btn-outline-dark mb-3") ← Volver a Agendas
+    link(rel="stylesheet" href="/css/style.css")
 
-  h1.text-center.mb-4 Editar Agenda
+    h1.text-center.mb-4 Editar Agenda
+
+    // ============================
+    // ALERTA GENERAL
+    // ============================
+    if error
+      .alert.alert-danger.mt-3(role="alert") #{error}
+
+    form(
+      action=`/agendas/update/${agenda.id}`
+      method="POST"
+      id="editar-form"
+      class="shadow p-4 rounded bg-light needs-validation"
+      novalidate
+    )
+
+      input(type="hidden" name="id" value=agenda.id)
+
+      // ============================
+      // FECHAS
+      // ============================
+      h4.mb-3.text-primary Fechas de la Agenda
+      .row.g-3.mb-3
+        .col-md-6
+          label.form-label Fecha de Creación
+            if erroresCampos && erroresCampos.fecha_creacion
+              span.text-danger  *
+          input.form-control(
+            type="date"
+            name="fecha_creacion"
+            required
+            class=(erroresCampos && erroresCampos.fecha_creacion ? 'is-invalid' : '')
+            value=agenda.fecha_creacion ? agenda.fecha_creacion.toISOString().split('T')[0] : ''
+          )
+
+        .col-md-6
+          label.form-label Fecha de Finalización
+            if erroresCampos && erroresCampos.fecha_fin
+              span.text-danger  *
+          input.form-control(
+            type="date"
+            name="fecha_fin"
+            required
+            class=(erroresCampos && erroresCampos.fecha_fin ? 'is-invalid' : '')
+            value=agenda.fecha_fin ? agenda.fecha_fin.toISOString().split('T')[0] : ''
+          )
+
+      // ============================
+      // HORARIOS
+      // ============================
+      h4.mt-4.mb-3.text-primary Horarios
+      .row.g-3.mb-3
+        .col-md-6
+          label.form-label Hora Inicio
+            if erroresCampos && erroresCampos.hora_inicio
+              span.text-danger  *
+          input.form-control(
+            type="time"
+            name="hora_inicio"
+            required
+            class=(erroresCampos && erroresCampos.hora_inicio ? 'is-invalid' : '')
+            value=agenda.hora_inicio
+          )
+
+        .col-md-6
+          label.form-label Hora Fin
+            if erroresCampos && erroresCampos.hora_fin
+              span.text-danger  *
+          input.form-control(
+            type="time"
+            name="hora_fin"
+            required
+            class=(erroresCampos && erroresCampos.hora_fin ? 'is-invalid' : '')
+            value=agenda.hora_fin
+          )
+
+      // ============================
+      // TURNOS
+      // ============================
+      h4.mt-4.mb-3.text-primary Turnos
+      .row.g-3.mb-3
+        .col-md-6
+          label.form-label Duración del turno
+            if erroresCampos && erroresCampos.duracion_turnos
+              span.text-danger  *
+          select.form-select(
+            name="duracion_turnos"
+            required
+            class=(erroresCampos && erroresCampos.duracion_turnos ? 'is-invalid' : '')
+          )
+            option(value="") Seleccione duración
+            each d in [15,20,25,30,35,40,45,50,60]
+              option(
+                value=d
+                selected=(String(d) === String(agenda.duracion_turnos))
+              ) #{d} minutos
+
+        .col-md-6
+          label.form-label Límite de Sobreturnos
+            if erroresCampos && erroresCampos.limite_sobreturnos
+              span.text-danger  *
+          input.form-control(
+            type="number"
+            min="0"
+            name="limite_sobreturnos"
+            required
+            class=(erroresCampos && erroresCampos.limite_sobreturnos ? 'is-invalid' : '')
+            value=agenda.limite_sobreturnos
+          )
+
+      // ============================
+      // DÍAS DE ATENCIÓN (NUEVO)
+      // ============================
+      h4.mt-4.mb-3.text-primary Días de atención
+      .row.mb-3
+        - const diasSemana = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+        each dia, i in diasSemana
+          - const valorDiaDB = (i + 1).toString()
+          .col-md-3.mb-2
+            .form-check
+              //- Verificamos si el día está en el array de días de la agenda
+              //- Nota: El backend debe enviar agenda.diasIds como un array de IDs [1, 2, 5]
+              - let isChecked = false
+              if agenda && agenda.diasIds
+                - isChecked = agenda.diasIds.map(String).includes(valorDiaDB)
+              
+              input.form-check-input(
+                type="checkbox"
+                name="dias"
+                id=`dia_${valorDiaDB}`
+                value=valorDiaDB
+                checked=isChecked
+              )
+              label.form-check-label(for=`dia_${valorDiaDB}`) #{dia}
+
+      // ============================
+      // MÉDICO / ESPECIALIDAD
+      // ============================
+      h4.mt-4.mb-3.text-primary Profesional
+      .row.g-3.mb-3
+        .col-md-6
+          label.form-label Médico
+            if erroresCampos && erroresCampos.id_medico
+              span.text-danger  *
+          select.form-select#medicoSelect(
+            name="id_medico"
+            required
+            class=(erroresCampos && erroresCampos.id_medico ? 'is-invalid' : '')
+          )
+            option(value="") Seleccione médico
+            each m in medicos
+              option(
+                value=m.id_medico
+                selected=(String(m.id_medico) === String(agenda.id_medico))
+              ) #{m.apellido} #{m.nombre}
+
+        .col-md-6
+          label.form-label Especialidad
+            if erroresCampos && erroresCampos.id_especialidad
+              span.text-danger  *
+          select.form-select#especialidadSelect(
+            name="id_especialidad"
+            required
+            class=(erroresCampos && erroresCampos.id_especialidad ? 'is-invalid' : '')
+          )
+            option(value="") Seleccione especialidad
+            each e in especialidades
+              option(
+                value=e.id
+                selected=(String(e.id) === String(agenda.id_especialidad))
+              ) #{e.nombre}
+
+      // ============================
+      // SUCURSAL / CLASIFICACIÓN
+      // ============================
+      .row.g-3.mb-3
+        .col-md-6
+          label.form-label Sucursal
+          select.form-select(name="id_sucursal" required)
+            option(value="1" selected=(agenda.id_sucursal == 1)) Clínica Argentina
+            option(value="2" selected=(agenda.id_sucursal == 2)) Clínica España
+
+        .col-md-6
+          label.form-label Clasificación
+          select.form-select(name="id_clasificacion" required)
+            option(value="1" selected=(agenda.id_clasificacion == 1)) Normal
+            option(value="2" selected=(agenda.id_clasificacion == 2)) Especial
+            option(value="3" selected=(agenda.id_clasificacion == 3)) VIP
+
+      .text-center.mt-4
+        button.btn.btn-success.btn-lg(type="submit") Guardar Cambios
 
   // ============================
-  // ALERTA GENERAL
-  // ============================
-  if error
-    .alert.alert-danger.mt-3(role="alert") #{error}
-
-  form(
-    action=`/agendas/update/${agenda.id}`
-    method="POST"
-    id="editar-form"
-    novalidate
-  )
-
-    input(type="hidden" name="id" value=agenda.id)
-
-    // ============================
-    // FECHAS
-    // ============================
-    .row.g-3.mb-3
-      .col-md-6
-        label.form-label
-          | Fecha de Creación
-          if erroresCampos && erroresCampos.fecha_creacion
-            span.text-danger *
-        input.form-control(
-          type="date"
-          name="fecha_creacion"
-          required
-          class=(erroresCampos && erroresCampos.fecha_creacion ? 'is-invalid' : '')
-          value=agenda.fecha_creacion ? agenda.fecha_creacion.toISOString().split('T')[0] : ''
-        )
-
-      .col-md-6
-        label.form-label
-          | Fecha de Finalización
-          if erroresCampos && erroresCampos.fecha_fin
-            span.text-danger *
-        input.form-control(
-          type="date"
-          name="fecha_fin"
-          required
-          class=(erroresCampos && erroresCampos.fecha_fin ? 'is-invalid' : '')
-          value=agenda.fecha_fin ? agenda.fecha_fin.toISOString().split('T')[0] : ''
-        )
-
-    // ============================
-    // HORARIOS
-    // ============================
-    .row.g-3.mb-3
-      .col-md-6
-        label.form-label
-          | Hora Inicio
-          if erroresCampos && erroresCampos.hora_inicio
-            span.text-danger *
-        input.form-control(
-          type="time"
-          name="hora_inicio"
-          required
-          class=(erroresCampos && erroresCampos.hora_inicio ? 'is-invalid' : '')
-          value=agenda.hora_inicio
-        )
-
-      .col-md-6
-        label.form-label
-          | Hora Fin
-          if erroresCampos && erroresCampos.hora_fin
-            span.text-danger *
-        input.form-control(
-          type="time"
-          name="hora_fin"
-          required
-          class=(erroresCampos && erroresCampos.hora_fin ? 'is-invalid' : '')
-          value=agenda.hora_fin
-        )
-
-    // ============================
-    // TURNOS
-    // ============================
-    .row.g-3.mb-3
-      .col-md-6
-        label.form-label
-          | Duración del turno
-          if erroresCampos && erroresCampos.duracion_turnos
-            span.text-danger *
-        select.form-select(
-          name="duracion_turnos"
-          required
-          class=(erroresCampos && erroresCampos.duracion_turnos ? 'is-invalid' : '')
-        )
-          option(value="") Seleccione duración
-          each d in [15,20,25,30,35,40,45,50,60]
-            option(
-              value=d
-              selected=(String(d) === String(agenda.duracion_turnos))
-            ) #{d} minutos
-
-      .col-md-6
-        label.form-label
-          | Límite de Sobreturnos
-          if erroresCampos && erroresCampos.limite_sobreturnos
-            span.text-danger *
-        input.form-control(
-          type="number"
-          min="0"
-          name="limite_sobreturnos"
-          required
-          class=(erroresCampos && erroresCampos.limite_sobreturnos ? 'is-invalid' : '')
-          value=agenda.limite_sobreturnos
-        )
-
-    // ============================
-    // MÉDICO / ESPECIALIDAD
-    // ============================
-    .row.g-3.mb-3
-      .col-md-6
-        label.form-label
-          | Médico
-          if erroresCampos && erroresCampos.id_medico
-            span.text-danger *
-        select.form-select#medicoSelect(
-          name="id_medico"
-          required
-          class=(erroresCampos && erroresCampos.id_medico ? 'is-invalid' : '')
-        )
-          option(value="") Seleccione médico
-          each m in medicos
-            option(
-              value=m.id_medico
-              selected=(String(m.id_medico) === String(agenda.id_medico))
-            ) #{m.apellido} #{m.nombre}
-
-      .col-md-6
-        label.form-label
-          | Especialidad
-          if erroresCampos && erroresCampos.id_especialidad
-            span.text-danger *
-        select.form-select#especialidadSelect(
-          name="id_especialidad"
-          required
-          class=(erroresCampos && erroresCampos.id_especialidad ? 'is-invalid' : '')
-        )
-          option(value="") Seleccione especialidad
-          each e in especialidades
-            option(
-              value=e.id
-              selected=(String(e.id) === String(agenda.id_especialidad))
-            ) #{e.nombre}
-
-    // ============================
-    // SUCURSAL / CLASIFICACIÓN
-    // ============================
-    .row.g-3.mb-3
-      .col-md-6
-        label.form-label
-          | Sucursal
-          if erroresCampos && erroresCampos.id_sucursal
-            span.text-danger *
-        select.form-select(
-          name="id_sucursal"
-          required
-          class=(erroresCampos && erroresCampos.id_sucursal ? 'is-invalid' : '')
-        )
-          option(value="1" selected=(agenda.id_sucursal == 1)) Clínica Argentina
-          option(value="2" selected=(agenda.id_sucursal == 2)) Clínica España
-
-      .col-md-6
-        label.form-label
-          | Clasificación
-          if erroresCampos && erroresCampos.id_clasificacion
-            span.text-danger *
-        select.form-select(
-          name="id_clasificacion"
-          required
-          class=(erroresCampos && erroresCampos.id_clasificacion ? 'is-invalid' : '')
-        )
-          option(value="1" selected=(agenda.id_clasificacion == 1)) Normal
-          option(value="2" selected=(agenda.id_clasificacion == 2)) Especial
-          option(value="3" selected=(agenda.id_clasificacion == 3)) VIP
-
-    .text-end.mt-4
-      button.btn.btn-success(type="submit") Guardar Cambios
-
-  // ============================
-  // JS: CAMBIO DINÁMICO DE ESPECIALIDADES
+  // JS ACTUALIZADO
   // ============================
   script.
     document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('editar-form');
       const medicoSelect = document.getElementById('medicoSelect');
       const especialidadSelect = document.getElementById('especialidadSelect');
 
+      // Cambio dinámico de especialidades
       medicoSelect.addEventListener('change', async () => {
         const idMedico = medicoSelect.value;
-
-        especialidadSelect.innerHTML =
-          '<option value="">Seleccione una especialidad</option>';
-
+        especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
         if (!idMedico) return;
 
         try {
           const res = await fetch(`/medicos/${idMedico}/especialidades`);
           const especialidades = await res.json();
-
-          if (!Array.isArray(especialidades) || especialidades.length === 0) {
-            especialidadSelect.innerHTML +=
-              '<option value="">Sin especialidades activas</option>';
-            return;
-          }
-
           especialidades.forEach(e => {
-            especialidadSelect.innerHTML +=
-              `<option value="${e.id}">${e.nombre}</option>`;
+            const opt = document.createElement('option');
+            opt.value = e.id;
+            opt.textContent = e.nombre;
+            especialidadSelect.appendChild(opt);
           });
-        } catch (err) {
-          console.error('Error cargando especialidades', err);
+        } catch (err) { console.error('Error cargando especialidades', err); }
+      });
+
+      // Validación de días al enviar
+      form.addEventListener('submit', (e) => {
+        const diasChecked = form.querySelectorAll('input[name="dias"]:checked');
+        if (diasChecked.length === 0) {
+          e.preventDefault();
+          alert('Debe seleccionar al menos un día de atención.');
+          return false;
         }
+        if (!form.checkValidity()) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        form.classList.add('was-validated');
       });
     });
 

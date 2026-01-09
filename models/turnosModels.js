@@ -96,29 +96,49 @@ class Turno {
     }
 
     // Crear turno
+    // static async create(data) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+
+    //         const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = data;
+
+    //         const sql = `
+    //             INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda)
+    //             VALUES (?, ?, ?, 'pendiente', 1, ?, ?);
+    //         `;
+
+    //         await conn.query(sql, [
+    //             fecha,
+    //             hora_inicio,
+    //             motivo,
+    //             id_paciente,
+    //             id_agenda
+    //         ]);
+
+    //     } catch (error) {
+    //         console.error("Error creando turno:", error);
+    //         throw new Error("Error al crear turno");
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
     static async create(data) {
         let conn;
         try {
             conn = await createConnection();
-
-            const { fecha, hora_inicio, motivo, id_paciente, id_agenda } = data;
+            const { fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni } = data;
 
             const sql = `
-                INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda)
-                VALUES (?, ?, ?, 'pendiente', 1, ?, ?);
-            `;
+            INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda, archivo_dni)
+            VALUES (?, ?, ?, 'pendiente', 1, ?, ?, ?);
+        `;
 
-            await conn.query(sql, [
-                fecha,
-                hora_inicio,
-                motivo,
-                id_paciente,
-                id_agenda
-            ]);
-
+            await conn.query(sql, [fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni]);
         } catch (error) {
             console.error("Error creando turno:", error);
-            throw new Error("Error al crear turno");
+            throw error;
         } finally {
             if (conn) conn.end();
         }
@@ -241,6 +261,66 @@ class Turno {
         }
     }
 
+
+
+
+    // =========================
+    // BUSCAR Turnos Disponibles
+    // =========================
+    static async obtenerTurnosDisponibles(id_agenda, fecha) {
+        const conn = await createConnection();
+
+        const [rows] = await conn.query(`
+    SELECT id, hora_inicio
+    FROM turnos
+    WHERE id_agenda = ?
+      AND fecha = ?
+      AND estado = 'Libre'
+    ORDER BY hora_inicio
+  `, [id_agenda, fecha]);
+
+        await conn.end();
+        return rows;
+    }
+
+    // =====================================================
+    // AGENDAR (CREA EL REGISTRO SI NO EXISTE Y LO RESERVA)
+    // =====================================================
+    static async agendarTurnoVirtual(data) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const { fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni } = data;
+
+            // 1. Verificamos si por casualidad ya existe (evitar duplicados)
+            const [existe] = await conn.query(
+                "SELECT id FROM turnos WHERE id_agenda = ? AND fecha = ? AND hora_inicio = ?",
+                [id_agenda, fecha, hora_inicio]
+            );
+
+            if (existe.length > 0) {
+                // Si existe, lo actualizamos a Reservado
+                await conn.query(
+                    `UPDATE turnos SET estado = 'Reservado', id_paciente = ?, motivo = ?, archivo_dni = ? WHERE id = ?`,
+                    [id_paciente, motivo, archivo_dni, existe[0].id]
+                );
+                return existe[0].id;
+            } else {
+                // 2. Si no existe (es virtual), lo insertamos directamente como Reservado
+                const [result] = await conn.query(
+                    `INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda, archivo_dni)
+                 VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?)`,
+                    [fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni]
+                );
+                return result.insertId;
+            }
+        } catch (error) {
+            console.error("Error en agendarTurnoVirtual:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
 
 

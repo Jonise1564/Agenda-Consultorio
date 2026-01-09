@@ -1,0 +1,38 @@
+extends ../layout
+
+block contenido
+  .container.mt-4
+    h2.text-center.mb-4 Lista de Espera
+
+    .card.shadow
+      .card-body
+        table.table.table-hover
+          thead.table-primary
+            tr
+              th Paciente
+              th Teléfono
+              th Fecha de Registro
+              th Médico
+              th Especialidad
+              th.text-center Acciones
+
+          tbody
+            if lista.length
+              each l in lista
+                tr
+                  td #{l.paciente}
+                  td #{l.telefono}
+                  td #{l.fecha_registro}
+                  td #{l.medico}
+                  td #{l.especialidad}
+                  td.text-center
+                    form(
+                      action=`/secretaria/lista-espera/eliminar/${l.id}`
+                      method="POST"
+                      onsubmit="return confirm('¿Eliminar de la lista de espera?')"
+                    )
+                      button.btn.btn-sm.btn-danger Eliminar
+            else
+              tr
+                td(colspan="6").text-center.text-muted
+                  | No hay pacientes en lista de espera

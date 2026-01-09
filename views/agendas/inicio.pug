@@ -1,10 +1,276 @@
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+
+//-         .container {
+//-             padding: 20px;
+//-         }
+
+//-         .center-text {
+//-             text-align: center;
+//-             font-weight: bold;
+//-             margin-bottom: 20px;
+//-         }
+
+//-         .right-align {
+//-             display: flex;
+//-             justify-content: flex-end;
+//-             margin-bottom: 10px;
+//-         }
+
+//-         /* ======================= FILTROS GRID ======================= */
+//-         .filters {
+//-             display: grid;
+//-             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+//-             gap: 15px;
+//-             margin: 20px 0;
+//-             padding: 15px;
+//-             background: #ffffff;
+//-             border-radius: 8px;
+//-             border: 1px solid #d0d7e1;
+//-             box-shadow: 0px 2px 4px rgba(0,0,0,0.08);
+//-         }
+
+//-         .filter-item p {
+//-             font-weight: bold;
+//-             margin-bottom: 4px;
+//-             font-size: 14px;
+//-             color: #333;
+//-         }
+
+//-         /* ======================= CARDS ======================= */
+//-         .cards-container {
+//-             display: grid;
+//-             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* más compacto */
+//-             gap: 15px;
+//-             padding: 10px;
+//-         }
+
+//-         .card {
+//-             border: 1px solid #ddd;
+//-             border-left: 4px solid #1e88e5;
+//-             border-radius: 8px;
+//-             padding: 12px; /* menos padding */
+//-             background-color: #ffffff;
+//-             box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+//-             transition: transform .15s ease;
+//-             font-size: 14px;
+//-         }
+
+//-         .card:hover {
+//-             transform: translateY(-4px);
+//-             box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+//-         }
+
+//-         .card-header h2 {
+//-             font-weight: 700;
+//-             font-size: 16px; /* más pequeño */
+//-             margin: 0;
+//-             color: #2b4c7e;
+//-         }
+
+//-         .card-body p {
+//-             margin: 3px 0; /* margen reducido */
+//-             color: #444;
+//-         }
+
+//-         .card-body p:first-child {
+//-             color: #1976d2;
+//-             font-weight: bold;
+//-             font-size: 12px; /* más pequeño */
+//-         }
+
+//-         .card-body p:nth-child(4) {
+//-             color: #ff9800;
+//-             font-weight: bold;
+//-         }
+
+//-         .card-footer {
+//-             margin-top: 12px;
+//-             display: flex;
+//-             flex-wrap: wrap;
+//-             gap: 10px;
+//-         }
+
+//-         .icon-btn {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             padding: 6px 10px;
+//-             border-radius: 6px;
+//-             display: inline-flex;
+//-             align-items: center;
+//-             justify-content: center;
+//-         }
+
+//-         .icon-view { color: #198754; }
+//-         .icon-edit { color: #0d6efd; }
+//-         .icon-delete { color: #dc3545; }
+//-         .icon-reserve { color: #ff9800; }
+//-         .icon-create { margin-left: 6px; }
+
+//-         .crear {
+//-             margin: 20px 0;
+//-         }
+
+//-     .container
+//-         .right-align
+//-             a.btn.btn-primary(href="/") Iniciar Sesión
+
+//-         h1.center-text Cartilla Médica / Agendas
+
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({
+//-                     title: 'Mensaje',
+//-                     text: '#{mensaje}',
+//-                     icon: 'success',
+//-                     confirmButtonText: 'OK'
+//-                 });
+
+//-         // ============================ FILTROS ============================
+//-         .filters
+//-             .filter-item
+//-                 p Especialidad
+//-                 select.form-select(onchange="applyFilters()" id="f-especialidad")
+//-                     option(value="") Todas
+//-                     each especialidad in especialidades || []
+//-                         option(value=especialidad.nombre)= especialidad.nombre
+
+//-             .filter-item
+//-                 p Clasificación
+//-                 select.form-select(onchange="applyFilters()" id="f-clasificacion")
+//-                     option(value="") Todas
+//-                     option Normal
+//-                     option Especial
+//-                     option Vip
+
+//-             .filter-item
+//-                 p Médico
+//-                 select.form-select(onchange="applyFilters()" id="f-medico")
+//-                     option(value="") Todos
+//-                     each medico in medicos || []
+//-                         option(value=`${medico.apellido} ${medico.nombre}`)= `${medico.apellido} ${medico.nombre}`
+
+//-             .filter-item
+//-                 p Día
+//-                 select.form-select(onchange="applyFilters()" id="f-dia")
+//-                     option(value="") Todos
+//-                     each dia in ["Lunes","Martes","Miercoles","Jueves","Viernes","Sábado","Domingo"]
+//-                         option(value=dia)= dia
+
+//-             .filter-item
+//-                 p Turnos
+//-                 select.form-select(onchange="applyFilters()" id="f-turno")
+//-                     option(value="") Todos
+//-                     each estado in ["Libre","Reservado","Confirmado","Cancelado","Ausente","Presente","En Consulta","Atendido","No Disponible"]
+//-                         option(value=estado)= estado
+
+//-             .filter-item
+//-                 p Obra Social
+//-                 select.form-select(onchange="applyFilters()" id="f-obra")
+//-                     option(value="") Todas
+//-                     each obra_social in obras_sociales || []
+//-                         option(value=obra_social.nombre)= obra_social.nombre
+
+//-         a.crear.btn.btn-success(href="/agendas/create")
+//-             i.bi.bi-plus-circle.icon-create
+//-             |  Crear Agenda
+
+//-     // ============================ CARDS ============================
+//-     .cards-container
+//-         each agenda in agendas
+//-             .card(
+//-                 data-especialidad=agenda.especialidad
+//-                 data-clasificacion=agenda.clasificacion
+//-                 data-medico=`${agenda.apellido} ${agenda.nombre}`
+//-                 data-dia=agenda.dias
+//-                 data-turno=agenda.estado_turno
+//-                 data-obra=agenda.obra_social
+//-             )
+//-                 .card-header
+//-                     h2 #{agenda.apellido} #{agenda.nombre}
+
+//-                 .card-body
+//-                     p #{agenda.especialidad}
+//-                     p #{agenda.dias}
+//-                     p #{agenda.hora_inicio} a #{agenda.hora_fin} hs
+//-                     p #{agenda.sucursal}
+//-                     p #{agenda.obra_social}
+
+//-                 .card-footer
+//-                     a.icon-btn.icon-view(href=`/turnos/${agenda.id}` title="Ver turnos")
+//-                         i.bi.bi-calendar-check
+
+//-                     a.icon-btn.icon-edit(href=`/agendas/edit/${agenda.id}` title="Editar")
+//-                         i.bi.bi-pencil-square
+
+//-                     button.icon-btn.icon-delete(onclick=`confirmDelete(${agenda.id})` title="Eliminar")
+//-                         i.bi.bi-trash
+
+//-     // ============================ SCRIPTS ============================
+//-     script.
+//-         function confirmDelete(id) {
+//-             Swal.fire({
+//-                 title: '¿Estás seguro?',
+//-                 text: "¡No podrás revertir esto!",
+//-                 icon: 'warning',
+//-                 showCancelButton: true,
+//-                 confirmButtonColor: '#3085d6',
+//-                 cancelButtonColor: '#d33',
+//-                 confirmButtonText: 'Sí, eliminarlo!'
+//-             }).then((result) => {
+//-                 if (result.isConfirmed) deleteAgenda(id);
+//-             });
+//-         }
+
+//-         function deleteAgenda(id) {
+//-             fetch(`/agendas/${id}`, { method: 'DELETE' })
+//-                 .then(res => {
+//-                     if (!res.ok) throw new Error();
+//-                     Swal.fire('Eliminado!', 'La agenda ha sido eliminada.', 'success')
+//-                         .then(() => location.reload());
+//-                 })
+//-                 .catch(() =>
+//-                     Swal.fire('Error!', 'Hubo un problema al eliminar la agenda.', 'error')
+//-                 );
+//-         }
+
+//-         function applyFilters() {
+//-             const filters = {
+//-                 especialidad: document.getElementById('f-especialidad').value,
+//-                 clasificacion: document.getElementById('f-clasificacion').value,
+//-                 medico: document.getElementById('f-medico').value,
+//-                 dia: document.getElementById('f-dia').value,
+//-                 turno: document.getElementById('f-turno').value,
+//-                 obra: document.getElementById('f-obra').value
+//-             };
+
+//-             document.querySelectorAll('.card').forEach(card => {
+//-                 const match =
+//-                     (filters.especialidad === "" || card.dataset.especialidad === filters.especialidad) &&
+//-                     (filters.clasificacion === "" || card.dataset.clasificacion === filters.clasificacion) &&
+//-                     (filters.medico === "" || card.dataset.medico === filters.medico) &&
+//-                     (filters.dia === "" || card.dataset.dia.includes(filters.dia)) &&
+//-                     (filters.turno === "" || card.dataset.turno === filters.turno) &&
+//-                     (filters.obra === "" || card.dataset.obra === filters.obra);
+
+//-                 card.style.display = match ? "block" : "none";
+//-             });
+//-         }
+
+
 extends ../layout
 
 block contenido
     style.
         body {
             background-color: #eef5ff;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
 
         .container {
@@ -15,6 +281,7 @@ block contenido
             text-align: center;
             font-weight: bold;
             margin-bottom: 20px;
+            color: #2b4c7e;
         }
 
         .right-align {
@@ -23,7 +290,7 @@ block contenido
             margin-bottom: 10px;
         }
 
-        /* ======================= FILTROS GRID ======================= */
+        /* ======================= FILTROS ======================= */
         .filters {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -43,186 +310,233 @@ block contenido
             color: #333;
         }
 
-        /* ======================= CARDS ======================= */
+        /* ======================= CARDS MEJORADAS ======================= */
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* más compacto */
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
             padding: 10px;
         }
 
         .card {
             border: 1px solid #ddd;
-            border-left: 4px solid #1e88e5;
-            border-radius: 8px;
-            padding: 12px; /* menos padding */
+            border-left: 5px solid #1e88e5;
+            border-radius: 10px;
+            padding: 15px;
             background-color: #ffffff;
-            box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
-            transition: transform .15s ease;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+            transition: all .2s ease;
             font-size: 14px;
+            display: flex;
+            flex-direction: column;
         }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 15px rgba(0,0,0,0.12);
+        }
+
+        .card-header {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
         }
 
         .card-header h2 {
             font-weight: 700;
-            font-size: 16px; /* más pequeño */
+            font-size: 17px;
             margin: 0;
-            color: #2b4c7e;
+            color: #1a3a63;
         }
 
-        .card-body p {
-            margin: 3px 0; /* margen reducido */
+        .especialidad-text {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .card-body {
+            flex-grow: 1;
+        }
+
+        .card-data-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
             color: #444;
         }
 
-        .card-body p:first-child {
-            color: #1976d2;
-            font-weight: bold;
-            font-size: 12px; /* más pequeño */
+        .card-data-row i {
+            width: 18px;
+            color: #1e88e5;
+            font-size: 15px;
+            text-align: center;
         }
 
-        .card-body p:nth-child(4) {
-            color: #ff9800;
+        .vigencia-tag {
+            display: inline-block;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #444;
+            border: 1px solid #e0e0e0;
+            margin-top: 8px;
+        }
+
+        .sobreturnos-badge {
+            background-color: #e3f2fd;
+            color: #0d47a1;
             font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
         }
 
         .card-footer {
-            margin-top: 12px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            justify-content: flex-end;
+            gap: 12px;
         }
 
         .icon-btn {
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 8px;
+            border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.2s;
+            text-decoration: none;
         }
 
-        .icon-view { color: #198754; }
-        .icon-edit { color: #0d6efd; }
-        .icon-delete { color: #dc3545; }
-        .icon-reserve { color: #ff9800; }
-        .icon-create { margin-left: 6px; }
+        .icon-view { color: #198754; background: #e8f5e9; }
+        .icon-edit { color: #0d6efd; background: #e7f0ff; }
+        .icon-delete { color: #dc3545; background: #ffebee; }
 
-        .crear {
-            margin: 20px 0;
-        }
+        .icon-view:hover { background: #c8e6c9; }
+        .icon-edit:hover { background: #cfe2ff; }
+        .icon-delete:hover { background: #ffcdd2; }
 
     .container
         .right-align
-            a.btn.btn-primary(href="/") Iniciar Sesión
+            a.btn.btn-outline-primary.btn-sm(href="/") Iniciar Sesión
 
-        h1.center-text Cartilla Médica / Agendas
+        h1.center-text Gestión de Agendas Médicas
 
         if mensaje
             script.
                 Swal.fire({
-                    title: 'Mensaje',
+                    title: '¡Éxito!',
                     text: '#{mensaje}',
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    confirmButtonColor: '#1e88e5'
                 });
 
         // ============================ FILTROS ============================
         .filters
             .filter-item
                 p Especialidad
-                select.form-select(onchange="applyFilters()" id="f-especialidad")
+                select.form-select.form-select-sm(onchange="applyFilters()" id="f-especialidad")
                     option(value="") Todas
-                    each especialidad in especialidades || []
-                        option(value=especialidad.nombre)= especialidad.nombre
-
-            .filter-item
-                p Clasificación
-                select.form-select(onchange="applyFilters()" id="f-clasificacion")
-                    option(value="") Todas
-                    option Normal
-                    option Especial
-                    option Vip
+                    each esp in especialidades || []
+                        option(value=esp.nombre)= esp.nombre
 
             .filter-item
                 p Médico
-                select.form-select(onchange="applyFilters()" id="f-medico")
+                select.form-select.form-select-sm(onchange="applyFilters()" id="f-medico")
                     option(value="") Todos
-                    each medico in medicos || []
-                        option(value=`${medico.apellido} ${medico.nombre}`)= `${medico.apellido} ${medico.nombre}`
+                    each med in medicos || []
+                        option(value=`${med.apellido} ${med.nombre}`)= `${med.apellido} ${med.nombre}`
 
             .filter-item
                 p Día
-                select.form-select(onchange="applyFilters()" id="f-dia")
+                select.form-select.form-select-sm(onchange="applyFilters()" id="f-dia")
                     option(value="") Todos
-                    each dia in ["Lunes","Martes","Miercoles","Jueves","Viernes","Sábado","Domingo"]
-                        option(value=dia)= dia
+                    each d in ["Lunes","Martes","Miercoles","Jueves","Viernes","Sábado","Domingo"]
+                        option(value=d)= d
 
             .filter-item
-                p Turnos
-                select.form-select(onchange="applyFilters()" id="f-turno")
-                    option(value="") Todos
-                    each estado in ["Libre","Reservado","Confirmado","Cancelado","Ausente","Presente","En Consulta","Atendido","No Disponible"]
-                        option(value=estado)= estado
-
-            .filter-item
-                p Obra Social
-                select.form-select(onchange="applyFilters()" id="f-obra")
+                p Sucursal
+                select.form-select.form-select-sm(onchange="applyFilters()" id="f-sucursal")
                     option(value="") Todas
-                    each obra_social in obras_sociales || []
-                        option(value=obra_social.nombre)= obra_social.nombre
+                    option Clínica Argentina
+                    option Centro España
 
-        a.crear.btn.btn-success(href="/agendas/create")
-            i.bi.bi-plus-circle.icon-create
-            |  Crear Agenda
+        .crear-container.mb-4
+            a.btn.btn-success(href="/agendas/create")
+                i.bi.bi-plus-circle.me-2
+                | Crear Nueva Agenda
 
-    // ============================ CARDS ============================
-    .cards-container
-        each agenda in agendas
-            .card(
-                data-especialidad=agenda.especialidad
-                data-clasificacion=agenda.clasificacion
-                data-medico=`${agenda.apellido} ${agenda.nombre}`
-                data-dia=agenda.dias
-                data-turno=agenda.estado_turno
-                data-obra=agenda.obra_social
-            )
-                .card-header
-                    h2 #{agenda.apellido} #{agenda.nombre}
+        // ============================ CARDS ============================
+        .cards-container
+            each agenda in agendas
+                .card(
+                    data-especialidad=agenda.especialidad
+                    data-medico=`${agenda.apellido} ${agenda.nombre}`
+                    data-dia=agenda.dias
+                    data-sucursal=agenda.sucursal
+                )
+                    .card-header
+                        h2 #{agenda.apellido} #{agenda.nombre}
+                        span.especialidad-text #{agenda.especialidad}
 
-                .card-body
-                    p #{agenda.especialidad}
-                    p #{agenda.dias}
-                    p #{agenda.hora_inicio} a #{agenda.hora_fin} hs
-                    p #{agenda.sucursal}
-                    p #{agenda.obra_social}
+                    .card-body
+                        .card-data-row
+                            i.bi.bi-clock
+                            span #{agenda.hora_inicio} - #{agenda.hora_fin} hs
+                        
+                        .card-data-row
+                            i.bi.bi-calendar3
+                            span #{agenda.dias}
 
-                .card-footer
-                    a.icon-btn.icon-view(href=`/turnos/${agenda.id}` title="Ver turnos")
-                        i.bi.bi-calendar-check
+                        .card-data-row
+                            i.bi.bi-geo-alt
+                            span #{agenda.sucursal}
 
-                    a.icon-btn.icon-edit(href=`/agendas/edit/${agenda.id}` title="Editar")
-                        i.bi.bi-pencil-square
+                        hr.my-2
 
-                    button.icon-btn.icon-delete(onclick=`confirmDelete(${agenda.id})` title="Eliminar")
-                        i.bi.bi-trash
+                        .card-data-row
+                            i.bi.bi-stopwatch
+                            span Consulta: 
+                            strong #{agenda.duracion_turnos} min
+                        
+                        .card-data-row
+                            i.bi.bi-person-plus
+                            span Sobreturnos: 
+                            span.sobreturnos-badge #{agenda.limite_sobreturnos}
+
+                        .vigencia-tag
+                            i.bi.bi-calendar-range.me-2
+                            | Vigencia: #{agenda.fecha_creacion} al #{agenda.fecha_fin}
+
+                    .card-footer
+                        a.icon-btn.icon-view(href=`/turnos/${agenda.id}` title="Gestionar Turnos")
+                            i.bi.bi-calendar-check
+
+                        a.icon-btn.icon-edit(href=`/agendas/edit/${agenda.id}` title="Editar Agenda")
+                            i.bi.bi-pencil-square
+
+                        button.icon-btn.icon-delete(onclick=`confirmDelete(${agenda.id})` title="Eliminar")
+                            i.bi.bi-trash
 
     // ============================ SCRIPTS ============================
     script.
         function confirmDelete(id) {
             Swal.fire({
-                title: '¿Estás seguro?',
-                text: "¡No podrás revertir esto!",
+                title: '¿Eliminar agenda?',
+                text: "Esta acción borrará la disponibilidad y no se puede deshacer.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, eliminarlo!'
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) deleteAgenda(id);
             });
@@ -232,33 +546,27 @@ block contenido
             fetch(`/agendas/${id}`, { method: 'DELETE' })
                 .then(res => {
                     if (!res.ok) throw new Error();
-                    Swal.fire('Eliminado!', 'La agenda ha sido eliminada.', 'success')
+                    Swal.fire('¡Eliminado!', 'La agenda ha sido quitada.', 'success')
                         .then(() => location.reload());
                 })
                 .catch(() =>
-                    Swal.fire('Error!', 'Hubo un problema al eliminar la agenda.', 'error')
+                    Swal.fire('Error', 'No se pudo eliminar. Verifique si tiene turnos asociados.', 'error')
                 );
         }
 
         function applyFilters() {
-            const filters = {
-                especialidad: document.getElementById('f-especialidad').value,
-                clasificacion: document.getElementById('f-clasificacion').value,
-                medico: document.getElementById('f-medico').value,
-                dia: document.getElementById('f-dia').value,
-                turno: document.getElementById('f-turno').value,
-                obra: document.getElementById('f-obra').value
-            };
+            const fEsp = document.getElementById('f-especialidad').value;
+            const fMed = document.getElementById('f-medico').value;
+            const fDia = document.getElementById('f-dia').value;
+            const fSuc = document.getElementById('f-sucursal').value;
 
             document.querySelectorAll('.card').forEach(card => {
                 const match =
-                    (filters.especialidad === "" || card.dataset.especialidad === filters.especialidad) &&
-                    (filters.clasificacion === "" || card.dataset.clasificacion === filters.clasificacion) &&
-                    (filters.medico === "" || card.dataset.medico === filters.medico) &&
-                    (filters.dia === "" || card.dataset.dia.includes(filters.dia)) &&
-                    (filters.turno === "" || card.dataset.turno === filters.turno) &&
-                    (filters.obra === "" || card.dataset.obra === filters.obra);
+                    (fEsp === "" || card.dataset.especialidad === fEsp) &&
+                    (fMed === "" || card.dataset.medico === fMed) &&
+                    (fDia === "" || card.dataset.dia.includes(fDia)) &&
+                    (fSuc === "" || card.dataset.sucursal === fSuc);
 
-                card.style.display = match ? "block" : "none";
+                card.style.display = match ? "flex" : "none";
             });
         }

@@ -1,0 +1,100 @@
+extends ../layout
+
+block contenido
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-7
+        .card.shadow
+          .card-body
+            h4.text-center.mb-4 Crear entrada en Lista de Espera
+
+            form(action="/secretaria/lista-espera" method="POST")
+
+              .mb-3
+                label.form-label Buscar Paciente *
+                input#buscarPaciente.form-control(
+                  type="text"
+                  placeholder="Buscar por nombre o DNI..."
+                  autocomplete="off"
+                )
+
+                select#selectPaciente.form-select.mt-2
+                  option(value="") Seleccione un paciente
+
+                input#idPacienteHidden(
+                  type="hidden"
+                  name="id_paciente"
+                )
+
+              .mb-3
+                label.form-label Buscar Profesional *
+                input#buscarMedico.form-control(
+                  type="text"
+                  placeholder="Buscar por apellido o nombre..."
+                  autocomplete="off"
+                )
+                select#selectMedico.form-select.mt-2(
+                  name="id_medico"
+                  required
+                )
+                  option(value="") Seleccione un profesional
+
+              .mb-3
+                label.form-label Especialidad *
+                select#selectEspecialidad.form-select(
+                  name="id_especialidad"
+                  required
+                  disabled
+                )
+                  option(value="") Seleccione una especialidad
+
+              .mb-3
+                label.form-label Observaciones
+                textarea.form-control(name="observaciones" rows="3")
+
+              .d-grid
+                button.btn.btn-primary(type="submit")
+                  | Agregar a Lista de Espera
+
+  script.
+    document.addEventListener("DOMContentLoaded", () => {
+
+      const buscarPaciente = document.getElementById("buscarPaciente");
+      const selectPaciente = document.getElementById("selectPaciente");
+      const idPacienteHidden = document.getElementById("idPacienteHidden");
+
+      buscarPaciente.addEventListener("input", async () => {
+        const q = buscarPaciente.value.trim();
+        if (q.length < 2) return;
+
+        const res = await fetch(`/pacientes/buscar?query=${q}`);
+        const pacientes = await res.json();
+
+        selectPaciente.innerHTML = '<option>Seleccione un paciente</option>';
+        idPacienteHidden.value = "";
+
+        // ✅ AUTO-SELECCIÓN
+        if (pacientes.length === 1) {
+          const p = pacientes[0];
+          selectPaciente.innerHTML = `
+            <option selected>
+              ${p.nombre} ${p.apellido} (DNI ${p.dni})
+            </option>`;
+          idPacienteHidden.value = p.id_paciente; // 🔥 ACÁ ESTÁ LA CLAVE
+          return;
+        }
+
+        pacientes.forEach(p => {
+          selectPaciente.innerHTML += `
+            <option data-id="${p.id_paciente}">
+              ${p.nombre} ${p.apellido} (DNI ${p.dni})
+            </option>`;
+        });
+      });
+
+      selectPaciente.addEventListener("change", () => {
+        const opt = selectPaciente.selectedOptions[0];
+        idPacienteHidden.value = opt?.dataset.id || "";
+      });
+
+    });

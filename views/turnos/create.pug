@@ -1,27 +1,91 @@
+//- extends ../layout
+
+//- block contenido
+//-   h1 Crear Turno
+
+//-   form(action="/turnos" method="POST")
+//-     input(type="hidden" name="id_agenda" value=id_agenda)
+
+//-     .mb-3
+//-       label Fecha:
+//-       input.form-control(type="date" name="fecha" required)
+
+//-     .mb-3
+//-       label Hora:
+//-       input.form-control(type="time" name="hora_inicio" required)
+
+//-     .mb-3
+//-       label Motivo:
+//-       input.form-control(type="text" name="motivo" required)
+
+//-     .mb-3
+//-       label Paciente:
+//-       input.form-control(type="number" name="id_paciente" required)
+
+//-     button.btn.btn-primary(type="submit") Guardar Turno
+
+//-     a.btn.btn-secondary(href=`/turnos/${id_agenda}`) Cancelar
+
+
+
+
 extends ../layout
 
 block contenido
-  h1 Crear Turno
+  .d-flex.justify-content-center
+    .col-md-8.col-lg-6
+      //- Título centrado según la imagen
+      h2.text-center.mb-4(style="color: var(--primary-color); font-weight: 700;") Crear Turno
 
-  form(action="/turnos" method="POST")
-    input(type="hidden" name="id_agenda" value=id_agenda)
+      .card-custom.shadow-sm
+        form(action="/turnos" method="POST" enctype="multipart/form-data")
+          input(type="hidden" name="id_agenda" value=id_agenda)
 
-    .mb-3
-      label Fecha:
-      input.form-control(type="date" name="fecha" required)
+          //- BUSCAR PROFESIONAL (Simulado según imagen)
+          .mb-4
+            label.form-label.fw-bold(style="color: var(--primary-color);") Buscar un Profesional
+            .input-group
+              span.input-group-text.bg-white
+                i.bi.bi-search
+              input.form-control(type="text" placeholder="Buscar por apellido o nombre...")
 
-    .mb-3
-      label Hora:
-      input.form-control(type="time" name="hora_inicio" required)
+          //- BUSCAR PACIENTE (Reemplaza al id_paciente numérico)
+          .mb-4
+            label.form-label.fw-bold(style="color: var(--primary-color);") Buscar un paciente
+            .input-group
+              span.input-group-text.bg-white
+                i.bi.bi-person
+              input.form-control(type="text" name="id_paciente" placeholder="Buscar por nombre o DNI..." required)
 
-    .mb-3
-      label Motivo:
-      input.form-control(type="text" name="motivo" required)
+          .row
+            //- SELECCIONAR FECHA
+            .col-md-6.mb-4
+              label.form-label.fw-bold Selecciona la fecha:
+              input.form-control(type="date" name="fecha" required)
+            
+            //- SELECCIONAR HORARIO (Como select según imagen)
+            .col-md-6.mb-4
+              label.form-label.fw-bold Selecciona un horario:
+              select.form-select(name="hora_inicio" required)
+                option(selected disabled) Selecciona un horario
+                //- Aquí iterarías sobre horarios disponibles si los envías desde el controller
+                option 09:00
+                option 09:30
+                option 10:00
 
-    .mb-3
-      label Paciente:
-      input.form-control(type="number" name="id_paciente" required)
+          //- DETALLE DEL TURNO (Motivo)
+          .mb-4
+            label.form-label.fw-bold Detalle del turno (opcional):
+            textarea.form-control(name="motivo" rows="4" placeholder="Detalles adicionales del turno")
 
-    button.btn.btn-primary(type="submit") Guardar Turno
+          //- SUBIDA DE ARCHIVO (Fotocopia DNI)
+          .mb-4
+            label.form-label.fw-bold Subí la fotocopia del DNI (máx. 10MB):
+            input.form-control(type="file" name="fotocopia_dni" accept="image/*,.pdf")
 
-    a.btn.btn-secondary(href=`/turnos/${id_agenda}`) Cancelar
+          //- BOTONES DE ACCIÓN
+          .d-grid.gap-2.mt-4
+            button.btn-primary-custom(type="submit") 
+              i.bi.bi-check2-circle.me-2
+              | Guardar Turno
+            a.btn.btn-link.text-secondary(href=`/turnos/${id_agenda}`) Cancelar

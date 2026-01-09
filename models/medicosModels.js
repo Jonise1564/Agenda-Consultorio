@@ -116,64 +116,7 @@ class Medico {
         }
     }
 
-
-
-    // static async crear(data) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         await conn.beginTransaction();
-
-    //         // Extraer y validar datos
-    //         const {
-    //             dni,
-    //             nombre,
-    //             apellido,
-    //             nacimiento,
-    //             telefonoAlternativo,
-    //             email,
-    //             password,
-    //             repeatPassword,
-    //             id_rol,
-    //             estado,
-    //             matricula,
-    //             especialidades = []
-    //         } = data;
-
-    //         // Validaciones
-    //         if (!dni || !nombre || !apellido || !nacimiento || !telefonoAlternativo ||
-    //             !email || !password || !repeatPassword || !id_rol || !estado || !matricula) {
-    //             throw new Error("Todos los campos obligatorios deben ser completados");
-    //         }
-
-    //         if (password !== repeatPassword) {
-    //             throw new Error("Las contraseñas no coinciden");
-    //         }
-
-    //         // Convertir especialidades a array si es necesario
-    //         const especialidadesArray = Array.isArray(especialidades)
-    //             ? especialidades
-    //             : [especialidades].filter(Boolean);
-
-    //         if (especialidadesArray.length === 0) {
-    //             throw new Error("Debe seleccionar al menos una especialidad");
-    //         }
-
-    //         // Resto de tu código original...
-    //         const [personaResult] = await conn.query(`
-    //         INSERT INTO personas (dni, nombre, apellido, nacimiento, telefono, email)
-    //         VALUES (?, ?, ?, ?, ?, ?)
-    //     `, [String(dni), nombre, apellido, nacimiento, String(telefonoAlternativo), email]);
-
-    //         // ... resto del código
-
-    //     } catch (error) {
-    //         if (conn) await conn.rollback();
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
+ 
 
 
     static async crear({
@@ -381,33 +324,7 @@ class Medico {
             if (conn) conn.end();
         }
     }
-    // static async getProfesionalesParaAgendas() {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-
-    //         const [rows] = await conn.query(`
-    //         SELECT 
-    //             m.matricula,
-    //             p.nombre,
-    //             p.apellido,
-    //             GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS Especialidades
-    //         FROM medicos m
-    //         INNER JOIN personas p ON p.id = m.id_persona
-    //         LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico
-    //         LEFT JOIN especialidades e ON e.id = me.id_especialidad
-    //         WHERE m.estado = '1'
-    //         GROUP BY m.matricula, p.nombre, p.apellido
-    //     `);
-
-    //         return rows;
-
-    //     } catch (error) {
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
+    
 
 
     static async getProfesionalesParaAgendas() {
