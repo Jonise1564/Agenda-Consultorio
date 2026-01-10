@@ -428,6 +428,64 @@ class Medico {
         }
     }
 
+    // ============================================================
+    // CONTAR TOTAL PARA PAGINACIÓN
+    // ============================================================
+    static async contarTodos(search = '') {
+        let conn;
+        try {
+            conn = await createConnection();
+            const s = `%${search}%`;
+            // Usamos un subquery o DISTINCT para contar médicos únicos incluso con múltiples especialidades
+            const [rows] = await conn.query(`
+                SELECT COUNT(DISTINCT m.id_medico) as total 
+                FROM medicos m
+                INNER JOIN personas p ON m.id_persona = p.id
+                LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico
+                LEFT JOIN especialidades e ON e.id = me.id_especialidad
+                WHERE p.nombre LIKE ? OR p.apellido LIKE ? OR m.matricula LIKE ? OR e.nombre LIKE ?
+            `, [s, s, s, s]);
+            return rows[0].total;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    // ============================================================
+    // LISTAR PAGINADO Y FILTRADO
+    // ============================================================
+    static async listarPaginado(limit, offset, search = '') {
+        let conn;
+        try {
+            conn = await createConnection();
+            const s = `%${search}%`;
+            const [result] = await conn.query(`
+                SELECT 
+                    m.id_medico AS id,
+                    p.dni, p.nombre, p.apellido, p.nacimiento,
+                    u.email, m.estado, m.matricula,
+                    GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS especialidades,
+                    GROUP_CONCAT(DISTINCT t.numero ORDER BY t.numero SEPARATOR ', ') AS telefonos
+                FROM medicos m
+                INNER JOIN personas p ON m.id_persona = p.id
+                INNER JOIN usuarios u ON u.id = m.id_usuario
+                LEFT JOIN medico_especialidad me ON me.id_medico = m.id_medico AND me.estado = 1
+                LEFT JOIN especialidades e ON e.id = me.id_especialidad
+                LEFT JOIN telefonos t ON t.id_persona = p.id
+                WHERE p.nombre LIKE ? OR p.apellido LIKE ? OR m.matricula LIKE ? OR e.nombre LIKE ?
+                GROUP BY m.id_medico, p.dni, p.nombre, p.apellido, p.nacimiento, u.email, m.estado, m.matricula
+                ORDER BY p.apellido ASC
+                LIMIT ? OFFSET ?
+            `, [s, s, s, s, limit, offset]);
+            return result;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+
+
 
 
 

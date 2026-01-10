@@ -217,131 +217,441 @@
 //-       select.value = '';
 //-     }
 
+//- extends ../layout
+
+//- block contenido
+//-   //- Encabezado de página
+//-   .d-flex.justify-content-between.align-items-center.mb-4
+//-     h2.m-0
+//-       i.fa-solid.fa-user-plus.me-2.text-primary
+//-       | Crear Médico
+//-     a.btn.btn-outline-secondary.btn-sm(href="/medicos")
+//-       i.bi.bi-arrow-left.me-1
+//-       | Volver a Médicos
+
+//-   //- Errores de Backend
+//-   if errores && errores.length
+//-     .alert.alert-danger.shadow-sm
+//-       ul.mb-0
+//-         each err in errores
+//-           li= err
+
+//-   //- Formulario Principal
+//-   form(action="/medicos" method="POST" novalidate)
+    
+//-     //- SECCIÓN: DATOS PERSONALES
+//-     .card-custom
+//-       h5.mb-3.text-primary
+//-         i.fa-solid.fa-id-card.me-2
+//-         | Datos Personales
+//-       .row.g-3
+//-         .col-md-4
+//-           label.form-label Nombre
+//-           input.form-control(type="text" name="nombre" value=(old && old.nombre ? old.nombre : '') required)
+//-         .col-md-4
+//-           label.form-label Apellido
+//-           input.form-control(type="text" name="apellido" value=(old && old.apellido ? old.apellido : '') required)
+//-         .col-md-4
+//-           label.form-label DNI
+//-           input.form-control(type="text" name="dni" value=(old && old.dni ? old.dni : '') required)
+//-         .col-md-6
+//-           label.form-label Fecha de Nacimiento
+//-           input.form-control(type="date" name="nacimiento" value=(old && old.nacimiento ? old.nacimiento : '') required)
+//-         .col-md-6
+//-           label.form-label Matrícula Profesional
+//-           input.form-control(type="text" name="matricula" value=(old && old.matricula ? old.matricula : '') required)
+
+//-     //- SECCIÓN: CREDENCIALES DE ACCESO
+//-     .card-custom
+//-       h5.mb-3.text-secondary
+//-         i.fa-solid.fa-lock.me-2
+//-         | Cuenta de Usuario
+//-       .row.g-3
+//-         .col-md-12
+//-           label.form-label Correo Electrónico (Email)
+//-           input.form-control(type="email" name="email" value=(old && old.email ? old.email : '') required)
+//-         .col-md-6
+//-           label.form-label Contraseña
+//-           input.form-control(type="password" name="password" required)
+//-         .col-md-6
+//-           label.form-label Repetir Contraseña
+//-           input.form-control(type="password" name="repeatPassword" required)
+
+//-     .row
+//-       //- SECCIÓN: TELÉFONOS
+//-       .col-md-6
+//-         .card-custom
+//-           .d-flex.justify-content-between.align-items-center.mb-3
+//-             h5.m-0.text-dark
+//-               i.fa-solid.fa-phone.me-2
+//-               | Teléfonos
+//-             button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()")
+//-               i.bi.bi-plus-lg
+          
+//-           #telefonos-container
+//-             if old && old.telefonos
+//-               - const tels = Array.isArray(old.telefonos) ? old.telefonos : [old.telefonos]
+//-               each tel in tels
+//-                 .input-group.mb-2
+//-                   input.form-control(type="text" name="telefonos" value=tel)
+//-                   button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
+//-                     i.bi.bi-trash
+
+//-       //- SECCIÓN: ESPECIALIDADES
+//-       .col-md-6
+//-         .card-custom
+//-           h5.mb-3.text-dark
+//-             i.fa-solid.fa-stethoscope.me-2
+//-             | Especialidades
+          
+//-           #especialidades-container
+//-             if old && old.especialidades
+//-               - const espOld = Array.isArray(old.especialidades) ? old.especialidades : [old.especialidades]
+//-               each espId in espOld
+//-                 - const esp = especialidades.find(e => String(e.id) === String(espId))
+//-                 if esp
+//-                   .input-group.mb-2
+//-                     input.form-control(readonly value=esp.nombre)
+//-                     input(type="hidden" name="especialidades" value=esp.id)
+//-                     button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
+//-                       i.bi.bi-trash
+
+//-           .row.g-2.mt-2
+//-             .col-8
+//-               select.form-select#select-especialidad
+//-                 option(value="") Seleccionar...
+//-                 each esp in especialidades
+//-                   option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+//-             .col-4
+//-               button.btn.btn-outline-primary.w-100(type="button" onclick="agregarEspecialidad()") Agregar
+
+//-     //- BOTÓN FINAL
+//-     .d-flex.justify-content-end.mt-4.mb-5
+//-       button.btn-primary-custom.px-5(type="submit")
+//-         i.bi.bi-check-circle.me-2
+//-         | Registrar Médico
+
+//-   //- SCRIPTS 
+//-   script.
+//-     function agregarTelefono() {
+//-       const cont = document.getElementById('telefonos-container');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2';
+//-       div.innerHTML = `
+//-         <input class="form-control" type="text" name="telefonos" placeholder="Ej: +54 9 11...">
+//-         <button class="btn btn-outline-danger" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => div.remove();
+//-       cont.appendChild(div);
+//-     }
+
+//-     function agregarEspecialidad() {
+//-       const select = document.getElementById('select-especialidad');
+//-       const id = select.value;
+//-       if (!id) return;
+
+//-       const nombre = select.options[select.selectedIndex].dataset.nombre;
+//-       const cont = document.getElementById('especialidades-container');
+
+//-       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
+
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2';
+//-       div.innerHTML = `
+//-         <input class="form-control" readonly value="${nombre}">
+//-         <input type="hidden" name="especialidades" value="${id}">
+//-         <button class="btn btn-outline-danger" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => div.remove();
+//-       cont.appendChild(div);
+//-       select.value = '';
+//-     }
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     .page-header { border-bottom: 2px solid #e9ecef; padding-bottom: 1rem; }
+//-     .card-custom {
+//-       background: #ffffff;
+//-       border-radius: 12px;
+//-       padding: 1.5rem;
+//-       margin-bottom: 1rem;
+//-       border: 1px solid #dee2e6;
+//-     }
+//-     .form-label { font-weight: 600; color: #495057; font-size: 0.85rem; margin-bottom: 4px; }
+//-     .section-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+//-     .btn-primary-custom {
+//-       background-color: #3498db;
+//-       color: white; border: none; padding: 10px 25px;
+//-       border-radius: 6px; font-weight: bold;
+//-     }
+
+//-   .page-header.d-flex.justify-content-between.align-items-center.mb-4
+//-     h2.m-0.text-dark
+//-       i.fa-solid.fa-user-doctor.me-2.text-primary
+//-       | Nuevo Médico
+//-     a.btn.btn-outline-secondary.btn-sm(href="/medicos")
+//-       i.fa-solid.fa-arrow-left.me-1
+//-       | Volver
+
+//-   form(action="/medicos" method="POST" novalidate)
+//-     input(type="hidden" name="id_rol" value="2") 
+//-     input(type="hidden" name="estado" value="1")
+
+//-     .row
+//-       //- COLUMNA IZQUIERDA: DATOS Y CUENTA
+//-       .col-lg-8
+//-         .card-custom
+//-           h5.section-title.text-primary
+//-             i.fa-solid.fa-address-card
+//-             | Información Personal
+//-           .row.g-3
+//-             .col-md-6
+//-               label.form-label Nombre
+//-               input.form-control(type="text" name="nombre" value=(old?old.nombre:'') required)
+//-             .col-md-6
+//-               label.form-label Apellido
+//-               input.form-control(type="text" name="apellido" value=(old?old.apellido:'') required)
+//-             .col-md-4
+//-               label.form-label DNI
+//-               input.form-control(type="text" name="dni" value=(old?old.dni:'') required)
+//-             .col-md-4
+//-               label.form-label Nacimiento
+//-               input.form-control(type="date" name="nacimiento" value=(old?old.nacimiento:'') required)
+//-             .col-md-4
+//-               label.form-label Matrícula
+//-               input.form-control(type="text" name="matricula" value=(old?old.matricula:'') required placeholder="M.P. / M.N.")
+
+//-         .card-custom
+//-           h5.section-title.text-secondary
+//-             i.fa-solid.fa-lock
+//-             | Cuenta de Usuario
+//-           .row.g-3
+//-             //- Aquí el email ahora ocupa solo la mitad
+//-             .col-md-6
+//-               label.form-label Correo Electrónico
+//-               input.form-control(type="email" name="email" value=(old?old.email:'') required placeholder="usuario@correo.com")
+//-             .col-md-3
+//-               label.form-label Contraseña
+//-               input.form-control(type="password" name="password" required)
+//-             .col-md-3
+//-               label.form-label Confirmar
+//-               input.form-control(type="password" name="repeatPassword" required)
+
+//-       //- COLUMNA DERECHA: ESPECIALIDADES Y TELÉFONOS
+//-       .col-lg-4
+//-         .card-custom
+//-           h5.section-title.text-dark
+//-             i.fa-solid.fa-stethoscope
+//-             | Especialidades
+          
+//-           #especialidades-container.mb-2
+//-             if old && old.especialidades
+//-               //- Lógica de re-poblado si hay error
+          
+//-           .input-group.input-group-sm
+//-             select.form-select#select-especialidad
+//-               option(value="") -- Elegir --
+//-               each esp in especialidades
+//-                 option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+//-             button.btn.btn-primary(type="button" onclick="agregarEspecialidad()") 
+//-               i.fa-solid.fa-plus
+
+//-         .card-custom
+//-           .d-flex.justify-content-between.align-items-center.mb-2
+//-             h5.section-title.text-dark.m-0
+//-               i.fa-solid.fa-phone
+//-               | Teléfonos
+//-             button.btn.btn-xs.btn-success(type="button" onclick="agregarTelefono()" style="padding: 2px 8px; font-size: 12px;") +
+          
+//-           #telefonos-container
+//-             .input-group.mb-2
+//-               input.form-control.form-control-sm(type="text" name="telefonoAlternativo" placeholder="Teléfono Principal")
+//-               span.input-group-text: i.fa-solid.fa-star.text-warning.small
+
+//-     .d-flex.justify-content-end.gap-2.mb-5
+//-       a.btn.btn-light(href="/medicos") Cancelar
+//-       button.btn-primary-custom(type="submit")
+//-         i.fa-solid.fa-floppy-disk.me-2
+//-         | Registrar Médico
+
+//-   script.
+//-     function agregarTelefono() {
+//-       const cont = document.getElementById('telefonos-container');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm" type="text" name="telefonos_extra" placeholder="Adicional...">
+//-         <button class="btn btn-sm btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i></button>
+//-       `;
+//-       div.querySelector('button').onclick = () => div.remove();
+//-       cont.appendChild(div);
+//-     }
+
+//-     function agregarEspecialidad() {
+//-       const select = document.getElementById('select-especialidad');
+//-       const id = select.value;
+//-       if (!id) return;
+//-       const nombre = select.options[select.selectedIndex].dataset.nombre;
+//-       const cont = document.getElementById('especialidades-container');
+//-       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
+
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm" readonly value="${nombre}">
+//-         <input type="hidden" name="especialidades" value="${id}">
+//-         <button class="btn btn-sm btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i></button>
+//-       `;
+//-       div.querySelector('button').onclick = () => div.remove();
+//-       cont.appendChild(div);
+//-       select.value = '';
+//-     }
+
 extends ../layout
 
 block contenido
-  //- Encabezado de página
-  .d-flex.justify-content-between.align-items-center.mb-4
-    h2.m-0
-      i.fa-solid.fa-user-plus.me-2.text-primary
-      | Crear Médico
-    a.btn.btn-outline-secondary.btn-sm(href="/medicos")
-      i.bi.bi-arrow-left.me-1
-      | Volver a Médicos
+  style.
+    .page-header { border-bottom: 2px solid #e9ecef; padding-bottom: 1rem; }
+    .card-custom {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .form-label { font-weight: 600; color: #495057; font-size: 0.85rem; margin-bottom: 4px; }
+    .section-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+    .btn-primary-custom {
+      background-color: #3498db;
+      color: white; border: none; padding: 10px 25px;
+      border-radius: 6px; font-weight: bold;
+      transition: all 0.3s;
+    }
+    .btn-primary-custom:hover { background-color: #2980b9; }
 
-  //- Errores de Backend
+  .page-header.d-flex.justify-content-between.align-items-center.mb-4
+    h2.m-0.text-dark
+      i.fa-solid.fa-user-doctor.me-2.text-primary
+      | Nuevo Médico
+    a.btn.btn-outline-secondary.btn-sm(href="/medicos")
+      i.fa-solid.fa-arrow-left.me-1
+      | Volver al Listado
+
+  //- Muestra de errores del servidor
   if errores && errores.length
-    .alert.alert-danger.shadow-sm
-      ul.mb-0
+    .alert.alert-danger.alert-dismissible.fade.show.shadow-sm(role="alert")
+      i.fa-solid.fa-circle-exclamation.me-2
+      strong Error: 
+      ul.mb-0.mt-2
         each err in errores
           li= err
+      button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Close")
 
-  //- Formulario Principal
   form(action="/medicos" method="POST" novalidate)
-    
-    //- SECCIÓN: DATOS PERSONALES
-    .card-custom
-      h5.mb-3.text-primary
-        i.fa-solid.fa-id-card.me-2
-        | Datos Personales
-      .row.g-3
-        .col-md-4
-          label.form-label Nombre
-          input.form-control(type="text" name="nombre" value=(old && old.nombre ? old.nombre : '') required)
-        .col-md-4
-          label.form-label Apellido
-          input.form-control(type="text" name="apellido" value=(old && old.apellido ? old.apellido : '') required)
-        .col-md-4
-          label.form-label DNI
-          input.form-control(type="text" name="dni" value=(old && old.dni ? old.dni : '') required)
-        .col-md-6
-          label.form-label Fecha de Nacimiento
-          input.form-control(type="date" name="nacimiento" value=(old && old.nacimiento ? old.nacimiento : '') required)
-        .col-md-6
-          label.form-label Matrícula Profesional
-          input.form-control(type="text" name="matricula" value=(old && old.matricula ? old.matricula : '') required)
-
-    //- SECCIÓN: CREDENCIALES DE ACCESO
-    .card-custom
-      h5.mb-3.text-secondary
-        i.fa-solid.fa-lock.me-2
-        | Cuenta de Usuario
-      .row.g-3
-        .col-md-12
-          label.form-label Correo Electrónico (Email)
-          input.form-control(type="email" name="email" value=(old && old.email ? old.email : '') required)
-        .col-md-6
-          label.form-label Contraseña
-          input.form-control(type="password" name="password" required)
-        .col-md-6
-          label.form-label Repetir Contraseña
-          input.form-control(type="password" name="repeatPassword" required)
+    //- Campos ocultos necesarios para el modelo
+    input(type="hidden" name="id_rol" value="2") 
+    input(type="hidden" name="estado" value="1")
 
     .row
-      //- SECCIÓN: TELÉFONOS
-      .col-md-6
+      //- COLUMNA IZQUIERDA: DATOS PERSONALES Y CUENTA
+      .col-lg-8
         .card-custom
-          .d-flex.justify-content-between.align-items-center.mb-3
-            h5.m-0.text-dark
-              i.fa-solid.fa-phone.me-2
-              | Teléfonos
-            button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()")
-              i.bi.bi-plus-lg
-          
-          #telefonos-container
-            if old && old.telefonos
-              - const tels = Array.isArray(old.telefonos) ? old.telefonos : [old.telefonos]
-              each tel in tels
-                .input-group.mb-2
-                  input.form-control(type="text" name="telefonos" value=tel)
-                  button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
-                    i.bi.bi-trash
+          h5.section-title.text-primary
+            i.fa-solid.fa-address-card
+            | Información Personal
+          .row.g-3
+            .col-md-6
+              label.form-label Nombre
+              input.form-control(type="text" name="nombre" value=(old?old.nombre:'') required)
+            .col-md-6
+              label.form-label Apellido
+              input.form-control(type="text" name="apellido" value=(old?old.apellido:'') required)
+            .col-md-4
+              label.form-label DNI
+              input.form-control(type="text" name="dni" value=(old?old.dni:'') required placeholder="Sin puntos")
+            .col-md-4
+              label.form-label Fecha de Nacimiento
+              input.form-control(type="date" name="nacimiento" value=(old?old.nacimiento:'') required)
+            .col-md-4
+              label.form-label Matrícula Profesional
+              input.form-control(type="text" name="matricula" value=(old?old.matricula:'') required placeholder="M.P. / M.N.")
 
-      //- SECCIÓN: ESPECIALIDADES
-      .col-md-6
         .card-custom
-          h5.mb-3.text-dark
-            i.fa-solid.fa-stethoscope.me-2
+          h5.section-title.text-secondary
+            i.fa-solid.fa-lock
+            | Cuenta de Usuario
+          .row.g-3
+            .col-md-6
+              label.form-label Correo Electrónico
+              input.form-control(type="email" name="email" value=(old?old.email:'') required placeholder="ejemplo@correo.com")
+            .col-md-3
+              label.form-label Contraseña
+              input.form-control(type="password" name="password" required)
+            .col-md-3
+              label.form-label Confirmar
+              input.form-control(type="password" name="repeatPassword" required)
+
+      //- COLUMNA DERECHA: ESPECIALIDADES Y TELÉFONOS
+      .col-lg-4
+        .card-custom
+          h5.section-title.text-dark
+            i.fa-solid.fa-stethoscope
             | Especialidades
           
-          #especialidades-container
+          #especialidades-container.mb-2
             if old && old.especialidades
               - const espOld = Array.isArray(old.especialidades) ? old.especialidades : [old.especialidades]
               each espId in espOld
                 - const esp = especialidades.find(e => String(e.id) === String(espId))
                 if esp
                   .input-group.mb-2
-                    input.form-control(readonly value=esp.nombre)
+                    input.form-control.form-control-sm(readonly value=esp.nombre)
                     input(type="hidden" name="especialidades" value=esp.id)
-                    button.btn.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
-                      i.bi.bi-trash
+                    button.btn.btn-sm.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
+                      i.fa-solid.fa-trash-can
 
-          .row.g-2.mt-2
-            .col-8
-              select.form-select#select-especialidad
-                option(value="") Seleccionar...
-                each esp in especialidades
-                  option(value=esp.id data-nombre=esp.nombre)= esp.nombre
-            .col-4
-              button.btn.btn-outline-primary.w-100(type="button" onclick="agregarEspecialidad()") Agregar
+          .input-group.input-group-sm
+            select.form-select#select-especialidad
+              option(value="") -- Seleccionar --
+              each esp in especialidades
+                option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+            button.btn.btn-primary(type="button" onclick="agregarEspecialidad()") 
+              i.fa-solid.fa-plus
 
-    //- BOTÓN FINAL
-    .d-flex.justify-content-end.mt-4.mb-5
-      button.btn-primary-custom.px-5(type="submit")
-        i.bi.bi-check-circle.me-2
+        .card-custom
+          .d-flex.justify-content-between.align-items-center.mb-2
+            h5.section-title.text-dark.m-0
+              i.fa-solid.fa-phone
+              | Teléfonos
+            button.btn.btn-sm.btn-success(type="button" onclick="agregarTelefono()" style="padding: 0px 8px;") +
+          
+          #telefonos-container
+            .input-group.mb-2
+              //- El name="telefonoAlternativo" es CRUCIAL para que el modelo lo reciba
+              input.form-control.form-control-sm(type="text" name="telefonoAlternativo" value=(old?old.telefonoAlternativo:'') placeholder="Teléfono Principal" required)
+              span.input-group-text: i.fa-solid.fa-star.text-warning.small
+
+    .d-flex.justify-content-end.gap-2.mb-5
+      a.btn.btn-light.px-4(href="/medicos") Cancelar
+      button.btn-primary-custom(type="submit")
+        i.fa-solid.fa-floppy-disk.me-2
         | Registrar Médico
 
-  //- SCRIPTS 
   script.
     function agregarTelefono() {
       const cont = document.getElementById('telefonos-container');
       const div = document.createElement('div');
       div.className = 'input-group mb-2';
       div.innerHTML = `
-        <input class="form-control" type="text" name="telefonos" placeholder="Ej: +54 9 11...">
-        <button class="btn btn-outline-danger" type="button">
-          <i class="bi bi-trash"></i>
-        </button>
+        <input class="form-control form-control-sm" type="text" name="telefonos_extra" placeholder="Adicional...">
+        <button class="btn btn-sm btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i></button>
       `;
       div.querySelector('button').onclick = () => div.remove();
       cont.appendChild(div);
@@ -351,20 +661,18 @@ block contenido
       const select = document.getElementById('select-especialidad');
       const id = select.value;
       if (!id) return;
-
       const nombre = select.options[select.selectedIndex].dataset.nombre;
       const cont = document.getElementById('especialidades-container');
-
+      
+      // Evitar duplicados
       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
 
       const div = document.createElement('div');
       div.className = 'input-group mb-2';
       div.innerHTML = `
-        <input class="form-control" readonly value="${nombre}">
+        <input class="form-control form-control-sm" readonly value="${nombre}">
         <input type="hidden" name="especialidades" value="${id}">
-        <button class="btn btn-outline-danger" type="button">
-          <i class="bi bi-trash"></i>
-        </button>
+        <button class="btn btn-sm btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i></button>
       `;
       div.querySelector('button').onclick = () => div.remove();
       cont.appendChild(div);

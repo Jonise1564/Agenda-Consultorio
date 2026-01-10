@@ -60,141 +60,624 @@
 
 //-                     td
 //-                         a(href=`/pacientes/edit/${paciente.id_paciente}` class="btn btn-info") Gestionar
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+//-         .top-actions {
+//-             display: flex;
+//-             justify-content: space-between;
+//-             align-items: center;
+//-             margin-bottom: 20px;
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 12px;
+//-         }
+//-         .icon-edit {
+//-             color: #1e88e5;
+//-         }
+//-         .icon-photo {
+//-             color: #6a1b9a;
+//-         }
+
+//-         table img {
+//-             border-radius: 50%;
+//-             object-fit: cover;
+//-         }
+
+//-         tr:hover {
+//-             filter: brightness(0.96);
+//-         }
+
+//-     .page-container
+
+//-         // ---------- TÍTULO ----------
+//-         h3.center-text Pacientes
+
+//-         // ---------- ACCIONES SUPERIORES ----------
+//-         .top-actions
+//-             a.btn.btn-success(href="/pacientes/create")
+//-                 i.fa-solid.fa-user-plus
+//-                 |  Nuevo Paciente
+
+//-         // ---------- MENSAJE ----------
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({
+//-                     title: 'Mensaje',
+//-                     text: '#{mensaje}',
+//-                     icon: 'success',
+//-                     confirmButtonText: 'OK'
+//-                 });
+
+//-         // ---------- TABLA ----------
+//-         table#tablaPacientes.table.table-striped.table-bordered.table-hover
+//-             thead.table-dark
+//-                 tr
+//-                     //- th ID
+//-                     th DNI
+//-                     th Nombre
+//-                     th Apellido
+//-                     th Nacimiento
+//-                     th Email
+//-                     th Foto
+//-                     th Teléfonos
+//-                     th Obra Social
+//-                     th Estado
+//-                     th Acciones
+
+//-             tbody
+//-                 each paciente in pacientes
+//-                     - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+//-                     - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
+
+//-                     tr
+//-                         //- td= paciente.id_paciente
+//-                         td= paciente.dni
+//-                         td= paciente.nombre
+//-                         td= paciente.apellido
+//-                         td= paciente.nacimiento
+//-                         td= paciente.email
+
+//-                         // ---------- FOTO HARDCODEADA ----------
+//-                         td.text-center
+//-                             img(
+//-                                 src="/img/paciente-default.png"
+//-                                 width="55"
+//-                                 height="55"
+//-                                 alt="Foto paciente"
+//-                             )
+
+//-                         // ---------- TELÉFONOS ----------
+//-                         td
+//-                             if telefonos.length === 0
+//-                                 span.text-muted Sin teléfono
+//-                             else if telefonos.length === 1
+//-                                 span= telefonos[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each tel in telefonos
+//-                                         option= tel
+
+//-                         // ---------- OBRAS ----------
+//-                         td
+//-                             if obras.length === 0
+//-                                 span.text-muted Sin obra social
+//-                             else if obras.length === 1
+//-                                 span= obras[0]
+//-                             else
+//-                                 select.form-select.form-select-sm
+//-                                     each os in obras
+//-                                         option= os
+
+//-                         // ---------- ESTADO ----------
+//-                         td
+//-                             if paciente.estado === 1
+//-                                 span.badge.bg-success Activo
+//-                             else
+//-                                 span.badge.bg-secondary Inactivo
+
+//-                         // ---------- ACCIONES ----------
+//-                         td.actions
+//-                             a(href=`/pacientes/edit/${paciente.id_paciente}` title="Gestionar paciente")
+//-                                 i.icon-edit.fa-solid.fa-pen-to-square
+//-                             a(href=`/pacientes/foto/${paciente.id_paciente}` title="Cambiar foto")
+//-                                 i.icon-photo.fa-solid.fa-camera
+
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #eef5ff;
+//-             font-family: Arial, sans-serif;
+//-         }
+//-         .center-text {
+//-             text-align: center;
+//-             margin-bottom: 20px;
+//-             font-size: 28px;
+//-             font-weight: bold;
+//-         }
+//-         .page-container {
+//-             padding: 20px;
+//-         }
+//-         .top-actions {
+//-             display: flex;
+//-             justify-content: space-between;
+//-             align-items: center;
+//-             margin-bottom: 20px;
+//-         }
+//-         .actions i {
+//-             font-size: 20px;
+//-             cursor: pointer;
+//-             margin-right: 12px;
+//-         }
+//-         .icon-edit {
+//-             color: #1e88e5;
+//-         }
+//-         .icon-photo {
+//-             color: #6a1b9a;
+//-         }
+
+//-         table img {
+//-             border-radius: 50%;
+//-             object-fit: cover;
+//-         }
+
+//-         tr:hover {
+//-             filter: brightness(0.96);
+//-         }
+//-         /* Estilo para asegurar que la paginación se vea bien */
+//-         .pagination {
+//-             margin-top: 20px;
+//-         }
+
+//-     .page-container
+
+//-         // ---------- TÍTULO ----------
+//-         h3.center-text Pacientes
+
+//-         // ---------- ACCIONES SUPERIORES ----------
+//-         .top-actions
+//-             a.btn.btn-success(href="/pacientes/create")
+//-                 i.fa-solid.fa-user-plus
+//-                 |  Nuevo Paciente
+//-             if totalPacientes
+//-                 span.text-muted Total: #{totalPacientes} registros
+
+//-         // ---------- MENSAJE ----------
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({
+//-                     title: 'Mensaje',
+//-                     text: '#{mensaje}',
+//-                     icon: 'success',
+//-                     confirmButtonText: 'OK'
+//-                 });
+
+//-         // ---------- TABLA ----------
+//-         .table-responsive
+//-             table#tablaPacientes.table.table-striped.table-bordered.table-hover
+//-                 thead.table-dark
+//-                     tr
+//-                         th DNI
+//-                         th Nombre
+//-                         th Apellido
+//-                         th Nacimiento
+//-                         th Email
+//-                         th Foto
+//-                         th Teléfonos
+//-                         th Obra Social
+//-                         th Estado
+//-                         th Acciones
+
+//-                 tbody
+//-                     each paciente in pacientes
+//-                         - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+//-                         - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
+
+//-                         tr
+//-                             td= paciente.dni
+//-                             td= paciente.nombre
+//-                             td= paciente.apellido
+//-                             td= paciente.nacimiento
+//-                             td= paciente.email
+
+//-                             td.text-center
+//-                                 img(
+//-                                     src="/img/paciente-default.png"
+//-                                     width="45"
+//-                                     height="45"
+//-                                     alt="Foto"
+//-                                 )
+
+//-                             td
+//-                                 if telefonos.length === 0
+//-                                     span.text-muted Sin teléfono
+//-                                 else if telefonos.length === 1
+//-                                     span= telefonos[0]
+//-                                 else
+//-                                     select.form-select.form-select-sm
+//-                                         each tel in telefonos
+//-                                             option= tel
+
+//-                             td
+//-                                 if obras.length === 0 || obras[0] === 'Sin obra social'
+//-                                     span.text-muted Sin O.S.
+//-                                 else
+//-                                     span= obras[0]
+
+//-                             td
+//-                                 if paciente.estado === 1
+//-                                     span.badge.bg-success Activo
+//-                                 else
+//-                                     span.badge.bg-secondary Inactivo
+
+//-                             td.actions
+//-                                 a(href=`/pacientes/edit/${paciente.id_paciente}` title="Gestionar paciente")
+//-                                     i.icon-edit.fa-solid.fa-pen-to-square
+//-                                 a(href=`/pacientes/foto/${paciente.id_paciente}` title="Cambiar foto")
+//-                                     i.icon-photo.fa-solid.fa-camera
+
+//-         // ---------- PAGINACIÓN ----------
+//-         if totalPages > 1
+//-             nav(aria-label="Navegación de páginas")
+//-                 ul.pagination.justify-content-center
+//-                     //- Botón Anterior
+//-                     li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+//-                         a.page-link(href=`/pacientes?page=${currentPage - 1}`) Anterior
+
+//-                     //- Números de Página
+//-                     - var n = 1
+//-                     while n <= totalPages
+//-                         li.page-item(class=(currentPage === n ? 'active' : ''))
+//-                             a.page-link(href=`/pacientes?page=${n}`)= n++
+
+//-                     //- Botón Siguiente
+//-                     li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+//-                         a.page-link(href=`/pacientes?page=${currentPage + 1}`) Siguiente
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body { background-color: #eef5ff; font-family: Arial, sans-serif; }
+//-         .center-text { text-align: center; margin-bottom: 20px; font-size: 28px; font-weight: bold; }
+//-         .page-container { padding: 20px; }
+//-         .top-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
+//-         .actions i { font-size: 20px; cursor: pointer; margin-right: 12px; }
+//-         .icon-edit { color: #1e88e5; }
+//-         .icon-photo { color: #6a1b9a; }
+//-         table img { border-radius: 50%; object-fit: cover; }
+//-         tr:hover { filter: brightness(0.96); }
+
+//-     .page-container
+//-         h3.center-text Pacientes
+
+//-         .top-actions
+//-             a.btn.btn-success(href="/pacientes/create")
+//-                 i.fa-solid.fa-user-plus
+//-                 |  Nuevo Paciente
+            
+//-             form.d-flex(method="GET" action="/pacientes" style="max-width: 450px; width: 100%;")
+//-                 .input-group
+//-                     input.form-control(type="text" name="q" placeholder="DNI, Nombre, Obra Social..." value=search)
+//-                     button.btn.btn-primary(type="submit")
+//-                         i.fa-solid.fa-magnifying-glass
+//-                     if search
+//-                         a.btn.btn-outline-secondary(href="/pacientes") 
+//-                             i.fa-solid.fa-xmark
+
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({ title: 'Mensaje', text: '#{mensaje}', icon: 'success', confirmButtonText: 'OK' });
+
+//-         .table-responsive
+//-             table#tablaPacientes.table.table-striped.table-bordered.table-hover
+//-                 thead.table-dark
+//-                     tr
+//-                         th DNI
+//-                         th Nombre
+//-                         th Apellido
+//-                         th Nacimiento
+//-                         th Email
+//-                         th Foto
+//-                         th Teléfonos
+//-                         th Obra Social
+//-                         th Estado
+//-                         th Acciones
+
+//-                 tbody
+//-                     each paciente in pacientes
+//-                         - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+//-                         - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
+//-                         tr
+//-                             td= paciente.dni
+//-                             td= paciente.nombre
+//-                             td= paciente.apellido
+//-                             td= paciente.nacimiento
+//-                             td= paciente.email
+//-                             td.text-center: img(src="/img/paciente-default.png" width="45" height="45")
+//-                             td
+//-                                 if telefonos.length > 1
+//-                                     select.form-select.form-select-sm
+//-                                         each tel in telefonos
+//-                                             option= tel
+//-                                 else
+//-                                     span= telefonos[0] || '-'
+//-                             td= paciente.obra_social
+//-                             td: span.badge(class=(paciente.estado === 1 ? 'bg-success' : 'bg-secondary'))= (paciente.estado === 1 ? 'Activo' : 'Inactivo')
+//-                             td.actions
+//-                                 a(href=`/pacientes/edit/${paciente.id_paciente}` title="Editar"): i.icon-edit.fa-solid.fa-pen-to-square
+//-                                 a(href=`/pacientes/foto/${paciente.id_paciente}` title="Foto"): i.icon-photo.fa-solid.fa-camera
+
+//-         if totalPages > 1
+//-             nav.mt-4
+//-                 ul.pagination.justify-content-center
+//-                     li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+//-                         a.page-link(href=`/pacientes?page=${currentPage - 1}&q=${search}`) Anterior
+//-                     - var n = 1
+//-                     while n <= totalPages
+//-                         li.page-item(class=(currentPage === n ? 'active' : ''))
+//-                             a.page-link(href=`/pacientes?page=${n}&q=${search}`)= n++
+//-                     li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+//-                         a.page-link(href=`/pacientes?page=${currentPage + 1}&q=${search}`) Siguiente
+
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body { background-color: #eef5ff; font-family: Arial, sans-serif; }
+//-         .center-text { text-align: center; margin-bottom: 20px; font-size: 28px; font-weight: bold; }
+//-         .page-container { padding: 20px; }
+//-         .top-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
+//-         .actions i { font-size: 20px; cursor: pointer; margin-right: 12px; }
+//-         .icon-edit { color: #1e88e5; }
+//-         .icon-photo { color: #6a1b9a; }
+//-         table img { border-radius: 50%; object-fit: cover; }
+//-         tr:hover { filter: brightness(0.96); }
+//-         /* Estilo para el input group para que se vea más moderno */
+//-         .input-group { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+//-         .total-count { font-size: 0.9rem; color: #666; margin-top: 5px; }
+
+//-     .page-container
+//-         h3.center-text Pacientes
+
+//-         .top-actions
+//-             div
+//-                 a.btn.btn-success(href="/pacientes/create")
+//-                     i.fa-solid.fa-user-plus
+//-                     |  Nuevo Paciente
+//-                 // Muestra el total de pacientes encontrados
+//-                 if totalPacientes !== undefined
+//-                     .total-count Registros: #{totalPacientes}
+
+//-             form.d-flex(method="GET" action="/pacientes" style="max-width: 450px; width: 100%;")
+//-                 .input-group
+//-                     input.form-control(type="text" name="q" placeholder="DNI, Nombre, Obra Social..." value=search)
+//-                     button.btn.btn-primary(type="submit")
+//-                         i.fa-solid.fa-magnifying-glass
+//-                     if search
+//-                         a.btn.btn-outline-secondary(href="/pacientes" title="Limpiar búsqueda") 
+//-                             i.fa-solid.fa-xmark
+
+//-         if mensaje
+//-             script.
+//-                 Swal.fire({ 
+//-                     title: 'Operación Exitosa', 
+//-                     text: '#{mensaje}', 
+//-                     icon: 'success', 
+//-                     confirmButtonColor: '#1e88e5',
+//-                     confirmButtonText: 'Continuar' 
+//-                 });
+
+//-         .table-responsive.shadow-sm.rounded
+//-             table#tablaPacientes.table.table-striped.table-bordered.table-hover.mb-0
+//-                 thead.table-dark
+//-                     tr
+//-                         th DNI
+//-                         th Nombre
+//-                         th Apellido
+//-                         th Nacimiento
+//-                         th Email
+//-                         th Foto
+//-                         th Teléfonos
+//-                         th Obra Social
+//-                         th Estado
+//-                         th Acciones
+
+//-                 tbody
+//-                     if pacientes.length > 0
+//-                         each paciente in pacientes
+//-                             - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+//-                             tr
+//-                                 td= paciente.dni
+//-                                 td= paciente.nombre
+//-                                 td= paciente.apellido
+//-                                 td= paciente.nacimiento
+//-                                 td= paciente.email
+//-                                 td.text-center
+//-                                     img(src="/img/paciente-default.png" width="45" height="45" alt="Paciente")
+//-                                 td
+//-                                     if telefonos.length > 1
+//-                                         select.form-select.form-select-sm
+//-                                             each tel in telefonos
+//-                                                 option= tel
+//-                                     else
+//-                                         span= telefonos[0] || '-'
+//-                                 td= paciente.obra_social
+//-                                 td
+//-                                     if paciente.estado === 1
+//-                                         span.badge.bg-success Activo
+//-                                     else
+//-                                         span.badge.bg-secondary Inactivo
+//-                                 td.actions
+//-                                     a(href=`/pacientes/edit/${paciente.id_paciente}` title="Editar"): i.icon-edit.fa-solid.fa-pen-to-square
+//-                                     a(href=`/pacientes/foto/${paciente.id_paciente}` title="Subir Foto"): i.icon-photo.fa-solid.fa-camera
+//-                     else
+//-                         tr
+//-                             td.text-center(colspan="10") No se encontraron pacientes con ese criterio.
+
+//-         // ---------- PAGINACIÓN ----------
+//-         if totalPages > 1
+//-             nav.mt-4
+//-                 ul.pagination.justify-content-center
+//-                     li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+//-                         a.page-link(href=`/pacientes?page=${currentPage - 1}${search ? '&q='+search : ''}`) Anterior
+                    
+//-                     - var n = 1
+//-                     while n <= totalPages
+//-                         li.page-item(class=(currentPage === n ? 'active' : ''))
+//-                             a.page-link(href=`/pacientes?page=${n}${search ? '&q='+search : ''}`)= n++
+                    
+//-                     li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+//-                         a.page-link(href=`/pacientes?page=${currentPage + 1}${search ? '&q='+search : ''}`) Siguiente
+
+
+
 extends ../layout
 
 block contenido
     style.
-        body {
-            background-color: #eef5ff;
-            font-family: Arial, sans-serif;
-        }
-        .center-text {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .page-container {
-            padding: 20px;
-        }
-        .top-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .actions i {
-            font-size: 20px;
-            cursor: pointer;
-            margin-right: 12px;
-        }
-        .icon-edit {
-            color: #1e88e5;
-        }
-        .icon-photo {
-            color: #6a1b9a;
-        }
-
-        table img {
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        tr:hover {
-            filter: brightness(0.96);
-        }
+        body { background-color: #eef5ff; font-family: Arial, sans-serif; }
+        .center-text { text-align: center; margin-bottom: 20px; font-size: 28px; font-weight: bold; }
+        .page-container { padding: 20px; }
+        .top-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
+        .actions i { font-size: 20px; cursor: pointer; margin-right: 12px; }
+        .icon-edit { color: #1e88e5; }
+        .icon-photo { color: #6a1b9a; }
+        .icon-active { color: #2e7d32; }
+        .icon-inactive { color: #c62828; }
+        table img { border-radius: 50%; object-fit: cover; }
+        tr:hover { filter: brightness(0.96); }
+        .input-group { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .total-count { font-size: 0.9rem; color: #666; margin-top: 5px; }
+        .limit-selector { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
 
     .page-container
-
-        // ---------- TÍTULO ----------
         h3.center-text Pacientes
 
-        // ---------- ACCIONES SUPERIORES ----------
         .top-actions
-            a.btn.btn-success(href="/pacientes/create")
-                i.fa-solid.fa-user-plus
-                |  Nuevo Paciente
+            div
+                a.btn.btn-success(href="/pacientes/crear")
+                    i.fa-solid.fa-user-plus.me-2
+                    | Nuevo Paciente
+                if totalPacientes !== undefined
+                    .total-count Registros encontrados: #{totalPacientes}
 
-        // ---------- MENSAJE ----------
+            //- Formulario Unificado: Búsqueda + Límite
+            form.d-flex.align-items-center(method="GET" action="/pacientes" style="max-width: 600px; width: 100%; gap: 15px;")
+                .limit-selector
+                    span Mostrar
+                    select.form-select.form-select-sm(name="limit" onchange="this.form.submit()" style="width: 70px;")
+                        option(value="5" selected=limit==5) 5
+                        option(value="10" selected=limit==10) 10
+                        option(value="25" selected=limit==25) 25
+                        option(value="50" selected=limit==50) 50
+                
+                .input-group
+                    input.form-control(type="text" name="q" placeholder="DNI, Nombre, Obra Social..." value=search)
+                    button.btn.btn-primary(type="submit")
+                        i.fa-solid.fa-magnifying-glass
+                    if search
+                        a.btn.btn-outline-secondary(href="/pacientes" title="Limpiar búsqueda") 
+                            i.fa-solid.fa-xmark
+
         if mensaje
             script.
-                Swal.fire({
-                    title: 'Mensaje',
-                    text: '#{mensaje}',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
+                Swal.fire({ 
+                    title: 'Operación Exitosa', 
+                    text: '#{mensaje}', 
+                    icon: 'success', 
+                    confirmButtonColor: '#1e88e5',
+                    confirmButtonText: 'Continuar' 
                 });
 
-        // ---------- TABLA ----------
-        table#tablaPacientes.table.table-striped.table-bordered.table-hover
-            thead.table-dark
-                tr
-                    //- th ID
-                    th DNI
-                    th Nombre
-                    th Apellido
-                    th Nacimiento
-                    th Email
-                    th Foto
-                    th Teléfonos
-                    th Obra Social
-                    th Estado
-                    th Acciones
-
-            tbody
-                each paciente in pacientes
-                    - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
-                    - const obras = paciente.obra_social ? paciente.obra_social.split(', ') : []
-
+        .table-responsive.shadow-sm.rounded
+            table#tablaPacientes.table.table-striped.table-bordered.table-hover.mb-0
+                thead.table-dark
                     tr
-                        //- td= paciente.id_paciente
-                        td= paciente.dni
-                        td= paciente.nombre
-                        td= paciente.apellido
-                        td= paciente.nacimiento
-                        td= paciente.email
+                        th DNI
+                        th Nombre
+                        th Apellido
+                        th Nacimiento
+                        th Email
+                        th Foto
+                        th Teléfonos
+                        th Obra Social
+                        th Estado
+                        th Acciones
 
-                        // ---------- FOTO HARDCODEADA ----------
-                        td.text-center
-                            img(
-                                src="/img/paciente-default.png"
-                                width="55"
-                                height="55"
-                                alt="Foto paciente"
-                            )
+                tbody
+                    if pacientes && pacientes.length > 0
+                        each paciente in pacientes
+                            - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+                            tr
+                                td.fw-bold= paciente.dni
+                                td= paciente.nombre
+                                td= paciente.apellido
+                                td= paciente.nacimiento
+                                td= paciente.email
+                                td.text-center
+                                    img(src="/img/paciente-default.png" width="40" height="40" alt="Paciente")
+                                td
+                                    if telefonos.length > 1
+                                        select.form-select.form-select-sm
+                                            each tel in telefonos
+                                                option= tel
+                                    else
+                                        span= telefonos[0] || '-'
+                                td= paciente.obra_social
+                                td.text-center
+                                    if paciente.estado === 1
+                                        span.badge.bg-success Activo
+                                    else
+                                        span.badge.bg-danger Inactivo
+                                td.actions.text-center
+                                    a(href=`/pacientes/editar/${paciente.id_paciente}` title="Editar"): i.icon-edit.fa-solid.fa-pen-to-square
+                                    a(href=`/pacientes/foto/${paciente.id_paciente}` title="Subir Foto"): i.icon-photo.fa-solid.fa-camera
+                                    if paciente.estado === 1
+                                        a(href=`/pacientes/inactivar/${paciente.id_paciente}` title="Dar de Baja" onclick="return confirm('¿Inactivar paciente?')"): i.icon-inactive.fa-solid.fa-user-minus
+                                    else
+                                        a(href=`/pacientes/activar/${paciente.id_paciente}` title="Dar de Alta"): i.icon-active.fa-solid.fa-user-check
+                    else
+                        tr
+                            td.text-center(colspan="10") No se encontraron pacientes con ese criterio.
 
-                        // ---------- TELÉFONOS ----------
-                        td
-                            if telefonos.length === 0
-                                span.text-muted Sin teléfono
-                            else if telefonos.length === 1
-                                span= telefonos[0]
-                            else
-                                select.form-select.form-select-sm
-                                    each tel in telefonos
-                                        option= tel
-
-                        // ---------- OBRAS ----------
-                        td
-                            if obras.length === 0
-                                span.text-muted Sin obra social
-                            else if obras.length === 1
-                                span= obras[0]
-                            else
-                                select.form-select.form-select-sm
-                                    each os in obras
-                                        option= os
-
-                        // ---------- ESTADO ----------
-                        td
-                            if paciente.estado === 1
-                                span.badge.bg-success Activo
-                            else
-                                span.badge.bg-secondary Inactivo
-
-                        // ---------- ACCIONES ----------
-                        td.actions
-                            a(href=`/pacientes/edit/${paciente.id_paciente}` title="Gestionar paciente")
-                                i.icon-edit.fa-solid.fa-pen-to-square
-                            a(href=`/pacientes/foto/${paciente.id_paciente}` title="Cambiar foto")
-                                i.icon-photo.fa-solid.fa-camera
+        // ---------- PAGINACIÓN ----------
+        if totalPages > 1
+            nav.mt-4
+                ul.pagination.justify-content-center
+                    //- Botón Anterior
+                    li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                        a.page-link(href=`/pacientes?page=${currentPage - 1}&limit=${limit}${search ? '&q='+search : ''}`) Anterior
+                    
+                    //- Lógica de números de página
+                    - var start = Math.max(1, currentPage - 2)
+                    - var end = Math.min(totalPages, start + 4)
+                    if (end - start < 4)
+                        - start = Math.max(1, end - 4)
+                    
+                    - for (var n = Math.max(1, start); n <= end; n++)
+                        li.page-item(class=(currentPage === n ? 'active' : ''))
+                            a.page-link(href=`/pacientes?page=${n}&limit=${limit}${search ? '&q='+search : ''}`)= n
+                    
+                    //- Botón Siguiente
+                    li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                        a.page-link(href=`/pacientes?page=${currentPage + 1}&limit=${limit}${search ? '&q='+search : ''}`) Siguiente
