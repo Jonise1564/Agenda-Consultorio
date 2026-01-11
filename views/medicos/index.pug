@@ -3,123 +3,6 @@
 //- block contenido
 //-     style.
 //-         .page-container {
-//-             background-color: #eef5ff;
-//-             font-family: Arial, sans-serif;
-//-             padding: 20px;
-//-             border-radius: 10px;
-//-         }
-//-         .center-text {
-//-             text-align: center;
-//-             margin-bottom: 20px;
-//-             font-size: 28px;
-//-             font-weight: bold;
-//-         }
-//-         .top-actions {
-//-             display: flex;
-//-             justify-content: space-between;
-//-             align-items: center;
-//-             margin-bottom: 20px;
-//-         }
-//-         .actions i {
-//-             font-size: 20px;
-//-             cursor: pointer;
-//-             margin-right: 12px;
-//-         }
-//-         .icon-edit {
-//-             color: #1e88e5;
-//-         }
-//-         tr:hover {
-//-             filter: brightness(0.96);
-//-         }
-
-//-     .page-container
-
-//-         h3.center-text Médicos
-
-//-         .top-actions
-//-             a.btn.btn-success(href="/medicos/create")
-//-                 i.fa-solid.fa-user-doctor
-//-                 |  Nuevo Médico
-
-//-         if mensaje
-//-             script.
-//-                 Swal.fire({
-//-                     title: 'Mensaje',
-//-                     text: '#{mensaje}',
-//-                     icon: 'success',
-//-                     confirmButtonText: 'OK'
-//-                 });
-
-//-         table#tablaMedicos.table.table-striped.table-bordered.table-hover
-//-             thead.table-dark
-//-                 tr
-//-                     th DNI
-//-                     th Nombre
-//-                     th Apellido
-//-                     th Nacimiento
-//-                     th Especialidades
-//-                     th Matrículas
-//-                     th Teléfonos
-//-                     th Estado
-//-                     th Acciones
-
-//-             tbody
-//-                 each medico in medicos
-//-                     - const especialidades = medico.especialidades ? medico.especialidades.split(', ') : []
-//-                     - const matriculas = medico.matriculas ? medico.matriculas.split(', ') : []
-//-                     - const telefonos = medico.telefonos ? medico.telefonos.split(', ') : []
-
-//-                     tr
-//-                         td= medico.dni
-//-                         td= medico.nombre
-//-                         td= medico.apellido
-//-                         td= medico.nacimiento || "Sin datos"
-
-//-                         td
-//-                             if especialidades.length === 0
-//-                                 span.text-muted Sin datos
-//-                             else if especialidades.length === 1
-//-                                 span= especialidades[0]
-//-                             else
-//-                                 select.form-select.form-select-sm
-//-                                     each esp in especialidades
-//-                                         option= esp
-
-//-                         td
-//-                             if matriculas.length === 0
-//-                                 span.text-muted Sin datos
-//-                             else if matriculas.length === 1
-//-                                 span= matriculas[0]
-//-                             else
-//-                                 select.form-select.form-select-sm
-//-                                     each mat in matriculas
-//-                                         option= mat
-
-//-                         td
-//-                             if telefonos.length === 0
-//-                                 span.text-muted Sin datos
-//-                             else if telefonos.length === 1
-//-                                 span= telefonos[0]
-//-                             else
-//-                                 select.form-select.form-select-sm
-//-                                     each tel in telefonos
-//-                                         option= tel
-
-//-                         td
-//-                             if medico.estado === 1
-//-                                 span.badge.bg-success Activo
-//-                             else
-//-                                 span.badge.bg-secondary Inactivo
-
-//-                         td.actions
-//-                             a(href=`/medicos/edit/${medico.id}` title="Gestionar médico")
-//-                                 i.icon-edit.fa-solid.fa-pen-to-square
-
-//- extends ../layout
-
-//- block contenido
-//-     style.
-//-         .page-container {
 //-             background-color: #f4f7f6;
 //-             font-family: 'Segoe UI', Arial, sans-serif;
 //-             padding: 20px;
@@ -266,179 +149,149 @@
 //-                     li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
 //-                         a.page-link(href=`/medicos?page=${currentPage + 1}&limit=${limit}${search ? '&q='+search : ''}`) Siguiente
 
-
 extends ../layout
 
 block contenido
-  style.
-    .page-header { border-bottom: 2px solid #e9ecef; padding-bottom: 1rem; }
-    .card-custom {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      border: 1px solid #dee2e6;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .form-label { font-weight: 600; color: #495057; font-size: 0.85rem; margin-bottom: 4px; }
-    .section-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-    .btn-primary-custom {
-      background-color: #3498db;
-      color: white; border: none; padding: 10px 25px;
-      border-radius: 6px; font-weight: bold;
-      transition: all 0.3s;
-    }
-    .btn-primary-custom:hover { background-color: #2980b9; }
-    .btn-xs { padding: 1px 5px; font-size: 0.75rem; line-height: 1.5; border-radius: 3px; }
-
-  .page-header.d-flex.justify-content-between.align-items-center.mb-4
-    h2.m-0.text-dark
-      i.fa-solid.fa-user-doctor.me-2.text-primary
-      | Nuevo Médico
-    a.btn.btn-outline-secondary.btn-sm(href="/medicos")
-      i.fa-solid.fa-arrow-left.me-1
-      | Volver
-
-  //- Bloque de Errores
-  if errores && errores.length
-    .alert.alert-danger.alert-dismissible.fade.show.shadow-sm(role="alert")
-      .d-flex.align-items-center
-        i.fa-solid.fa-triangle-exclamation.me-3.fa-2x
+  .container-fluid
+    // Encabezado
+    .row.mb-4
+      .col-12.d-flex.justify-content-between.align-items-center
         div
-          strong Por favor, corrige lo siguiente:
-          ul.mb-0.small
-            each err in errores
-              li= err
-      button.btn-close(type="button" data-bs-dismiss="alert")
+          h2.fw-bold.text-primary 
+            i.fa-solid.fa-user-doctor.me-2
+            | Gestión de Médicos
+          if totalMedicos !== undefined
+            span.badge.bg-light.text-dark.border 
+              i.bi.bi-person-badge.me-1
+              | Total: #{totalMedicos} profesionales
+        
+        a.btn.btn-primary.shadow-sm(href="/medicos/crear")
+          i.fa-solid.fa-user-plus.me-2
+          | Nuevo Médico
 
-  form(action="/medicos" method="POST" novalidate)
-    input(type="hidden" name="id_rol" value="2") 
-    input(type="hidden" name="estado" value="1")
+    // Filtros y Buscador
+    .card.border-0.shadow-sm.mb-4
+      .card-body
+        form(method="GET" action="/medicos")
+          .row.g-3.align-items-center
+            .col-md-auto
+              .input-group.input-group-sm
+                label.input-group-text Mostrar
+                select.form-select(name="limit" onchange="this.form.submit()" style="width: 75px;")
+                  each val in [5, 10, 25, 50]
+                    option(value=val selected=limit==val)= val
+            
+            .col-md
+              .input-group
+                span.input-group-text.bg-white
+                  i.fa-solid.fa-magnifying-glass.text-muted
+                input.form-control(
+                  type="text" 
+                  name="q" 
+                  placeholder="Buscar por Matrícula, Nombre o Especialidad..." 
+                  value=search
+                )
+                if search
+                  a.btn.btn-outline-secondary(href="/medicos")
+                    i.fa-solid.fa-xmark
+                button.btn.btn-primary.px-4(type="submit") Buscar
 
-    .row
-      //- COLUMNA IZQUIERDA: INFORMACIÓN PERSONAL
-      .col-lg-8
-        .card-custom
-          h5.section-title.text-primary
-            i.fa-solid.fa-address-card
-            | Información Personal
-          .row.g-3
-            .col-md-6
-              label.form-label Nombre
-              input.form-control(type="text" name="nombre" value=(old?old.nombre:'') required)
-            .col-md-6
-              label.form-label Apellido
-              input.form-control(type="text" name="apellido" value=(old?old.apellido:'') required)
-            .col-md-4
-              label.form-label DNI
-              input.form-control(type="text" name="dni" value=(old?old.dni:'') required placeholder="Sin puntos")
-            .col-md-4
-              label.form-label Nacimiento
-              input.form-control(type="date" name="nacimiento" value=(old?old.nacimiento:'') required)
-            .col-md-4
-              label.form-label Matrícula
-              input.form-control(type="text" name="matricula" value=(old?old.matricula:'') required placeholder="M.P. / M.N.")
+    // Mensaje de SweetAlert
+    if mensaje
+      script.
+        Swal.fire({
+          title: 'Operación Exitosa',
+          text: '#{mensaje}',
+          icon: 'success',
+          confirmButtonColor: '#0a3d62'
+        });
 
-        .card-custom
-          h5.section-title.text-secondary
-            i.fa-solid.fa-lock
-            | Cuenta de Usuario
-          .row.g-3
-            .col-md-6
-              label.form-label Correo Electrónico
-              input.form-control(type="email" name="email" value=(old?old.email:'') required placeholder="usuario@correo.com")
-            .col-md-3
-              label.form-label Contraseña
-              input.form-control(type="password" name="password" required)
-            .col-md-3
-              label.form-label Confirmar
-              input.form-control(type="password" name="repeatPassword" required)
+    // Tabla de Resultados
+    .card.border-0.shadow-sm
+      .table-responsive
+        table.table.table-hover.align-middle.mb-0
+          thead.bg-light
+            tr
+              th.ps-3 DNI
+              th Médico
+              th Especialidades
+              th Matrícula
+              th Teléfonos
+              th.text-center Estado
+              th.text-center Acciones
 
-      //- COLUMNA DERECHA: ESPECIALIDADES Y TELÉFONOS
-      .col-lg-4
-        .card-custom
-          h5.section-title.text-dark
-            i.fa-solid.fa-stethoscope
-            | Especialidades
+          tbody
+            if medicos && medicos.length > 0
+              each medico in medicos
+                - const especialidades = medico.especialidades ? medico.especialidades.split(', ') : []
+                - const telefonos = medico.telefonos ? medico.telefonos.split(', ') : []
+                
+                tr
+                  td.ps-3.fw-bold= medico.dni
+                  td
+                    div.fw-bold= `${medico.apellido}, ${medico.nombre}`
+                    small.text-muted Profesional de Salud
+                  td
+                    if especialidades.length === 0
+                      span.text-muted.small -
+                    else if especialidades.length === 1
+                      span.badge.bg-primary.bg-opacity-10.text-primary.border.border-primary.small= especialidades[0]
+                    else
+                      select.form-select.form-select-sm(style="max-width: 150px;")
+                        each esp in especialidades
+                          option= esp
+                  td
+                    span.font-monospace= medico.matricula || "N/A"
+                  td
+                    if telefonos.length === 0
+                      span.text-muted.small -
+                    else if telefonos.length === 1
+                      span.small= telefonos[0]
+                    else
+                      select.form-select.form-select-sm(style="max-width: 130px;")
+                        each tel in telefonos
+                          option= tel
+                  td.text-center
+                    if medico.estado === 1
+                      span.badge.rounded-pill.bg-success Activo
+                    else
+                      span.badge.rounded-pill.bg-danger Inactivo
+                  td.text-center
+                    .btn-group.btn-group-sm
+                      a.btn.btn-outline-primary(href=`/medicos/editar/${medico.id}` title="Editar")
+                        i.fa-solid.fa-pen-to-square
+                      if medico.estado === 1
+                        a.btn.btn-outline-danger(
+                          href=`/medicos/inactivar/${medico.id}` 
+                          title="Inactivar" 
+                          onclick="return confirm('¿Seguro desea inactivar este profesional?')"
+                        )
+                          i.fa-solid.fa-user-slash
+                      else
+                        a.btn.btn-outline-success(href=`/medicos/activar/${medico.id}` title="Activar")
+                          i.fa-solid.fa-user-check
+            else
+              tr
+                td.text-center.py-5(colspan="7")
+                  p.text-muted No se encontraron médicos registrados.
+
+    // Paginación
+    if totalPages > 1
+      nav.mt-4
+        ul.pagination.justify-content-center
+          li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+            a.page-link(href=`/medicos?page=${currentPage - 1}&limit=${limit}${search ? '&q='+search : ''}`)
+              i.bi.bi-chevron-left
           
-          #especialidades-container.mb-2
-            if old && old.especialidades
-              - const listaEsp = Array.isArray(old.especialidades) ? old.especialidades : [old.especialidades]
-              each espId in listaEsp
-                - const match = especialidades.find(e => String(e.id) === String(espId))
-                if match
-                  .input-group.mb-2
-                    input.form-control.form-control-sm(readonly value=match.nombre)
-                    input(type="hidden" name="especialidades" value=match.id)
-                    button.btn.btn-sm.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
-                      i.fa-solid.fa-trash-can
-
-          .input-group.input-group-sm
-            select.form-select#select-especialidad
-              option(value="") -- Elegir --
-              each esp in especialidades
-                option(value=esp.id data-nombre=esp.nombre)= esp.nombre
-            button.btn.btn-primary(type="button" onclick="agregarEspecialidad()") 
-              i.fa-solid.fa-plus
-
-        .card-custom
-          .d-flex.justify-content-between.align-items-center.mb-2
-            h5.section-title.text-dark.m-0
-              i.fa-solid.fa-phone
-              | Teléfonos
-            button.btn.btn-xs.btn-success(type="button" onclick="agregarTelefono()") + Agregar
+          - var start = Math.max(1, currentPage - 2)
+          - var end = Math.min(totalPages, start + 4)
+          if (end - start < 4)
+            - start = Math.max(1, end - 4)
           
-          #telefonos-container
-            .input-group.mb-2
-              //- El nombre telefonoAlternativo coincide con lo que desestructura el controlador
-              input.form-control.form-control-sm(type="text" name="telefonoAlternativo" value=(old?old.telefonoAlternativo:'') placeholder="Teléfono Principal" required)
-              span.input-group-text: i.fa-solid.fa-star.text-warning.small
-
-            if old && old.telefonos_extra
-              - const extras = Array.isArray(old.telefonos_extra) ? old.telefonos_extra : [old.telefonos_extra]
-              each tel in extras
-                if tel
-                  .input-group.mb-2
-                    input.form-control.form-control-sm(type="text" name="telefonos_extra" value=tel)
-                    button.btn.btn-sm.btn-outline-danger(type="button" onclick="this.parentNode.remove()")
-                      i.fa-solid.fa-trash-can
-
-    .d-flex.justify-content-end.gap-2.mb-5
-      a.btn.btn-light.px-4(href="/medicos") Cancelar
-      button.btn-primary-custom(type="submit")
-        i.fa-solid.fa-floppy-disk.me-2
-        | Registrar Médico
-
-  script.
-    function agregarTelefono() {
-      const cont = document.getElementById('telefonos-container');
-      const div = document.createElement('div');
-      div.className = 'input-group mb-2';
-      div.innerHTML = `
-        <input class="form-control form-control-sm" type="text" name="telefonos_extra" placeholder="Adicional...">
-        <button class="btn btn-sm btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i></button>
-      `;
-      div.querySelector('button').onclick = () => div.remove();
-      cont.appendChild(div);
-    }
-
-    function agregarEspecialidad() {
-      const select = document.getElementById('select-especialidad');
-      const id = select.value;
-      if (!id) return;
-      const nombre = select.options[select.selectedIndex].dataset.nombre;
-      const cont = document.getElementById('especialidades-container');
-      
-      if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
-
-      const div = document.createElement('div');
-      div.className = 'input-group mb-2';
-      div.innerHTML = `
-        <input class="form-control form-control-sm" readonly value="${nombre}">
-        <input type="hidden" name="especialidades" value="${id}">
-        <button class="btn btn-sm btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i></button>
-      `;
-      div.querySelector('button').onclick = () => div.remove();
-      cont.appendChild(div);
-      select.value = '';
-    }
+          - for (var n = Math.max(1, start); n <= end; n++)
+            li.page-item(class=(currentPage === n ? 'active' : ''))
+              a.page-link(href=`/medicos?page=${n}&limit=${limit}${search ? '&q='+search : ''}`)= n
+          
+          li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+            a.page-link(href=`/medicos?page=${currentPage + 1}&limit=${limit}${search ? '&q='+search : ''}`)
+              i.bi.bi-chevron-right

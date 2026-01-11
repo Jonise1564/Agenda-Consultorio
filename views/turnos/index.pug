@@ -1,149 +1,307 @@
 
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body { background-color:#eef5ff; font-family:Arial,sans-serif; }
+//-     .center-text { text-align:center; margin-bottom:20px; font-size:26px; font-weight:bold; }
+//-     .page-container { padding:20px; }
+//-     .filter-box { background:#fff; padding:15px; border-radius:10px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+
+//-     td.actions { white-space:nowrap; text-align:center; vertical-align:middle; }
+//-     td.actions .btn { margin:0 4px; }
+
+
+
+//-   .page-container
+//-     .mb-3
+//-       a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
+
+//-     if turnos && turnos.length
+//-       h3.center-text Turnos del Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
+
+//-     else
+//-       h3.center-text Turnos del Doctor
+
+//-     // ===================== FILTROS =====================
+//-     .filter-box
+//-       h4 Filtros
+//-       .row.g-3
+//-         .col-md-2
+//-           label Fecha
+//-           input.form-control(type="date" id="f-fecha")
+//-         .col-md-2
+//-           label Hora
+//-           input.form-control(type="time" id="f-hora")
+//-         .col-md-2
+//-           label Estado
+//-           select.form-select(id="f-estado")
+//-             option(value="") Todos
+//-             each e in ['No disponible','Libre','Sobreturno','Reservado','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
+//-               option= e
+//-         .col-md-2
+//-           label Orden
+//-           input.form-control(type="number" id="f-orden")
+//-         .col-md-2
+//-           label Paciente
+//-           input.form-control(type="text" id="f-paciente")
+//-         .col-md-2
+//-           label DNI
+//-           input.form-control(type="text" id="f-dni")
+
+//-       .mt-3.text-end
+//-         button.btn.btn-primary(onclick="applyFilters()") Filtrar
+//-         button.btn.btn-secondary.ms-2(onclick="clearFilters()") Limpiar
+
+//-     // ===================== TABLA =====================
+//-     table#tablaTurnos.table.table-bordered.table-hover
+//-       thead.table-dark
+//-         tr
+//-           th Fecha
+//-           th Hora
+//-           th Motivo
+//-           th Estado
+//-           th Orden
+//-           th Paciente
+//-           th DNI
+//-           th Acciones
+
+//-       tbody
+//-         each turno in turnos
+//-           tr(
+//-             data-fecha=turno.fecha_iso
+//-             data-hora=turno.hora_inicio.slice(0,5)
+//-             data-estado=turno.estado
+//-             data-orden=turno.orden
+//-             data-paciente=turno.paciente_nombre || ''
+//-             data-dni=turno.dni || ''
+//-           )
+//-             td= turno.fecha_formateada
+//-             td= turno.hora_inicio.slice(0,5)
+//-             td= turno.motivo || '—'
+//-             td= turno.estado
+//-             td= turno.orden
+//-             td= turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}` : '—'
+//-             td= turno.dni || '—'
+
+//-             td.actions
+//-               - const estado = (turno.estado || '').trim().toLowerCase()
+
+//-               // 📅 RESERVAR → SOLO Libre o Sobreturno
+//-               if ['libre','sobreturno'].includes(estado)
+//-                 a.btn.btn-success.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Reservar turno"
+//-                 )
+//-                   i.fa-solid.fa-calendar-check.fa-lg
+
+//-               // ✏️ EDITAR → TODOS MENOS No disponible, Libre y Sobreturno
+//-               if !['no disponible','libre','sobreturno'].includes(estado)
+//-                 a.btn.btn-primary.btn-sm(
+//-                   href=`/turnos/reservar/${turno.id}`
+//-                   title="Editar turno"
+//-                 )
+//-                   i.fa-solid.fa-pen-to-square.fa-lg
+
+//-               // 🗑 ELIMINAR → SIEMPRE
+//-               button.btn.btn-danger.btn-sm(
+//-                 title="Eliminar turno"
+//-                 onclick=`confirmDelete(${turno.id})`
+//-               )
+//-                 i.fa-solid.fa-trash.fa-lg
+
+//-   // ===================== SCRIPTS =====================
+//-   script.
+//-     function applyFilters() {
+//-       const v = id => document.getElementById(id).value;
+//-       document.querySelectorAll('#tablaTurnos tbody tr').forEach(row => {
+//-         const ok =
+//-           (!v('f-fecha') || row.dataset.fecha === v('f-fecha')) &&
+//-           (!v('f-hora') || row.dataset.hora === v('f-hora')) &&
+//-           (!v('f-estado') || row.dataset.estado === v('f-estado')) &&
+//-           (!v('f-orden') || row.dataset.orden === v('f-orden')) &&
+//-           (!v('f-paciente') || row.dataset.paciente.toLowerCase().includes(v('f-paciente').toLowerCase())) &&
+//-           (!v('f-dni') || row.dataset.dni === v('f-dni'));
+//-         row.style.display = ok ? '' : 'none';
+//-       });
+//-     }
+
+//-     function clearFilters() {
+//-       document.querySelectorAll('.filter-box input, .filter-box select')
+//-         .forEach(e => e.value = '');
+//-       applyFilters();
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Eliminar turno?',
+//-         text: 'Esta acción no se puede deshacer',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonText: 'Eliminar',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then(r => {
+//-         if (r.isConfirmed) {
+//-           fetch(`/turnos/${id}`, { method: 'DELETE' })
+//-             .then(() => location.reload());
+//-         }
+//-       });
+//-     }
+
+
 extends ../layout
 
 block contenido
-  style.
-    body { background-color:#eef5ff; font-family:Arial,sans-serif; }
-    .center-text { text-align:center; margin-bottom:20px; font-size:26px; font-weight:bold; }
-    .page-container { padding:20px; }
-    .filter-box { background:#fff; padding:15px; border-radius:10px; margin-bottom:20px; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+  //- Forzamos la carga de iconos
+  link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
 
-    td.actions { white-space:nowrap; text-align:center; vertical-align:middle; }
-    td.actions .btn { margin:0 4px; }
+  .container-fluid.py-4
+    // ---------- ENCABEZADO ----------
+    .row.mb-4.align-items-center
+      .col-md-8
+        a.btn.btn-outline-primary.btn-sm.rounded-pill.mb-3(href="/agendas")
+          i.bi.bi-arrow-left.me-2
+          | Volver a Agendas
+        h2.fw-bold.text-primary.mb-0
+          i.bi.bi-calendar2-check.me-2
+          if turnos && turnos.length
+            | Turnos: Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
+          else
+            | Gestión de Turnos
+      
+      .col-md-4.text-md-end
+        span.badge.bg-primary.p-2.px-3.rounded-pill Total turnos: #{turnos ? turnos.length : 0}
 
+    // ---------- BARRA DE FILTROS MODERNA ----------
+    .card.border-0.shadow-sm.mb-4
+      .card-body.bg-light.rounded
+        h6.fw-bold.mb-3: i.bi.bi-funnel.me-2
+        .row.g-3
+          .col-md-2
+            label.form-label.small.fw-bold Fecha
+            input.form-control.form-control-sm.border-0.shadow-sm(type="date" id="f-fecha" onchange="applyFilters()")
+          .col-md-2
+            label.form-label.small.fw-bold Hora
+            input.form-control.form-control-sm.border-0.shadow-sm(type="time" id="f-hora" onchange="applyFilters()")
+          .col-md-2
+            label.form-label.small.fw-bold Estado
+            select.form-select.form-select-sm.border-0.shadow-sm(id="f-estado" onchange="applyFilters()")
+              option(value="") Todos
+              each e in ['No disponible','Libre','Sobreturno','Reservado','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
+                option= e
+          .col-md-2
+            label.form-label.small.fw-bold Paciente / DNI
+            input.form-control.form-control-sm.border-0.shadow-sm(type="text" id="f-paciente" placeholder="Nombre o DNI..." onkeyup="applyFilters()")
+          .col-md-2.d-flex.align-items-end
+            button.btn.btn-secondary.btn-sm.w-100(onclick="clearFilters()") 
+              i.bi.bi-eraser.me-2
+              | Limpiar
 
+    // ---------- TABLA DE TURNOS ----------
+    .card.border-0.shadow-sm
+      .table-responsive
+        table#tablaTurnos.table.table-hover.align-middle.mb-0
+          thead.bg-primary.text-white
+            tr
+              th.py-3.ps-4 Fecha
+              th.py-3 Hora
+              th.py-3 Paciente
+              th.py-3 DNI
+              th.py-3 Estado
+              th.py-3 Orden
+              th.py-3.text-center Acciones
 
-  .page-container
-    .mb-3
-      a.btn.btn-secondary(href="/agendas") ⬅ Volver a Agendas
-
-    if turnos && turnos.length
-      h3.center-text Turnos del Dr/a. #{turnos[0].medico_apellido} #{turnos[0].medico_nombre}
-
-    else
-      h3.center-text Turnos del Doctor
-
-    // ===================== FILTROS =====================
-    .filter-box
-      h4 Filtros
-      .row.g-3
-        .col-md-2
-          label Fecha
-          input.form-control(type="date" id="f-fecha")
-        .col-md-2
-          label Hora
-          input.form-control(type="time" id="f-hora")
-        .col-md-2
-          label Estado
-          select.form-select(id="f-estado")
-            option(value="") Todos
-            each e in ['No disponible','Libre','Sobreturno','Reservado','Confirmado','Cancelado','Ausente','Presente','En consulta','Atendido']
-              option= e
-        .col-md-2
-          label Orden
-          input.form-control(type="number" id="f-orden")
-        .col-md-2
-          label Paciente
-          input.form-control(type="text" id="f-paciente")
-        .col-md-2
-          label DNI
-          input.form-control(type="text" id="f-dni")
-
-      .mt-3.text-end
-        button.btn.btn-primary(onclick="applyFilters()") Filtrar
-        button.btn.btn-secondary.ms-2(onclick="clearFilters()") Limpiar
-
-    // ===================== TABLA =====================
-    table#tablaTurnos.table.table-bordered.table-hover
-      thead.table-dark
-        tr
-          th Fecha
-          th Hora
-          th Motivo
-          th Estado
-          th Orden
-          th Paciente
-          th DNI
-          th Acciones
-
-      tbody
-        each turno in turnos
-          tr(
-            data-fecha=turno.fecha_iso
-            data-hora=turno.hora_inicio.slice(0,5)
-            data-estado=turno.estado
-            data-orden=turno.orden
-            data-paciente=turno.paciente_nombre || ''
-            data-dni=turno.dni || ''
-          )
-            td= turno.fecha_formateada
-            td= turno.hora_inicio.slice(0,5)
-            td= turno.motivo || '—'
-            td= turno.estado
-            td= turno.orden
-            td= turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}` : '—'
-            td= turno.dni || '—'
-
-            td.actions
+          tbody.bg-white
+            each turno in turnos
               - const estado = (turno.estado || '').trim().toLowerCase()
+              - let badgeClass = 'bg-secondary'
+              if estado === 'libre' || estado === 'sobreturno'
+                - badgeClass = 'bg-success'
+              else if estado === 'reservado' || estado === 'confirmado'
+                - badgeClass = 'bg-primary'
+              else if estado === 'cancelado' || estado === 'ausente'
+                - badgeClass = 'bg-danger'
 
-              // 📅 RESERVAR → SOLO Libre o Sobreturno
-              if ['libre','sobreturno'].includes(estado)
-                a.btn.btn-success.btn-sm(
-                  href=`/turnos/reservar/${turno.id}`
-                  title="Reservar turno"
-                )
-                  i.fa-solid.fa-calendar-check.fa-lg
-
-              // ✏️ EDITAR → TODOS MENOS No disponible, Libre y Sobreturno
-              if !['no disponible','libre','sobreturno'].includes(estado)
-                a.btn.btn-primary.btn-sm(
-                  href=`/turnos/reservar/${turno.id}`
-                  title="Editar turno"
-                )
-                  i.fa-solid.fa-pen-to-square.fa-lg
-
-              // 🗑 ELIMINAR → SIEMPRE
-              button.btn.btn-danger.btn-sm(
-                title="Eliminar turno"
-                onclick=`confirmDelete(${turno.id})`
+              tr(
+                data-fecha=turno.fecha_iso
+                data-hora=turno.hora_inicio.slice(0,5)
+                data-estado=turno.estado
+                data-paciente=turno.paciente_apellido ? `${turno.paciente_apellido} ${turno.paciente_nombre}`.toLowerCase() : ''
+                data-dni=turno.dni || ''
               )
-                i.fa-solid.fa-trash.fa-lg
+                td.ps-4
+                  span.fw-bold= turno.fecha_formateada
+                td
+                  span.badge.bg-light.text-dark.border= turno.hora_inicio.slice(0,5)
+                td
+                  if turno.paciente_apellido
+                    span.fw-bold= `${turno.paciente_apellido} ${turno.paciente_nombre}`
+                  else
+                    span.text-muted.small —
+                td
+                  span.text-muted= turno.dni || '—'
+                td
+                  span(class=`badge ${badgeClass} bg-opacity-10 text-${badgeClass.replace('bg-', '')} border border-${badgeClass.replace('bg-', '')} border-opacity-25`)
+                    | #{turno.estado}
+                td
+                  span.text-muted # #{turno.orden}
 
-  // ===================== SCRIPTS =====================
+                td.text-center
+                  .btn-group
+                    // 📅 RESERVAR → SOLO Libre o Sobreturno
+                    if ['libre','sobreturno'].includes(estado)
+                      a.btn.btn-outline-success.btn-sm(href=`/turnos/reservar/${turno.id}` title="Reservar")
+                        i.bi.bi-calendar-plus
+                    
+                    // ✏️ EDITAR → SOLO SI YA TIENE DATOS
+                    if !['no disponible','libre','sobreturno'].includes(estado)
+                      a.btn.btn-outline-primary.btn-sm(href=`/turnos/reservar/${turno.id}` title="Editar")
+                        i.bi.bi-pencil
+                    
+                    // 🗑 ELIMINAR
+                    button.btn.btn-outline-danger.btn-sm(onclick=`confirmDelete(${turno.id})` title="Eliminar")
+                      i.bi.bi-trash
+
+  // ---------- SCRIPTS ----------
   script.
     function applyFilters() {
-      const v = id => document.getElementById(id).value;
-      document.querySelectorAll('#tablaTurnos tbody tr').forEach(row => {
-        const ok =
+      const v = id => document.getElementById(id).value.toLowerCase();
+      const rows = document.querySelectorAll('#tablaTurnos tbody tr');
+      
+      rows.forEach(row => {
+        const match =
           (!v('f-fecha') || row.dataset.fecha === v('f-fecha')) &&
           (!v('f-hora') || row.dataset.hora === v('f-hora')) &&
-          (!v('f-estado') || row.dataset.estado === v('f-estado')) &&
-          (!v('f-orden') || row.dataset.orden === v('f-orden')) &&
-          (!v('f-paciente') || row.dataset.paciente.toLowerCase().includes(v('f-paciente').toLowerCase())) &&
-          (!v('f-dni') || row.dataset.dni === v('f-dni'));
-        row.style.display = ok ? '' : 'none';
+          (!v('f-estado') || row.dataset.estado.toLowerCase() === v('f-estado')) &&
+          (!v('f-paciente') || 
+            row.dataset.paciente.includes(v('f-paciente')) || 
+            row.dataset.dni.includes(v('f-paciente')));
+        
+        row.style.display = match ? '' : 'none';
       });
     }
 
     function clearFilters() {
-      document.querySelectorAll('.filter-box input, .filter-box select')
-        .forEach(e => e.value = '');
+      document.querySelectorAll('.card input, .card select').forEach(e => e.value = '');
       applyFilters();
     }
 
     function confirmDelete(id) {
       Swal.fire({
         title: '¿Eliminar turno?',
-        text: 'Esta acción no se puede deshacer',
+        text: 'Esta acción liberará el espacio en la agenda.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Eliminar',
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
       }).then(r => {
         if (r.isConfirmed) {
           fetch(`/turnos/${id}`, { method: 'DELETE' })
-            .then(() => location.reload());
+            .then(res => {
+               if(res.ok) location.reload();
+               else Swal.fire('Error', 'No se pudo eliminar el turno', 'error');
+            });
         }
       });
     }

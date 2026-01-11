@@ -1,0 +1,198 @@
+extends ../../layout
+
+block contenido
+  .row.justify-content-center
+    .col-lg-8
+      .card.shadow-sm.border-0.card-custom
+        .card-header.bg-white.py-3.border-bottom
+          h4.mb-0.fw-bold.text-primary
+            i.fa-solid.fa-clock-rotate-left.me-2.text-warning
+            | Nueva Entrada en Lista de Espera
+        
+        .card-body.p-4
+          //- ALERTA DE DUPLICADO (Oculta por defecto)
+          #alertaDuplicado.alert.alert-danger.d-none.mb-4
+            i.fa-solid.fa-circle-exclamation.me-2
+            b El paciente ya se encuentra en la lista de espera 
+            | para este médico y especialidad.
+
+          form#formListaEspera(action="/secretaria/lista-espera/store" method="POST" autocomplete="off")
+            
+            //- SECCIÓN: PACIENTE
+            .mb-4
+              label.form-label.small.fw-bold Paciente
+              if paciente
+                .p-3.border.rounded.bg-light.d-flex.align-items-center
+                  .icon-circle.bg-primary.text-white.me-3
+                    i.fa-solid.fa-user
+                  div
+                    h6.mb-0.fw-bold #{paciente.apellido}, #{paciente.nombre}
+                    small.text-muted DNI: #{paciente.dni}
+                  input#pacienteIdHidden(type="hidden" name="id_paciente" value=id_paciente)
+              else
+                .position-relative
+                  .input-group
+                    span.input-group-text.bg-white: i.fa-solid.fa-magnifying-glass
+                    input#buscarPaciente.form-control(type="text" placeholder="Buscar por DNI o Apellido...")
+                  #sugerenciasPaciente.list-group.position-absolute.w-100.shadow-lg.z-3
+                  input#pacienteIdHidden(type="hidden" name="id_paciente" required)
+                  .form-text.text-muted Seleccione un paciente para habilitar el registro.
+
+            hr.my-4
+
+            //- SECCIÓN: MÉDICO Y ESPECIALIDAD
+            .row.g-3.mb-4
+              .col-md-6
+                label.form-label.small.fw-bold Profesional Requerido
+                select#medicoSelect.form-select(name="id_medico" required)
+                  option(value="" disabled selected=!id_medico) Seleccione Médico
+                  if medicos
+                    each med in medicos
+                      option(value=med.id_medico selected=(med.id_medico == id_medico)) Dra/er. #{med.nombre} #{med.apellido}
+              
+              .col-md-6
+                label.form-label.small.fw-bold Especialidad
+                select#especialidadSelect.form-select(name="id_especialidad" required)
+                  option(value="" disabled selected=!id_especialidad) Seleccione Especialidad
+                  if especialidades
+                    each esp in especialidades
+                      option(value=esp.id selected=(esp.id == id_especialidad)) #{esp.nombre}
+
+            //- SECCIÓN: PRIORIDAD Y NOTAS
+            .row.g-3.mb-4
+              .col-md-6
+                label.form-label.small.fw-bold Nivel de Prioridad
+                select.form-select(name="prioridad" required)
+                  option(value="Baja") Baja
+                  option(value="Media" selected) Media
+                  option(value="Alta") Alta
+              
+              .col-md-6
+                label.form-label.small.fw-bold Motivo de la Prioridad
+                input.form-control(type="text" name="motivo_prioridad" placeholder="Ej: Urgencia, post-operatorio...")
+
+            .mb-4
+              label.form-label.small.fw-bold Observaciones
+              textarea.form-control(name="observaciones" rows="3" placeholder="Detalles sobre disponibilidad horaria...")
+
+            .d-flex.justify-content-between.pt-3
+              a.btn.btn-outline-secondary.px-4(href="/secretaria") 
+                i.fa-solid.fa-xmark.me-2
+                | Cancelar
+              button#btnConfirmar.btn.btn-primary.px-5.fw-bold(type="submit" disabled=!id_paciente)
+                i.fa-solid.fa-floppy-disk.me-2
+                | Confirmar Registro
+
+  style.
+    .card-custom { border-radius: 15px; }
+    .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .list-group.position-absolute { max-height: 200px; overflow-y: auto; z-index: 1100; }
+    .list-group-item { cursor: pointer; }
+
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const medicoSelect = document.getElementById('medicoSelect');
+      const especialidadSelect = document.getElementById('especialidadSelect');
+      const buscarPac = document.getElementById('buscarPaciente');
+      const sugPac = document.getElementById('sugerenciasPaciente');
+      const hiddenPac = document.getElementById('pacienteIdHidden');
+      const btnConfirmar = document.getElementById('btnConfirmar');
+      const alertaDuplicado = document.getElementById('alertaDuplicado');
+
+      // --- NUEVA FUNCIÓN: VERIFICAR SI EXISTE EN LISTA ---
+      const verificarExistencia = async () => {
+        const idPac = hiddenPac.value;
+        const idMed = medicoSelect.value;
+        const idEsp = especialidadSelect.value;
+
+        // Solo consultamos si tenemos los 3 campos seleccionados
+        if (idPac && idMed && idEsp) {
+          try {
+            const res = await fetch(`/secretaria/lista-espera/verificar?id_paciente=${idPac}&id_medico=${idMed}&id_especialidad=${idEsp}`);
+            const data = await res.json();
+
+            if (data.existe) {
+              alertaDuplicado.classList.remove('d-none');
+              btnConfirmar.disabled = true;
+            } else {
+              alertaDuplicado.classList.add('d-none');
+              btnConfirmar.disabled = false;
+            }
+          } catch (err) {
+            console.error("Error al verificar duplicado", err);
+          }
+        }
+      };
+
+      // 1. Lógica del Buscador de Pacientes
+      if (buscarPac) {
+        let timeout;
+        buscarPac.addEventListener('input', () => {
+          clearTimeout(timeout);
+          const q = buscarPac.value.trim();
+          if (q.length < 2) { sugPac.innerHTML = ''; return; }
+
+          timeout = setTimeout(async () => {
+            try {
+              const res = await fetch(`/pacientes/buscar?q=${encodeURIComponent(q)}`);
+              const data = await res.json();
+              sugPac.innerHTML = data.map(p => `
+                <button type="button" class="list-group-item list-group-item-action" data-id="${p.id_paciente || p.id}" data-text="${p.apellido}, ${p.nombre}">
+                  ${p.apellido}, ${p.nombre} <small class="text-muted">(${p.dni})</small>
+                </button>`).join('');
+
+              sugPac.querySelectorAll('button').forEach(btn => {
+                btn.onclick = () => {
+                  buscarPac.value = btn.dataset.text;
+                  hiddenPac.value = btn.dataset.id;
+                  sugPac.innerHTML = '';
+                  verificarExistencia(); // Verificar al seleccionar paciente
+                };
+              });
+            } catch (err) { console.error(err); }
+          }, 300);
+        });
+      }
+
+      // 2. Actualizar especialidades y verificar duplicado al cambiar médico
+      medicoSelect.addEventListener('change', async (e) => {
+        const id = e.target.value;
+        especialidadSelect.innerHTML = '<option value="" disabled selected>Cargando...</option>';
+        try {
+          const res = await fetch(`/medicos/${id}/especialidades`);
+          const data = await res.json();
+          especialidadSelect.innerHTML = '<option value="" disabled selected>Seleccione Especialidad</option>' + 
+            data.map(esp => `<option value="${esp.id}">${esp.nombre}</option>`).join('');
+          
+          verificarExistencia(); // Verificar al cambiar médico
+        } catch (err) { console.error(err); }
+      });
+
+      // 3. Verificar duplicado al cambiar especialidad
+      especialidadSelect.addEventListener('change', verificarExistencia);
+
+      // 4. Alerta de éxito al enviar
+      document.getElementById('formListaEspera').onsubmit = function(e) {
+        e.preventDefault();
+        Swal.fire({
+          title: '¡Registrado!',
+          text: 'El paciente fue añadido a la lista de espera.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          willClose: () => { this.submit(); }
+        });
+      };
+
+      // Verificar al inicio por si ya vienen datos cargados (ej: desde el panel)
+      if (hiddenPac.value && medicoSelect.value && especialidadSelect.value) {
+        verificarExistencia();
+      }
+    });
+
+
+
+
+
+

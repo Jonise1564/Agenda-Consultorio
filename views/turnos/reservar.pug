@@ -1,127 +1,258 @@
+//- extends ../layout
+
+//- block contenido
+//-   h1 Reservar Turno
+
+//-   form(action=`/turnos/reservar/${turno.id}` method="POST")
+
+//-     // =========================
+//-     // CAMPOS OCULTOS
+//-     // =========================
+//-     input(type="hidden" name="id" value=turno.id)
+//-     input(type="hidden" name="id_agenda" value=turno.id_agenda)
+
+//-     // =========================
+//-     // FECHA (TOTALMENTE BLOQUEADA)
+//-     // =========================
+//-     .mb-3
+//-       label Fecha:
+//-       input.form-control(
+//-         type="date"
+//-         name="fecha"
+//-         value=turno.fecha_input
+//-         readonly
+//-         tabindex="-1"
+//-         style="pointer-events:none; background:#eee;"
+//-       )
+
+//-     // =========================
+//-     // HORA (TOTALMENTE BLOQUEADA)
+//-     // =========================
+//-     .mb-3
+//-       label Hora:
+//-       input.form-control(
+//-         type="time"
+//-         name="hora_inicio"
+//-         value=turno.hora_inicio
+//-         readonly
+//-         tabindex="-1"
+//-         style="pointer-events:none; background:#eee;"
+//-       )
+
+//-     // =========================
+//-     // MOTIVO
+//-     // =========================
+//-     .mb-3
+//-       label Motivo:
+//-       input.form-control(
+//-         type="text"
+//-         name="motivo"
+//-         value=turno.motivo
+//-         required
+//-       )
+
+//-     // =========================
+//-     // ESTADO
+//-     // =========================
+//-     .mb-3
+//-       label Estado:
+//-       select.form-select(name="estado")
+//-         option(value="Libre" selected=turno.estado==="Libre") Libre
+//-         option(value="Reservado" selected=turno.estado==="Reservado") Reservado
+//-         option(value="Confirmado" selected=turno.estado==="Confirmado") Confirmado
+//-         option(value="Pendiente" selected=turno.estado==="Pendiente") Pendiente
+//-         option(value="Cancelado" selected=turno.estado==="Cancelado") Cancelado
+//-         option(value="Ausente" selected=turno.estado==="Ausente") Ausente
+//-         option(value="Presente" selected=turno.estado==="Presente") Presente
+//-         option(value="En Consulta" selected=turno.estado==="En Consulta") En Consulta
+//-         option(value="Atendido" selected=turno.estado==="Atendido") Atendido
+//-         option(value="No Disponible" selected=turno.estado==="No Disponible") No Disponible
+
+//-     // =========================
+//-     // PACIENTE (BUSCADOR + SELECT)
+//-     // =========================
+//-     .mb-3
+//-       label Paciente:
+
+//-       // Buscador AJAX
+//-       input#buscadorPaciente.form-control(
+//-         type="text"
+//-         placeholder="Buscar paciente por nombre o DNI..."
+//-       )
+
+//-       // Select dinámico
+//-       select#selectPaciente.form-select(name="id_paciente" required)
+//-         if turno.id_paciente
+//-           option(
+//-             value=turno.id_paciente
+//-             selected
+//-           ) #{turno.paciente_nombre} #{turno.paciente_apellido} (DNI #{turno.dni})
+//-         else
+//-           option(value="" disabled selected) Seleccione un paciente...
+
+//-     // =========================
+//-     // BOTONES
+//-     // =========================
+//-     button.btn.btn-primary(type="submit") Guardar Reserva
+//-     a.btn.btn-secondary(href=`/turnos/${turno.id_agenda}`) Cancelar
+
+//-   // =========================
+//-   // SCRIPT BUSCADOR DE PACIENTES
+//-   // =========================
+//-   script.
+//-     document.addEventListener("DOMContentLoaded", () => {
+//-       const buscador = document.getElementById("buscadorPaciente");
+//-       const select = document.getElementById("selectPaciente");
+
+//-       buscador.addEventListener("input", async () => {
+//-         const texto = buscador.value.trim();
+
+//-         if (texto.length < 2) {
+//-           select.innerHTML =
+//-             '<option value="" disabled selected>Escribí para buscar pacientes...</option>';
+//-           return;
+//-         }
+
+//-         try {
+//-           const res = await fetch(`/pacientes/buscar?query=${texto}`);
+//-           const pacientes = await res.json();
+
+//-           select.innerHTML = "";
+
+//-           if (!pacientes || pacientes.length === 0) {
+//-             select.innerHTML =
+//-               '<option value="" disabled>No se encontraron pacientes</option>';
+//-             return;
+//-           }
+
+//-           pacientes.forEach(p => {
+//-             const opt = document.createElement("option");
+//-             opt.value = p.id_paciente;
+//-             opt.textContent = `${p.nombre} ${p.apellido} (DNI ${p.dni})`;
+//-             select.appendChild(opt);
+//-           });
+
+//-         } catch (error) {
+//-           console.error("Error buscando pacientes:", error);
+//-         }
+//-       });
+//-     });
+
+
 extends ../layout
 
 block contenido
-  h1 Reservar Turno
+  //- Carga de iconos
+  link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
 
-  form(action=`/turnos/reservar/${turno.id}` method="POST")
+  .container.py-5
+    .row.justify-content-center
+      .col-md-8.col-lg-6
+        // ---------- ENCABEZADO ----------
+        .d-flex.align-items-center.mb-4
+          a.btn.btn-outline-primary.btn-sm.rounded-pill.me-3(href=`/turnos/${turno.id_agenda}`)
+            i.bi.bi-arrow-left
+          div
+            h2.fw-bold.text-primary.mb-0 #{turno.id_paciente ? 'Editar Turno' : 'Reservar Turno'}
+            p.text-muted.small Complete los datos para la atención médica.
 
-    // =========================
-    // CAMPOS OCULTOS
-    // =========================
-    input(type="hidden" name="id" value=turno.id)
-    input(type="hidden" name="id_agenda" value=turno.id_agenda)
+        // ---------- FORMULARIO ----------
+        form(action=`/turnos/reservar/${turno.id}` method="POST" class="needs-validation" novalidate)
+          input(type="hidden" name="id" value=turno.id)
+          input(type="hidden" name="id_agenda" value=turno.id_agenda)
 
-    // =========================
-    // FECHA (TOTALMENTE BLOQUEADA)
-    // =========================
-    .mb-3
-      label Fecha:
-      input.form-control(
-        type="date"
-        name="fecha"
-        value=turno.fecha_input
-        readonly
-        tabindex="-1"
-        style="pointer-events:none; background:#eee;"
-      )
+          //- TARJETA 1: DATOS DEL TURNO (Solo lectura)
+          .card.border-0.shadow-sm.mb-4
+            .card-header.bg-white.py-3.border-0
+              h6.fw-bold.mb-0.text-dark: i.bi.bi-clock-history.me-2.text-primary
+              | Información del Horario
+            .card-body.bg-light.bg-opacity-50.rounded-bottom
+              .row.g-3
+                .col-6
+                  label.form-label.small.text-muted Fecha
+                  .input-group.input-group-sm
+                    span.input-group-text.bg-white: i.bi.bi-calendar-event
+                    input.form-control.bg-white(type="date" name="fecha" value=turno.fecha_input readonly tabindex="-1")
+                .col-6
+                  label.form-label.small.text-muted Hora
+                  .input-group.input-group-sm
+                    span.input-group-text.bg-white: i.bi.bi-alarm
+                    input.form-control.bg-white(type="time" name="hora_inicio" value=turno.hora_inicio readonly tabindex="-1")
 
-    // =========================
-    // HORA (TOTALMENTE BLOQUEADA)
-    // =========================
-    .mb-3
-      label Hora:
-      input.form-control(
-        type="time"
-        name="hora_inicio"
-        value=turno.hora_inicio
-        readonly
-        tabindex="-1"
-        style="pointer-events:none; background:#eee;"
-      )
+          //- TARJETA 2: PACIENTE Y ESTADO
+          .card.border-0.shadow-sm.mb-4
+            .card-header.bg-white.py-3.border-0
+              h6.fw-bold.mb-0.text-dark: i.bi.bi-person-badge.me-2.text-primary
+              | Datos del Paciente
+            .card-body
+              // Buscador de Paciente
+              .mb-3
+                label.form-label.small.fw-bold Buscar Paciente
+                .input-group
+                  span.input-group-text: i.bi.bi-search
+                  input#buscadorPaciente.form-control(type="text" placeholder="Escriba Nombre o DNI...")
+              
+              // Select dinámico
+              .mb-3
+                label.form-label.small.fw-bold Seleccionar Resultado
+                select#selectPaciente.form-select(name="id_paciente" required)
+                  if turno.id_paciente
+                    option(value=turno.id_paciente selected) #{turno.paciente_nombre} #{turno.paciente_apellido} (DNI #{turno.dni})
+                  else
+                    option(value="" disabled selected) Busque un paciente arriba...
+                .invalid-feedback Debe seleccionar un paciente.
 
-    // =========================
-    // MOTIVO
-    // =========================
-    .mb-3
-      label Motivo:
-      input.form-control(
-        type="text"
-        name="motivo"
-        value=turno.motivo
-        required
-      )
+              hr.my-4.opacity-25
 
-    // =========================
-    // ESTADO
-    // =========================
-    .mb-3
-      label Estado:
-      select.form-select(name="estado")
-        option(value="Libre" selected=turno.estado==="Libre") Libre
-        option(value="Reservado" selected=turno.estado==="Reservado") Reservado
-        option(value="Confirmado" selected=turno.estado==="Confirmado") Confirmado
-        option(value="Pendiente" selected=turno.estado==="Pendiente") Pendiente
-        option(value="Cancelado" selected=turno.estado==="Cancelado") Cancelado
-        option(value="Ausente" selected=turno.estado==="Ausente") Ausente
-        option(value="Presente" selected=turno.estado==="Presente") Presente
-        option(value="En Consulta" selected=turno.estado==="En Consulta") En Consulta
-        option(value="Atendido" selected=turno.estado==="Atendido") Atendido
-        option(value="No Disponible" selected=turno.estado==="No Disponible") No Disponible
+              // Motivo y Estado
+              .row.g-3
+                .col-12
+                  label.form-label.small.fw-bold Motivo de Consulta
+                  textarea.form-control(name="motivo" rows="2" placeholder="Ej: Control anual, Dolor de garganta..." required)= turno.motivo
+                
+                .col-12
+                  label.form-label.small.fw-bold Estado del Turno
+                  select.form-select(name="estado" required)
+                    each e in ['Libre','Reservado','Confirmado','Pendiente','Cancelado','Ausente','Presente','En Consulta','Atendido','No Disponible']
+                      option(value=e selected=turno.estado===e)= e
 
-    // =========================
-    // PACIENTE (BUSCADOR + SELECT)
-    // =========================
-    .mb-3
-      label Paciente:
+          //- ACCIONES
+          .d-grid.gap-2
+            button.btn.btn-primary.btn-lg.shadow-sm(type="submit")
+              i.bi.bi-check-circle.me-2
+              | Confirmar Turno
+            a.btn.btn-link.text-muted(href=`/turnos/${turno.id_agenda}`) Cancelar y volver
 
-      // Buscador AJAX
-      input#buscadorPaciente.form-control(
-        type="text"
-        placeholder="Buscar paciente por nombre o DNI..."
-      )
-
-      // Select dinámico
-      select#selectPaciente.form-select(name="id_paciente" required)
-        if turno.id_paciente
-          option(
-            value=turno.id_paciente
-            selected
-          ) #{turno.paciente_nombre} #{turno.paciente_apellido} (DNI #{turno.dni})
-        else
-          option(value="" disabled selected) Seleccione un paciente...
-
-    // =========================
-    // BOTONES
-    // =========================
-    button.btn.btn-primary(type="submit") Guardar Reserva
-    a.btn.btn-secondary(href=`/turnos/${turno.id_agenda}`) Cancelar
-
-  // =========================
-  // SCRIPT BUSCADOR DE PACIENTES
-  // =========================
+  // ---------- SCRIPT BUSCADOR ----------
   script.
     document.addEventListener("DOMContentLoaded", () => {
       const buscador = document.getElementById("buscadorPaciente");
       const select = document.getElementById("selectPaciente");
 
+      // Validación de Bootstrap
+      const forms = document.querySelectorAll('.needs-validation');
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+
+      // Lógica de búsqueda AJAX
       buscador.addEventListener("input", async () => {
         const texto = buscador.value.trim();
-
-        if (texto.length < 2) {
-          select.innerHTML =
-            '<option value="" disabled selected>Escribí para buscar pacientes...</option>';
-          return;
-        }
+        if (texto.length < 2) return;
 
         try {
           const res = await fetch(`/pacientes/buscar?query=${texto}`);
           const pacientes = await res.json();
-
+          
           select.innerHTML = "";
-
           if (!pacientes || pacientes.length === 0) {
-            select.innerHTML =
-              '<option value="" disabled>No se encontraron pacientes</option>';
+            select.innerHTML = '<option value="" disabled>No se encontraron resultados</option>';
             return;
           }
 
@@ -131,9 +262,8 @@ block contenido
             opt.textContent = `${p.nombre} ${p.apellido} (DNI ${p.dni})`;
             select.appendChild(opt);
           });
-
         } catch (error) {
-          console.error("Error buscando pacientes:", error);
+          console.error("Error:", error);
         }
       });
     });

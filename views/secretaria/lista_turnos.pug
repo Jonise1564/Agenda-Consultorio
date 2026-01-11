@@ -1,0 +1,708 @@
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- Cabecera
+//-     .d-flex.justify-content-between.align-items-center.mb-4
+//-       div
+//-         h2.fw-bold.text-dark 
+//-           i.fa-solid.fa-list-check.me-2.text-info
+//-           | Gestión de Turnos
+//-         p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+//-       a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-         i.fa-solid.fa-house-user.me-2
+//-         | Volver al Panel
+
+//-     //- Filtros de Búsqueda
+//-     .card.border-0.shadow-sm.mb-4
+//-       .card-body.bg-light.rounded
+//-         form.row.g-3(method="GET" action="/secretaria/turnos")
+//-           .col-md-4
+//-             label.form-label.small.fw-bold Paciente / DNI
+//-             input.form-control(type="text" name="paciente" placeholder="Ej: Camargo o 30123..." value=filtros.paciente)
+//-           .col-md-4
+//-             label.form-label.small.fw-bold Profesional
+//-             input.form-control(type="text" name="profesional" placeholder="Ej: Benitez" value=filtros.profesional)
+//-           .col-md-4.d-flex.align-items-end.gap-2
+//-             button.btn.btn-info.text-white.flex-fill(type="submit")
+//-               i.fa-solid.fa-magnifying-glass.me-2
+//-               | Filtrar
+//-             a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+//-               i.fa-solid.fa-eraser.me-2
+//-               | Limpiar
+
+//-     //- Tabla de Resultados
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0
+//-           thead.text-white(style="background-color: #5bc0de;")
+//-             tr
+//-               th Turno para
+//-               th Médico
+//-               th Especialidad
+//-               th Fecha
+//-               th Hora
+//-               th Estado
+//-               th Acciones
+//-           tbody
+//-             if turnos && turnos.length > 0
+//-               each turno in turnos
+//-                 //- Resaltado si está reservado (amarillo suave como en tu imagen)
+//-                 tr(class=turno.estado === 'Reservado' ? 'table-warning' : '')
+//-                   td
+//-                     .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+//-                     small.text-muted DNI: #{turno.paciente_dni}
+//-                   td #{turno.medico_apellido}, #{turno.medico_nombre}
+//-                   td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+//-                   td #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+//-                   td: span.fw-bold #{turno.hora}
+//-                   td
+//-                     span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
+//-                   td
+//-                     .d-grid.gap-1
+//-                       //- El botón de Trasladar llama a la función JS que abre el modal
+//-                       button.btn.btn-sm.btn-primary(type="button" onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+//-                         i.fa-solid.fa-arrow-right-arrow-left.me-1
+//-                         | Trasladar turno
+//-                       button.btn.btn-sm.btn-outline-primary(type="button") 
+//-                         i.fa-solid.fa-circle-info.me-1
+//-                         | Detalles
+//-             else
+//-               tr
+//-                 td.text-center.py-5(colspan="7")
+//-                   i.fa-solid.fa-calendar-minus.fs-1.text-muted.d-block.mb-3
+//-                   p.text-muted No se encontraron turnos con los filtros aplicados.
+
+//-   //- Modal de Traslado Individual (Solo para esta vista)
+//-   #modalTrasladoIndividual.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content
+//-         .modal-header.bg-primary.text-white
+//-           h5.modal-title Trasladar Paciente
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           form#formTrasladoUnico(action="/secretaria/trasladar-turno" method="POST")
+//-             input#trasladoTurnoId(type="hidden" name="id_turno")
+//-             p.mb-3 Moviendo a: 
+//-               strong#nombrePacienteTraslado -
+//-             .mb-3
+//-               label.form-label Médico Destino
+//-               select.form-select(name="id_medico_destino" required)
+//-                 each med in medicos
+//-                   option(value=med.id_medico) #{med.apellido}, #{med.nombre}
+//-             .row
+//-               .col-6
+//-                 label.form-label Nueva Fecha
+//-                 input.form-control(type="date" name="nueva_fecha" required)
+//-               .col-6
+//-                 label.form-label Nueva Hora
+//-                 input.form-control(type="time" name="nueva_hora" required)
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Cancelar
+//-           button.btn.btn-primary(type="submit") Confirmar Cambio
+
+//-   script.
+//-     function abrirModalTraslado(id, nombre) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalTrasladoIndividual'));
+//-       document.getElementById('trasladoTurnoId').value = id;
+//-       document.getElementById('nombrePacienteTraslado').innerText = nombre;
+//-       modal.show();
+//-     }
+
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- Cabecera
+//-     .d-flex.justify-content-between.align-items-center.mb-4
+//-       div
+//-         h2.fw-bold.text-dark 
+//-           i.fa-solid.fa-list-check.me-2.text-info
+//-           | Gestión de Turnos
+//-         p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+//-       a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-         i.fa-solid.fa-house-user.me-2
+//-         | Volver al Panel
+
+//-     //- Filtros de Búsqueda
+//-     .card.border-0.shadow-sm.mb-4
+//-       .card-body.bg-light.rounded
+//-         form.row.g-3(method="GET" action="/secretaria/turnos")
+//-           .col-md-4
+//-             label.form-label.small.fw-bold Paciente / DNI
+//-             input.form-control(type="text" name="paciente" placeholder="Ej: Camargo o 30123..." value=filtros.paciente)
+//-           .col-md-4
+//-             label.form-label.small.fw-bold Profesional
+//-             input.form-control(type="text" name="profesional" placeholder="Ej: Benitez" value=filtros.profesional)
+//-           .col-md-4.d-flex.align-items-end.gap-2
+//-             button.btn.btn-info.text-white.flex-fill(type="submit")
+//-               i.fa-solid.fa-magnifying-glass.me-2
+//-               | Filtrar
+//-             a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+//-               i.fa-solid.fa-eraser.me-2
+//-               | Limpiar
+
+//-     //- Tabla de Resultados
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0
+//-           thead.text-white(style="background-color: #5bc0de;")
+//-             tr
+//-               th Turno para
+//-               th Médico
+//-               th Especialidad
+//-               th Fecha
+//-               th Hora
+//-               th Estado
+//-               th Acciones
+//-           tbody
+//-             if turnos && turnos.length > 0
+//-               each turno in turnos
+//-                 tr(class=turno.estado === 'Reservado' ? 'table-warning' : '')
+//-                   td
+//-                     .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+//-                     small.text-muted DNI: #{turno.paciente_dni}
+//-                   td #{turno.medico_apellido}, #{turno.medico_nombre}
+//-                   td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+//-                   td #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+//-                   td: span.fw-bold #{turno.hora}
+//-                   td
+//-                     span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
+//-                   td
+//-                     .d-grid.gap-1
+//-                       button.btn.btn-sm.btn-primary(type="button" onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+//-                         i.fa-solid.fa-arrow-right-arrow-left.me-1
+//-                         | Trasladar
+//-                       //- Botón Detalle modificado para pasar datos del turno
+//-                       button.btn.btn-sm.btn-outline-info(type="button" onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
+//-                         i.fa-solid.fa-eye.me-1
+//-                         | Detalles
+//-             else
+//-               tr
+//-                 td.text-center.py-5(colspan="7")
+//-                   i.fa-solid.fa-calendar-minus.fs-1.text-muted.d-block.mb-3
+//-                   p.text-muted No se encontraron turnos.
+
+//-   //- Modal de Traslado Individual
+//-   #modalTrasladoIndividual.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content
+//-         .modal-header.bg-primary.text-white
+//-           h5.modal-title Trasladar Paciente
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           form#formTrasladoUnico(action="/secretaria/trasladar-turno" method="POST")
+//-             input#trasladoTurnoId(type="hidden" name="id_turno")
+//-             p.mb-3 Moviendo a: 
+//-               strong#nombrePacienteTraslado -
+//-             .mb-3
+//-               label.form-label Médico Destino
+//-               select.form-select(name="id_medico_destino" required)
+//-                 each med in medicos
+//-                   option(value=med.id_medico) #{med.apellido}, #{med.nombre}
+//-             .row
+//-               .col-6
+//-                 label.form-label Nueva Fecha
+//-                 input.form-control(type="date" name="nueva_fecha" required)
+//-               .col-6
+//-                 label.form-label Nueva Hora
+//-                 input.form-control(type="time" name="nueva_hora" required)
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Cancelar
+//-           button.btn.btn-primary(type="submit") Confirmar Cambio
+
+//-   //- ===============================
+//-   //- MODAL DE DETALLES Y FOTO DNI
+//-   //- ===============================
+//-   #modalDetallesTurno.modal.fade(tabindex="-1")
+//-     .modal-dialog.modal-lg
+//-       .modal-content.border-0.shadow-lg
+//-         .modal-header.bg-info.text-white
+//-           h5.modal-title 
+//-             i.fa-solid.fa-circle-info.me-2
+//-             | Información Detallada del Turno
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body.p-4
+//-           .row
+//-             .col-md-6
+//-               h6.fw-bold.text-primary.border-bottom.pb-2 Datos del Paciente
+//-               p.mb-1: strong Nombre: 
+//-                 span#det-paciente-nombre
+//-               p.mb-1: strong DNI: 
+//-                 span#det-paciente-dni
+//-               p.mb-1: strong Especialidad: 
+//-                 span#det-especialidad
+//-               p.mb-1: strong Motivo: 
+//-                 span#det-motivo.text-muted
+//-             .col-md-6
+//-               h6.fw-bold.text-primary.border-bottom.pb-2 Datos del Turno
+//-               p.mb-1: strong Profesional: 
+//-                 span#det-medico
+//-               p.mb-1: strong Fecha: 
+//-                 span#det-fecha
+//-               p.mb-1: strong Hora: 
+//-                 span#det-hora
+//-               p.mb-1: strong Estado: 
+//-                 span#det-estado.badge
+          
+//-           hr
+          
+//-           .text-center
+//-             h6.fw-bold.mb-3 Foto del DNI / Documento
+//-             #contenedorFotoDni
+//-               img#fotoDniPreview.img-fluid.rounded.shadow-sm(src="" alt="Cargando..." style="max-height: 300px; display:none;")
+//-               .alert.alert-light.border#sinFotoDni(style="display:none;") 
+//-                 i.fa-solid.fa-image-slash.me-2
+//-                 | No hay foto de documento cargada.
+
+//-         .modal-footer.bg-light
+//-           button.btn.btn-secondary.rounded-pill(data-bs-dismiss="modal") Cerrar
+
+//-   script.
+//-     function abrirModalTraslado(id, nombre) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalTrasladoIndividual'));
+//-       document.getElementById('trasladoTurnoId').value = id;
+//-       document.getElementById('nombrePacienteTraslado').innerText = nombre;
+//-       modal.show();
+//-     }
+
+//-     // Función para llenar y mostrar detalles del turno
+//-     function verDetallesTurno(turno) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalDetallesTurno'));
+      
+//-       // Llenar campos de texto
+//-       document.getElementById('det-paciente-nombre').innerText = `${turno.paciente_apellido}, ${turno.paciente_nombre}`;
+//-       document.getElementById('det-paciente-dni').innerText = turno.paciente_dni || 'No registrado';
+//-       document.getElementById('det-especialidad').innerText = turno.especialidad_nombre;
+//-       document.getElementById('det-motivo').innerText = turno.motivo || 'Sin observaciones';
+//-       document.getElementById('det-medico').innerText = `${turno.medico_apellido}, ${turno.medico_nombre}`;
+//-       document.getElementById('det-fecha').innerText = new Date(turno.fecha).toLocaleDateString('es-AR');
+//-       document.getElementById('det-hora').innerText = turno.hora;
+      
+//-       const estadoBadge = document.getElementById('det-estado');
+//-       estadoBadge.innerText = turno.estado;
+//-       estadoBadge.className = 'badge ' + (turno.estado === 'Reservado' ? 'bg-warning text-dark' : 'bg-success');
+
+//-       // Lógica para la imagen del DNI
+//-       const imgPreview = document.getElementById('fotoDniPreview');
+//-       const alertSinFoto = document.getElementById('sinFotoDni');
+
+//-       // Asumiendo que el campo en tu DB se llama 'foto_dni_url' o similar
+//-       if (turno.paciente_foto_dni) {
+//-         imgPreview.src = turno.paciente_foto_dni; 
+//-         imgPreview.style.display = 'inline-block';
+//-         alertSinFoto.style.display = 'none';
+//-       } else {
+//-         imgPreview.style.display = 'none';
+//-         alertSinFoto.style.display = 'block';
+//-       }
+
+//-       modal.show();
+//-     }
+
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- Cabecera
+//-     .d-flex.justify-content-between.align-items-center.mb-4.d-print-none
+//-       div
+//-         h2.fw-bold.text-dark 
+//-           i.fa-solid.fa-list-check.me-2.text-info
+//-           | Gestión de Turnos
+//-         p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+//-       .d-flex.gap-2
+//-         //- BOTÓN DE IMPRESIÓN
+//-         button.btn.btn-dark.shadow-sm(onclick="window.print()")
+//-           i.fa-solid.fa-print.me-2
+//-           | Imprimir Listado
+//-         a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+
+//-     //- Título solo visible al imprimir
+//-     .text-center.mb-4.d-none.d-print-block
+//-       h2.fw-bold LISTADO DE TURNOS MÉDICOS
+//-       h5 Profesional: #{filtros.profesional || 'Todos'} - Fecha: #{new Date().toLocaleDateString('es-AR')}
+//-       hr
+
+//-     //- Filtros de Búsqueda (Se ocultan al imprimir)
+//-     .card.border-0.shadow-sm.mb-4.d-print-none
+//-       .card-body.bg-light.rounded
+//-         form.row.g-3(method="GET" action="/secretaria/turnos")
+//-           .col-md-4
+//-             label.form-label.small.fw-bold Paciente / DNI
+//-             input.form-control(type="text" name="paciente" placeholder="Ej: Camargo o 30123..." value=filtros.paciente)
+//-           .col-md-4
+//-             label.form-label.small.fw-bold Profesional
+//-             input.form-control(type="text" name="profesional" placeholder="Ej: Benitez" value=filtros.profesional)
+//-           .col-md-4.d-flex.align-items-end.gap-2
+//-             button.btn.btn-info.text-white.flex-fill(type="submit")
+//-               i.fa-solid.fa-magnifying-glass.me-2
+//-               | Filtrar
+//-             a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+//-               i.fa-solid.fa-eraser.me-2
+//-               | Limpiar
+
+//-     //- Tabla de Resultados
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0#tablaTurnos
+//-           thead.text-white(style="background-color: #5bc0de;")
+//-             tr
+//-               th Turno para
+//-               th Médico
+//-               th Especialidad
+//-               th.text-center Fecha
+//-               th.text-center Hora
+//-               th.text-center Estado
+//-               th.d-print-none Acciones
+//-           tbody
+//-             if turnos && turnos.length > 0
+//-               each turno in turnos
+//-                 tr(class=turno.estado === 'Reservado' ? 'table-warning' : '')
+//-                   td
+//-                     .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+//-                     small.text-muted DNI: #{turno.paciente_dni}
+//-                   td #{turno.medico_apellido}, #{turno.medico_nombre}
+//-                   td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+//-                   td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+//-                   td.text-center: span.fw-bold #{turno.hora}
+//-                   td.text-center
+//-                     span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
+//-                   td.d-print-none
+//-                     .d-grid.gap-1
+//-                       button.btn.btn-sm.btn-primary(type="button" onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+//-                         i.fa-solid.fa-arrow-right-arrow-left.me-1
+//-                         | Trasladar
+//-                       button.btn.btn-sm.btn-outline-info(type="button" onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
+//-                         i.fa-solid.fa-eye.me-1
+//-                         | Detalles
+//-             else
+//-               tr
+//-                 td.text-center.py-5(colspan="7")
+//-                   i.fa-solid.fa-calendar-minus.fs-1.text-muted.d-block.mb-3
+//-                   p.text-muted No se encontraron turnos.
+
+//-   //- Modal de Traslado Individual
+//-   #modalTrasladoIndividual.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content
+//-         .modal-header.bg-primary.text-white
+//-           h5.modal-title Trasladar Paciente
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           form#formTrasladoUnico(action="/secretaria/trasladar-turno" method="POST")
+//-             input#trasladoTurnoId(type="hidden" name="id_turno")
+//-             p.mb-3 Moviendo a: 
+//-               strong#nombrePacienteTraslado -
+//-             .mb-3
+//-               label.form-label Médico Destino
+//-               select.form-select(name="id_medico_destino" required)
+//-                 each med in medicos
+//-                   option(value=med.id_medico) #{med.apellido}, #{med.nombre}
+//-             .row
+//-               .col-6
+//-                 label.form-label Nueva Fecha
+//-                 input.form-control(type="date" name="nueva_fecha" required)
+//-               .col-6
+//-                 label.form-label Nueva Hora
+//-                 input.form-control(type="time" name="nueva_hora" required)
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Cancelar
+//-           button.btn.btn-primary(type="submit") Confirmar Cambio
+
+//-   //- Modal de Detalles
+//-   #modalDetallesTurno.modal.fade(tabindex="-1")
+//-     .modal-dialog.modal-lg
+//-       .modal-content.border-0.shadow-lg
+//-         .modal-header.bg-info.text-white
+//-           h5.modal-title 
+//-             i.fa-solid.fa-circle-info.me-2
+//-             | Información Detallada del Turno
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body.p-4
+//-           .row
+//-             .col-md-6
+//-               h6.fw-bold.text-primary.border-bottom.pb-2 Datos del Paciente
+//-               p.mb-1: strong Nombre: 
+//-                 span#det-paciente-nombre
+//-               p.mb-1: strong DNI: 
+//-                 span#det-paciente-dni
+//-               p.mb-1: strong Especialidad: 
+//-                 span#det-especialidad
+//-               p.mb-1: strong Motivo: 
+//-                 span#det-motivo.text-muted
+//-             .col-md-6
+//-               h6.fw-bold.text-primary.border-bottom.pb-2 Datos del Turno
+//-               p.mb-1: strong Profesional: 
+//-                 span#det-medico
+//-               p.mb-1: strong Fecha: 
+//-                 span#det-fecha
+//-               p.mb-1: strong Hora: 
+//-                 span#det-hora
+//-               p.mb-1: strong Estado: 
+//-                 span#det-estado.badge
+//-           hr
+//-           .text-center
+//-             h6.fw-bold.mb-3 Foto del DNI / Documento
+//-             #contenedorFotoDni
+//-               img#fotoDniPreview.img-fluid.rounded.shadow-sm(src="" alt="Cargando..." style="max-height: 300px; display:none;")
+//-               .alert.alert-light.border#sinFotoDni(style="display:none;") 
+//-                 i.fa-solid.fa-image-slash.me-2
+//-                 | No hay foto de documento cargada.
+//-         .modal-footer.bg-light
+//-           button.btn.btn-secondary.rounded-pill(data-bs-dismiss="modal") Cerrar
+
+//-   //- ESTILOS PARA IMPRESIÓN
+//-   style.
+//-     @media print {
+//-       body { background: white !important; }
+//-       .navbar, .sidebar, .btn, .d-print-none, form { display: none !important; }
+//-       .container-fluid { padding: 0 !important; }
+//-       .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+//-       .table th { background-color: #f8f9fa !important; color: black !important; border: 1px solid #ddd !important; }
+//-       .table td { border: 1px solid #ddd !important; }
+//-       .badge { border: 1px solid #000 !important; color: black !important; background: transparent !important; }
+//-       @page { size: auto; margin: 1cm; }
+//-     }
+
+//-   script.
+//-     function abrirModalTraslado(id, nombre) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalTrasladoIndividual'));
+//-       document.getElementById('trasladoTurnoId').value = id;
+//-       document.getElementById('nombrePacienteTraslado').innerText = nombre;
+//-       modal.show();
+//-     }
+
+//-     function verDetallesTurno(turno) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalDetallesTurno'));
+//-       document.getElementById('det-paciente-nombre').innerText = `${turno.paciente_apellido}, ${turno.paciente_nombre}`;
+//-       document.getElementById('det-paciente-dni').innerText = turno.paciente_dni || 'No registrado';
+//-       document.getElementById('det-especialidad').innerText = turno.especialidad_nombre;
+//-       document.getElementById('det-motivo').innerText = turno.motivo || 'Sin observaciones';
+//-       document.getElementById('det-medico').innerText = `${turno.medico_apellido}, ${turno.medico_nombre}`;
+//-       document.getElementById('det-fecha').innerText = new Date(turno.fecha).toLocaleDateString('es-AR');
+//-       document.getElementById('det-hora').innerText = turno.hora;
+      
+//-       const estadoBadge = document.getElementById('det-estado');
+//-       estadoBadge.innerText = turno.estado;
+//-       estadoBadge.className = 'badge ' + (turno.estado === 'Reservado' ? 'bg-warning text-dark' : 'bg-success');
+
+//-       const imgPreview = document.getElementById('fotoDniPreview');
+//-       const alertSinFoto = document.getElementById('sinFotoDni');
+//-       if (turno.paciente_foto_dni) {
+//-         imgPreview.src = turno.paciente_foto_dni; 
+//-         imgPreview.style.display = 'inline-block';
+//-         alertSinFoto.style.display = 'none';
+//-       } else {
+//-         imgPreview.style.display = 'none';
+//-         alertSinFoto.style.display = 'block';
+//-       }
+//-       modal.show();
+//-     }
+
+extends ../layout
+
+block contenido
+  .container-fluid.py-4
+    //- Cabecera
+    .d-flex.justify-content-between.align-items-center.mb-4.d-print-none
+      div
+        h2.fw-bold.text-dark 
+          i.fa-solid.fa-list-check.me-2.text-info
+          | Gestión de Turnos
+        p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+      .d-flex.gap-2
+        button.btn.btn-dark.shadow-sm(onclick="window.print()")
+          i.fa-solid.fa-print.me-2
+          | Imprimir Listado
+        a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+          i.fa-solid.fa-house-user.me-2
+          | Volver al Panel
+
+    //- Título solo visible al imprimir
+    .text-center.mb-4.d-none.d-print-block
+      h2.fw-bold LISTADO DE TURNOS MÉDICOS
+      h5 
+        | Profesional: #{filtros.profesional || 'Todos'} 
+        | - Fecha: #{filtros.fecha ? new Date(filtros.fecha).toLocaleDateString('es-AR') : 'Todas'}
+      hr
+
+    //- Filtros de Búsqueda (Se ocultan al imprimir)
+    .card.border-0.shadow-sm.mb-4.d-print-none
+      .card-body.bg-light.rounded
+        form.row.g-3(method="GET" action="/secretaria/turnos")
+          .col-md-3
+            label.form-label.small.fw-bold Paciente / DNI
+            input.form-control(type="text" name="paciente" placeholder="Ej: Camargo..." value=filtros.paciente)
+          .col-md-3
+            label.form-label.small.fw-bold Profesional
+            input.form-control(type="text" name="profesional" placeholder="Ej: Benitez..." value=filtros.profesional)
+          .col-md-3
+            label.form-label.small.fw-bold Fecha del Turno
+            input.form-control(type="date" name="fecha" value=filtros.fecha)
+          .col-md-3.d-flex.align-items-end.gap-2
+            button.btn.btn-info.text-white.flex-fill(type="submit")
+              i.fa-solid.fa-magnifying-glass
+              |  Filtrar
+            a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+              i.fa-solid.fa-eraser
+              |  Limpiar
+
+    //- Tabla de Resultados
+    .card.border-0.shadow-sm
+      .table-responsive
+        table.table.table-hover.align-middle.mb-0#tablaTurnos
+          thead.text-white(style="background-color: #5bc0de;")
+            tr
+              th Turno para
+              th Médico
+              th Especialidad
+              th.text-center Fecha
+              th.text-center Hora
+              th.text-center Estado
+              th.d-print-none Acciones
+          tbody
+            if turnos && turnos.length > 0
+              each turno in turnos
+                tr(class=turno.estado === 'Reservado' ? 'table-warning' : '')
+                  td
+                    .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+                    small.text-muted DNI: #{turno.paciente_dni}
+                  td #{turno.medico_apellido}, #{turno.medico_nombre}
+                  td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+                  td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+                  td.text-center: span.fw-bold #{turno.hora}
+                  td.text-center
+                    span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
+                  td.d-print-none
+                    .d-grid.gap-1
+                      button.btn.btn-sm.btn-primary(type="button" onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+                        i.fa-solid.fa-arrow-right-arrow-left.me-1
+                        | Trasladar
+                      button.btn.btn-sm.btn-outline-info(type="button" onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
+                        i.fa-solid.fa-eye.me-1
+                        | Detalles
+            else
+              tr
+                td.text-center.py-5(colspan="7")
+                  i.fa-solid.fa-calendar-minus.fs-1.text-muted.d-block.mb-3
+                  p.text-muted No se encontraron turnos.
+
+  //- Modal de Traslado
+  #modalTrasladoIndividual.modal.fade(tabindex="-1")
+    .modal-dialog
+      .modal-content
+        .modal-header.bg-primary.text-white
+          h5.modal-title Trasladar Paciente
+          button.btn-close.btn-close-white(data-bs-dismiss="modal")
+        .modal-body
+          form#formTrasladoUnico(action="/secretaria/trasladar-turno" method="POST")
+            input#trasladoTurnoId(type="hidden" name="id_turno")
+            p.mb-3 Moviendo a: 
+              strong#nombrePacienteTraslado -
+            .mb-3
+              label.form-label Médico Destino
+              select.form-select(name="id_medico_destino" required)
+                each med in medicos
+                  option(value=med.id_medico) #{med.apellido}, #{med.nombre}
+            .row
+              .col-6
+                label.form-label Nueva Fecha
+                input.form-control(type="date" name="nueva_fecha" required)
+              .col-6
+                label.form-label Nueva Hora
+                input.form-control(type="time" name="nueva_hora" required)
+        .modal-footer
+          button.btn.btn-secondary(data-bs-dismiss="modal") Cancelar
+          button.btn.btn-primary(type="submit") Confirmar Cambio
+
+  //- Modal de Detalles
+  #modalDetallesTurno.modal.fade(tabindex="-1")
+    .modal-dialog.modal-lg
+      .modal-content.border-0.shadow-lg
+        .modal-header.bg-info.text-white
+          h5.modal-title 
+            i.fa-solid.fa-circle-info.me-2
+            | Información Detallada
+          button.btn-close.btn-close-white(data-bs-dismiss="modal")
+        .modal-body.p-4
+          .row
+            .col-md-6
+              h6.fw-bold.text-primary.border-bottom.pb-2 Datos del Paciente
+              p.mb-1: strong Nombre: 
+                span#det-paciente-nombre
+              p.mb-1: strong DNI: 
+                span#det-paciente-dni
+              p.mb-1: strong Especialidad: 
+                span#det-especialidad
+              p.mb-1: strong Motivo: 
+                span#det-motivo.text-muted
+            .col-md-6
+              h6.fw-bold.text-primary.border-bottom.pb-2 Datos del Turno
+              p.mb-1: strong Profesional: 
+                span#det-medico
+              p.mb-1: strong Fecha: 
+                span#det-fecha
+              p.mb-1: strong Hora: 
+                span#det-hora
+              p.mb-1: strong Estado: 
+                span#det-estado.badge
+          hr
+          .text-center
+            h6.fw-bold.mb-3 Foto del DNI / Documento
+            #contenedorFotoDni
+              img#fotoDniPreview.img-fluid.rounded.shadow-sm(src="" alt="Cargando..." style="max-height: 300px; display:none;")
+              .alert.alert-light.border#sinFotoDni(style="display:none;") 
+                i.fa-solid.fa-image-slash.me-2
+                | No hay foto cargada.
+        .modal-footer.bg-light
+          button.btn.btn-secondary.rounded-pill(data-bs-dismiss="modal") Cerrar
+
+  style.
+    @media print {
+      body { background: white !important; }
+      .navbar, .sidebar, .btn, .d-print-none, form { display: none !important; }
+      .container-fluid { padding: 0 !important; }
+      .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+      .table th { background-color: #f8f9fa !important; color: black !important; border: 1px solid #ddd !important; }
+      .table td { border: 1px solid #ddd !important; }
+      .badge { border: 1px solid #000 !important; color: black !important; background: transparent !important; }
+      @page { size: auto; margin: 1cm; }
+    }
+
+  script.
+    function abrirModalTraslado(id, nombre) {
+      const modal = new bootstrap.Modal(document.getElementById('modalTrasladoIndividual'));
+      document.getElementById('trasladoTurnoId').value = id;
+      document.getElementById('nombrePacienteTraslado').innerText = nombre;
+      modal.show();
+    }
+
+    function verDetallesTurno(turno) {
+      const modal = new bootstrap.Modal(document.getElementById('modalDetallesTurno'));
+      document.getElementById('det-paciente-nombre').innerText = `${turno.paciente_apellido}, ${turno.paciente_nombre}`;
+      document.getElementById('det-paciente-dni').innerText = turno.paciente_dni || 'No registrado';
+      document.getElementById('det-especialidad').innerText = turno.especialidad_nombre;
+      document.getElementById('det-motivo').innerText = turno.motivo || 'Sin observaciones';
+      document.getElementById('det-medico').innerText = `${turno.medico_apellido}, ${turno.medico_nombre}`;
+      document.getElementById('det-fecha').innerText = new Date(turno.fecha).toLocaleDateString('es-AR');
+      document.getElementById('det-hora').innerText = turno.hora;
+      
+      const estadoBadge = document.getElementById('det-estado');
+      estadoBadge.innerText = turno.estado;
+      estadoBadge.className = 'badge ' + (turno.estado === 'Reservado' ? 'bg-warning text-dark' : 'bg-success');
+
+      const imgPreview = document.getElementById('fotoDniPreview');
+      const alertSinFoto = document.getElementById('sinFotoDni');
+      if (turno.paciente_foto_dni) {
+        imgPreview.src = turno.paciente_foto_dni; 
+        imgPreview.style.display = 'inline-block';
+        alertSinFoto.style.display = 'none';
+      } else {
+        imgPreview.style.display = 'none';
+        alertSinFoto.style.display = 'block';
+      }
+      modal.show();
+    }

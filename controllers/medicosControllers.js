@@ -608,6 +608,8 @@ class MedicosController {
 
             const medicos = await Medico.listarPaginado(limit, offset, search);
             const totalMedicos = await Medico.contarTodos(search);
+            const especialidades = await Especialidad.getAll(); // Para modales de creación/edición en el index
+
             const totalPages = Math.ceil(totalMedicos / limit);
 
             const medicosConFecha = medicos.map(m => ({
@@ -626,6 +628,7 @@ class MedicosController {
 
             res.render('medicos/index', {
                 medicos: medicosConFecha,
+                especialidades, // <--- Enviado para evitar el error 'length' en el each
                 mensaje,
                 currentPage: page,
                 totalPages: totalPages,
@@ -645,14 +648,14 @@ class MedicosController {
     async getCreateForm(req, res, next) {
         try {
             const especialidades = await Especialidad.getAll();
-            res.render('medicos/crear', { especialidades });
+            res.render('medicos/crear', { especialidades, errores: [], old: {} });
         } catch (err) {
             next(err);
         }
     }
 
     // ================================================================
-    // GUARDAR (STORE)
+    // GUARDAR MÉDICO (STORE)
     // ================================================================
     async store(req, res, next) {
         try {
@@ -664,20 +667,25 @@ class MedicosController {
 
             // 1. Normalizar Especialidades
             const especialidadesArray = Array.isArray(especialidades)
-                ? especialidades : (especialidades ? [especialidades] : []);
+                ? especialidades
+                : especialidades ? [especialidades] : [];
 
-            // 2. Unificar Teléfonos
+            // 2. Unificar teléfonos y limpiar vacíos
             let todosLosTelefonos = [];
-            if (telefonoAlternativo) todosLosTelefonos.push(telefonoAlternativo.trim());
+            if (telefonoAlternativo && telefonoAlternativo.trim()) {
+                todosLosTelefonos.push(telefonoAlternativo.trim());
+            }
             if (telefonos_extra) {
                 const extras = Array.isArray(telefonos_extra) ? telefonos_extra : [telefonos_extra];
-                extras.forEach(t => { if(t.trim()) todosLosTelefonos.push(t.trim()) });
+                extras.forEach(t => {
+                    if (t && t.trim()) todosLosTelefonos.push(t.trim());
+                });
             }
 
             // 3. Validación Zod
             const parsed = validateMedicos({
                 dni, nombre, apellido,
-                fechaNacimiento: new Date(nacimiento),
+                fechaNacimiento: nacimiento, // Zod Preprocess lo convierte a Date
                 email, password, repeatPassword, matricula,
                 especialidades: especialidadesArray,
                 telefonos: todosLosTelefonos
@@ -693,7 +701,7 @@ class MedicosController {
             }
 
             // 4. Verificar DNI Único
-            const personaExistente = await Persona.getByDni(dni);
+            const personaExistente = await Persona.getByDni(parsed.data.dni);
             if (personaExistente) {
                 const especialidadesDB = await Especialidad.getAll();
                 return res.render('medicos/crear', {
@@ -703,12 +711,15 @@ class MedicosController {
                 });
             }
 
-            // 5. Creación en Cascada
+            // 5. Creación de Persona
             const persona = await Persona.create({
-                dni, nombre, apellido,
+                dni: parsed.data.dni,
+                nombre: parsed.data.nombre,
+                apellido: parsed.data.apellido,
                 nacimiento: parsed.data.fechaNacimiento.toISOString().split('T')[0]
             });
 
+            // 6. Creación de Usuario
             const hashedPassword = await bcrypt.hash(parsed.data.password, 10);
             const usuario = await Usuario.create({
                 email: parsed.data.email,
@@ -717,26 +728,32 @@ class MedicosController {
                 id_rol: 2
             });
 
+            // 7. Creación de Médico (Aseguramos que todos los campos obligatorios existan)
             const medicoId = await Medico.crear({
                 id_persona: persona.id,
                 id_usuario: usuario.id,
-                estado: 1,
-                matricula: parsed.data.matricula
+                matricula: parsed.data.matricula,
+                estado: 1
             });
 
-            // 6. Asignar Especialidades y Teléfonos
+            // 8. Relaciones (Especialidades y Teléfonos)
             for (const idEsp of parsed.data.especialidades) {
                 await Especialidad.asignarAMedico(medicoId, idEsp);
             }
-            for (const tel of todosLosTelefonos) {
+            for (const tel of parsed.data.telefonos) {
                 await Persona.addTelefono(persona.id, tel);
             }
 
             res.redirect('/medicos?nombreStore=1');
 
         } catch (err) {
-            console.error('Error al crear médico:', err);
-            next(err);
+            console.error('Error detallado al crear médico:', err);
+            const especialidadesDB = await Especialidad.getAll();
+            res.render('medicos/crear', {
+                errores: [err.message || 'Ocurrió un error inesperado al guardar'],
+                old: req.body,
+                especialidades: especialidadesDB
+            });
         }
     }
 
@@ -747,6 +764,7 @@ class MedicosController {
         try {
             const { id_medico } = req.params;
             const medico = await Medico.obtenerPorId(id_medico);
+            
             if (!medico) return res.status(404).send('Médico no encontrado');
 
             const persona = {
@@ -756,13 +774,20 @@ class MedicosController {
                 nacimiento: medico.nacimiento ? new Date(medico.nacimiento) : null
             };
 
-            const usuario = { id: medico.id_usuario, email: medico.email };
+            const usuario = {
+                id: medico.id_usuario,
+                email: medico.email
+            };
+
             const especialidades = await Especialidad.getAll();
             const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
 
             res.render('medicos/editar', {
-                medico, persona, usuario,
-                especialidades, especialidadesAsignadas
+                medico,
+                persona,
+                usuario,
+                especialidades,
+                especialidadesAsignadas
             });
         } catch (err) {
             next(err);
@@ -776,18 +801,18 @@ class MedicosController {
         try {
             const { id_medico } = req.params;
             const {
-                nombre, apellido, nacimiento, email, password, matricula,
-                especialidades, especialidades_modificadas,
-                telefonoAlternativo, telefonos_extra, telefonos_modificados
+                nombre, apellido, nacimiento, email, password,
+                matricula, especialidades, especialidades_modificadas,
+                telefonos, telefonos_modificados
             } = req.body;
 
             const medico = await Medico.obtenerPorId(id_medico);
             if (!medico) return res.status(404).send('Médico no encontrado');
 
-            // 1. Actualizar Persona
+            // Actualizar Persona
             await Persona.updatePersona(medico.id_persona, { nombre, apellido, nacimiento });
 
-            // 2. Actualizar Usuario
+            // Actualizar Usuario (Email y Password si existe)
             const userUpdates = {};
             if (email) userUpdates.email = email.trim();
             if (password && password.trim() !== '') {
@@ -797,30 +822,25 @@ class MedicosController {
                 await Usuario.updateUsuario(medico.id_usuario, userUpdates);
             }
 
-            // 3. Matrícula
+            // Actualizar Matrícula
             if (matricula) await Medico.updateMatricula(id_medico, matricula);
 
-            // 4. Especialidades
+            // Actualizar Especialidades si cambiaron
             if (especialidades_modificadas === '1') {
-                const listaEspecialidades = Array.isArray(especialidades)
-                    ? especialidades : (especialidades ? [especialidades] : []);
+                const listaEspecialidades = Array.isArray(especialidades) ? especialidades : (especialidades ? [especialidades] : []);
                 await Especialidad.desactivarTodasPorMedico(id_medico);
                 for (const idEsp of listaEspecialidades) {
                     await Especialidad.asignarAMedico(id_medico, idEsp);
                 }
             }
 
-            // 5. Teléfonos (Ajustado a los nuevos nombres del PUG)
+            // Actualizar Teléfonos si cambiaron
             if (telefonos_modificados === '1') {
-                let todosLosTelefonos = [];
-                if (telefonoAlternativo) todosLosTelefonos.push(telefonoAlternativo.trim());
-                if (telefonos_extra) {
-                    const extras = Array.isArray(telefonos_extra) ? telefonos_extra : [telefonos_extra];
-                    extras.forEach(t => { if(t.trim()) todosLosTelefonos.push(t.trim()) });
-                }
-
+                const telefonosArray = Array.isArray(telefonos) ? telefonos : (telefonos ? [telefonos] : []);
+                const telefonosLimpios = telefonosArray.map(t => t?.trim()).filter(Boolean);
+                
                 await Persona.eliminarTelefonos(medico.id_persona);
-                for (const tel of todosLosTelefonos) {
+                for (const tel of telefonosLimpios) {
                     await Persona.addTelefono(medico.id_persona, tel);
                 }
             }
@@ -833,18 +853,25 @@ class MedicosController {
     }
 
     // ================================================================
-    // ESTADOS Y BUSQUEDA
+    // ESTADO (ACTIVAR/INACTIVAR)
     // ================================================================
     async inactivar(req, res, next) {
-        await Medico.actualizarEstado(req.params.id_medico, 0);
-        res.redirect('/medicos?nombreInactivo=1');
+        try {
+            await Medico.actualizarEstado(req.params.id_medico, 0);
+            res.redirect('/medicos?nombreInactivo=1');
+        } catch (err) { next(err); }
     }
 
     async activar(req, res, next) {
-        await Medico.actualizarEstado(req.params.id_medico, 1);
-        res.redirect('/medicos?nombreActivo=1');
+        try {
+            await Medico.actualizarEstado(req.params.id_medico, 1);
+            res.redirect('/medicos?nombreActivo=1');
+        } catch (err) { next(err); }
     }
 
+    // ================================================================
+    // BUSCADORES Y API
+    // ================================================================
     async buscar(req, res) {
         try {
             const { q } = req.query;

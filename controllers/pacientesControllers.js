@@ -1648,6 +1648,256 @@
 
 
 
+// const Paciente = require('../models/pacientesModels');
+// const Persona = require('../models/personasModels');
+// const Usuario = require('../models/usuariosModels');
+
+// const { validatePacientes } = require('../schemas/validation');
+// const { obtenerFechaFormateada } = require('../utils/dateFormatter');
+// const bcrypt = require('bcryptjs');
+
+// class PacientesController {
+
+//     // ===========================================
+//     // LISTAR PACIENTES (PAGINACIÓN + BUSCADOR)
+//     // ===========================================
+//     async get(req, res, next) {
+//         try {
+//             // 1. Capturar parámetros de URL
+//             const page = parseInt(req.query.page) || 1;
+//             const search = req.query.q || ''; // Término de búsqueda (q)
+//             const limit = parseInt(req.query.limit) || 10; // Límite dinámico
+//             const offset = (page - 1) * limit;
+
+//             // 2. Obtener datos filtrados y total de registros (On-Demand)
+//             const totalPacientes = await Paciente.countAll(search);
+//             const pacientes = await Paciente.getAllPaginated(limit, offset, search);
+            
+//             const totalPages = Math.ceil(totalPacientes / limit);
+
+//             // 3. Formatear fechas para la tabla
+//             const pacientesConFechaFormateada = pacientes.map(p => ({
+//                 ...p,
+//                 nacimiento: p.nacimiento ? obtenerFechaFormateada(new Date(p.nacimiento)) : '---'
+//             }));
+
+//             // 4. Gestión de mensajes de alerta
+//             const { nombreUpdate, nombreStore, nombreActivo, nombreInactivo } = req.query;
+//             let mensaje = null;
+//             if (nombreInactivo) mensaje = 'Se ha dado de Baja a un Paciente';
+//             else if (nombreActivo) mensaje = 'Se ha dado de Alta a un Paciente';
+//             else if (nombreUpdate) mensaje = 'Paciente Actualizado correctamente';
+//             else if (nombreStore) mensaje = 'Paciente Creado correctamente';
+
+//             // 5. Renderizar vista
+//             res.render('pacientes/index', { 
+//                 pacientes: pacientesConFechaFormateada, 
+//                 mensaje,
+//                 currentPage: page,
+//                 totalPages: totalPages,
+//                 totalPacientes: totalPacientes,
+//                 limit: limit,
+//                 search: search 
+//             });
+
+//         } catch (error) {
+//             console.error("Error en get pacientes:", error);
+//             next(error);
+//         }
+//     }
+
+//     // ===========================================
+//     // FORM CREAR PACIENTE
+//     // ===========================================
+//     async getCreateForm(req, res, next) {
+//         try {
+//             const obrasSociales = await Paciente.getAllOS();
+//             res.render('pacientes/crear', { obrasSociales });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+
+//     // ===========================================
+//     // CREAR PACIENTE (STORE)
+//     // ===========================================
+//     async store(req, res, next) {
+//         try {
+//             const { 
+//                 dni, nombre, apellido, nacimiento, 
+//                 email, password, repeatPassword, 
+//                 id_rol, estado, telefonos, obra_sociales 
+//             } = req.body;
+
+//             const result = validatePacientes({
+//                 dni, nombre, apellido, fechaNacimiento: nacimiento,
+//                 email, password, repeatPassword, telefonos, obra_sociales
+//             });
+
+//             if (!result.success) {
+//                 return res.status(422).json({ error: result.error.issues });
+//             }
+
+//             const data = result.data;
+
+//             const existePersona = await Persona.getByDni(data.dni);
+//             if (existePersona) {
+//                 return res.status(409).json({ message: 'Ya existe una persona con ese DNI' });
+//             }
+
+//             const salt = await bcrypt.genSalt(10);
+//             const hashedPassword = await bcrypt.hash(data.password, salt);
+
+//             const personaCreada = await Persona.create({
+//                 dni: data.dni,
+//                 nombre: data.nombre,
+//                 apellido: data.apellido,
+//                 nacimiento: data.fechaNacimiento.toISOString().split('T')[0]
+//             });
+
+//             const id_persona = personaCreada.id || personaCreada.insertId;
+
+//             const usuarioCreado = await Usuario.create({
+//                 id_persona: id_persona,
+//                 email: data.email,
+//                 password: hashedPassword,
+//                 id_rol: id_rol || 3
+//             });
+
+//             const id_usuario = usuarioCreado.id || usuarioCreado.insertId;
+
+//             await Paciente.create({
+//                 id_persona: id_persona,
+//                 id_usuario: id_usuario,
+//                 id_obra_social: data.obra_sociales,
+//                 estado: estado || 1
+//             });
+
+//             if (data.telefonos) {
+//                 const listaTelefonos = Array.isArray(data.telefonos) ? data.telefonos : [data.telefonos];
+//                 for (let num of listaTelefonos) {
+//                     if (num) {
+//                         const numString = String(num).trim();
+//                         if (numString !== '') await Persona.addTelefono(id_persona, numString);
+//                     }
+//                 }
+//             }
+
+//             res.redirect(`/pacientes?nombreStore=true`);
+
+//         } catch (error) {
+//             console.error("Error en store paciente:", error);
+//             next(error);
+//         }
+//     }
+
+//     // ===========================================
+//     // FORM EDITAR PACIENTE
+//     // ===========================================
+//     async edit(req, res, next) {
+//         try {
+//             const { id } = req.params;
+//             const paciente = await Paciente.getPacienteById(id);
+//             if (!paciente) return res.status(404).send('Paciente no encontrado');
+
+//             if (paciente.nacimiento) {
+//                 paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
+//             }
+
+//             const usuario = await Usuario.getById(paciente.id_usuario);
+//             const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+//             const telefonos = telefonosDB.map(t => t.numero);
+//             const obra_social = await Paciente.getOSByPaciente(id);
+//             const obrasSociales = await Paciente.getAllOS();
+
+//             res.render('pacientes/editar', {
+//                 paciente,
+//                 usuario,
+//                 telefonos,
+//                 obra_social,
+//                 obrasSociales
+//             });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+
+//     // ===========================================
+//     // ACTUALIZAR PACIENTE (UPDATE)
+//     // ===========================================
+//     async update(req, res, next) {
+//         try {
+//             const { id } = req.params;
+//             const { nombre, apellido, nacimiento, email, password, id_obra_social, telefonos } = req.body;
+
+//             const updates = {
+//                 nombre,
+//                 apellido,
+//                 nacimiento,
+//                 id_obra_social: id_obra_social || null
+//             };
+
+//             if (email && email.trim() !== '') updates.email = email;
+//             if (password && password.trim() !== '') {
+//                 updates.password = await bcrypt.hash(password, 10);
+//             }
+
+//             await Paciente.updatePaciente(id, updates);
+
+//             const paciente = await Paciente.getPacienteById(id);
+//             await Persona.eliminarTelefonos(paciente.id_persona);
+
+//             if (telefonos) {
+//                 const lista = Array.isArray(telefonos) ? telefonos : [telefonos];
+//                 for (let numero of lista) {
+//                     if (numero) {
+//                         const numString = String(numero).trim();
+//                         if (numString !== '') await Persona.addTelefono(paciente.id_persona, numString);
+//                     }
+//                 }
+//             }
+
+//             res.redirect('/pacientes?nombreUpdate=true');
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+
+//     // ===========================================
+//     // GESTIÓN DE ESTADOS (ALTA / BAJA)
+//     // ===========================================
+//     // async inactivar(req, res, next) {
+//     //     try {
+//     //         await Paciente.inactivarPaciente(req.params.id);
+//     //         res.redirect(`/pacientes?nombreInactivo=true`);
+//     //     } catch (error) {
+//     //         next(error);
+//     //     }
+//     // }
+//     async inactivar(req, res, next) {
+//     try {
+//         await Paciente.inactivarPaciente(req.params.id);
+        
+//         // Si viene de la edición, podrías querer volver ahí. 
+//         // Por ahora lo enviamos al index con el mensaje como ya lo tenías:
+//         res.redirect(`/pacientes?nombreInactivo=true`);
+//     } catch (error) {
+//         next(error);
+//     }
+// }
+
+//     async activar(req, res, next) {
+//         try {
+//             await Paciente.activarPaciente(req.params.id);
+//             res.redirect(`/pacientes?nombreActivo=true`);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// }
+
+// module.exports = new PacientesController();
+
 const Paciente = require('../models/pacientesModels');
 const Persona = require('../models/personasModels');
 const Usuario = require('../models/usuariosModels');
@@ -1659,29 +1909,61 @@ const bcrypt = require('bcryptjs');
 class PacientesController {
 
     // ===========================================
+    // BUSCADOR DINÁMICO (AJAX)
+    // ===========================================
+    // async buscar(req, res) {
+    //     try {
+    //         const { query } = req.query;
+    //         if (!query || query.length < 2) {
+    //             return res.json([]);
+    //         }
+
+    //         // Llama al método estático que pusimos en el modelo
+    //         const resultados = await Paciente.buscar(query);
+            
+    //         res.json(resultados);
+    //     } catch (error) {
+    //         console.error("Error en PacientesController.buscar:", error);
+    //         res.status(500).json({ error: "Error en la búsqueda" });
+    //     }
+    // }
+    async buscar(req, res) {
+    try {
+        // Acepta tanto ?q=... como ?query=...
+        const texto = req.query.q || req.query.query; 
+        
+        if (!texto || texto.length < 2) {
+            return res.json([]);
+        }
+
+        const resultados = await Paciente.buscar(texto);
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error en PacientesController.buscar:", error);
+        res.status(500).json({ error: "Error en la búsqueda" });
+    }
+}
+
+    // ===========================================
     // LISTAR PACIENTES (PAGINACIÓN + BUSCADOR)
     // ===========================================
     async get(req, res, next) {
         try {
-            // 1. Capturar parámetros de URL
             const page = parseInt(req.query.page) || 1;
-            const search = req.query.q || ''; // Término de búsqueda (q)
-            const limit = parseInt(req.query.limit) || 10; // Límite dinámico
+            const search = req.query.q || ''; 
+            const limit = parseInt(req.query.limit) || 10; 
             const offset = (page - 1) * limit;
 
-            // 2. Obtener datos filtrados y total de registros (On-Demand)
             const totalPacientes = await Paciente.countAll(search);
             const pacientes = await Paciente.getAllPaginated(limit, offset, search);
             
             const totalPages = Math.ceil(totalPacientes / limit);
 
-            // 3. Formatear fechas para la tabla
             const pacientesConFechaFormateada = pacientes.map(p => ({
                 ...p,
                 nacimiento: p.nacimiento ? obtenerFechaFormateada(new Date(p.nacimiento)) : '---'
             }));
 
-            // 4. Gestión de mensajes de alerta
             const { nombreUpdate, nombreStore, nombreActivo, nombreInactivo } = req.query;
             let mensaje = null;
             if (nombreInactivo) mensaje = 'Se ha dado de Baja a un Paciente';
@@ -1689,7 +1971,6 @@ class PacientesController {
             else if (nombreUpdate) mensaje = 'Paciente Actualizado correctamente';
             else if (nombreStore) mensaje = 'Paciente Creado correctamente';
 
-            // 5. Renderizar vista
             res.render('pacientes/index', { 
                 pacientes: pacientesConFechaFormateada, 
                 mensaje,
@@ -1864,27 +2145,16 @@ class PacientesController {
     }
 
     // ===========================================
-    // GESTIÓN DE ESTADOS (ALTA / BAJA)
+    // GESTIÓN DE ESTADOS
     // ===========================================
-    // async inactivar(req, res, next) {
-    //     try {
-    //         await Paciente.inactivarPaciente(req.params.id);
-    //         res.redirect(`/pacientes?nombreInactivo=true`);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
     async inactivar(req, res, next) {
-    try {
-        await Paciente.inactivarPaciente(req.params.id);
-        
-        // Si viene de la edición, podrías querer volver ahí. 
-        // Por ahora lo enviamos al index con el mensaje como ya lo tenías:
-        res.redirect(`/pacientes?nombreInactivo=true`);
-    } catch (error) {
-        next(error);
+        try {
+            await Paciente.inactivarPaciente(req.params.id);
+            res.redirect(`/pacientes?nombreInactivo=true`);
+        } catch (error) {
+            next(error);
+        }
     }
-}
 
     async activar(req, res, next) {
         try {
