@@ -1,4 +1,3 @@
-
 const createConnection = require('../config/configDb');
 
 class Paciente {
@@ -11,19 +10,22 @@ class Paciente {
         try {
             conn = await createConnection();
             const sql = `
-                SELECT 
-                    pa.id AS id_paciente, 
-                    pe.nombre, 
-                    pe.apellido, 
-                    pe.dni
-                FROM pacientes pa
-                INNER JOIN personas pe ON pa.id_persona = pe.id
-                WHERE pe.nombre LIKE ? 
-                   OR pe.apellido LIKE ? 
-                   OR pe.dni LIKE ?
-                LIMIT 10
-            `;
+            SELECT 
+                pa.id AS id_paciente, 
+                pe.nombre, 
+                pe.apellido, 
+                pe.dni,
+                pa.estado  -- Agregamos el estado para tenerlo disponible
+            FROM pacientes pa
+            INNER JOIN personas pe ON pa.id_persona = pe.id
+            WHERE (pe.nombre LIKE ? 
+                OR pe.apellido LIKE ? 
+                OR pe.dni LIKE ?)
+                AND pa.estado = 1  -- FILTRO CRÍTICO: Solo pacientes activos
+            LIMIT 10
+        `;
             const filtro = `%${texto}%`;
+            // Nota: se pasan 3 parámetros porque hay 3 signos de interrogación en el WHERE
             const [rows] = await conn.query(sql, [filtro, filtro, filtro]);
             return rows;
         } catch (error) {
@@ -145,7 +147,7 @@ class Paciente {
             conn = await createConnection();
             await conn.beginTransaction();
             await conn.query(`UPDATE personas SET nombre = ?, apellido = ?, nacimiento = ?
-                WHERE id = (SELECT id_persona FROM pacientes WHERE id = ?)`, 
+                WHERE id = (SELECT id_persona FROM pacientes WHERE id = ?)`,
                 [updates.nombre, updates.apellido, updates.nacimiento, id_paciente]);
             if (updates.email || updates.password) {
                 const campos = []; const valores = [];
@@ -200,10 +202,10 @@ class Paciente {
 
     //obtener datos completos del paciente para mostrar en el crear lista de espera
     static async getDatosCompletos(id_paciente) {
-    let conn;
-    try {
-        conn = await createConnection(); 
-        const [rows] = await conn.query(`
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
             SELECT 
                 p.nombre, 
                 p.apellido, 
@@ -211,15 +213,15 @@ class Paciente {
             FROM pacientes pac
             INNER JOIN personas p ON pac.id_persona = p.id
             WHERE pac.id = ?`, [id_paciente]);
-        
-        return rows[0] || null;
-    } catch (error) {
-        console.error("Error al obtener datos del paciente:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+
+            return rows[0] || null;
+        } catch (error) {
+            console.error("Error al obtener datos del paciente:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
 

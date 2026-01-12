@@ -1,0 +1,132 @@
+extends ../layout
+
+block content
+  .container.mt-4
+    .row
+      .col-12
+        h2.mb-4 
+          i.fa-solid.fa-calendar-lock.me-2
+          | Gestión de Bloqueos y Ausencias
+        
+        if status === 'ausencia_success'
+          .alert.alert-success.alert-dismissible.fade.show(role='alert')
+            | Ausencia programada correctamente.
+            button.btn-close(type='button' data-bs-dismiss='alert')
+        
+        if status === 'feriado_success'
+          .alert.alert-info.alert-dismissible.fade.show(role='alert')
+            | Feriado global registrado con éxito.
+            button.btn-close(type='button' data-bs-dismiss='alert')
+
+    .row.g-4
+      //- FORMULARIO AUSENCIAS MÉDICAS
+      .col-md-5
+        .card.shadow-sm
+          .card-header.bg-primary.text-white
+            h5.mb-0 
+              i.fa-solid.fa-user-doctor.me-2
+              | Registrar Ausencia de Médico
+          .card-body
+            form(action='/admin/ausencias/guardar' method='POST')
+              .mb-3
+                label.form-label Médico
+                select.form-select(name='id_medico' required)
+                  option(value='') Seleccione un profesional...
+                  each medico in medicos
+                    option(value=medico.id_medico) #{medico.apellido}, #{medico.nombre}
+              
+              .row
+                .col-md-6.mb-3
+                  label.form-label Fecha Inicio
+                  input.form-control(type='date' name='fecha_inicio' required)
+                .col-md-6.mb-3
+                  label.form-label Fecha Fin
+                  input.form-control(type='date' name='fecha_fin' required)
+              
+              .mb-3
+                label.form-label Tipo de Ausencia
+                select.form-select(name='tipo' required)
+                  option(value='Vacaciones') Vacaciones
+                  option(value='Imprevisto') Imprevisto
+                  option(value='Licencia') Licencia
+                  option(value='Congreso') Congreso
+              
+              .mb-3
+                label.form-label Observaciones
+                textarea.form-control(name='descripcion' rows='2' placeholder='Ej: Viaje familiar o Problema de salud')
+              
+              button.btn.btn-primary.w-100(type='submit')
+                i.fa-solid.fa-save.me-2
+                | Guardar Ausencia
+
+        //- FORMULARIO FERIADOS GLOBALES
+        .card.shadow-sm.mt-4
+          .card-header.bg-dark.text-white
+            h5.mb-0 
+              i.fa-solid.fa-star-of-life.me-2
+              | Registrar Feriado Global
+          .card-body
+            form(action='/admin/feriados/guardar' method='POST')
+              .row
+                .col-md-5.mb-3
+                  label.form-label Fecha
+                  input.form-control(type='date' name='fecha' required)
+                .col-md-7.mb-3
+                  label.form-label Motivo/Nombre
+                  input.form-control(type='text' name='descripcion' placeholder='Ej: Navidad' required)
+              
+              button.btn.btn-dark.w-100(type='submit')
+                i.fa-solid.fa-plus.me-2
+                | Agregar Feriado
+
+      //- TABLAS DE RESUMEN
+      .col-md-7
+        .card.shadow-sm
+          .card-header.bg-light
+            h5.mb-0 
+              i.fa-solid.fa-list.me-2
+              | Próximos Bloqueos Programados
+          .card-body.p-0
+            .table-responsive
+              table.table.table-hover.mb-0
+                thead.table-light
+                  tr
+                    th Profesional / Motivo
+                    th Desde
+                    th Hasta
+                    th Tipo
+                    th Acciones
+                tbody
+                  if ausencias && ausencias.length > 0
+                    each a in ausencias
+                      tr
+                        td 
+                          strong #{a.apellido}, #{a.nombre}
+                          br
+                          small.text-muted #{a.descripcion}
+                        td #{new Date(a.fecha_inicio).toLocaleDateString()}
+                        td #{new Date(a.fecha_fin).toLocaleDateString()}
+                        td
+                          span.badge(class=a.tipo === 'Vacaciones' ? 'bg-success' : 'bg-warning text-dark') #{a.tipo}
+                        td
+                          a.btn.btn-outline-danger.btn-sm(href=`/admin/ausencias/eliminar/${a.id}` onclick="return confirm('¿Eliminar este bloqueo?')")
+                            i.fa-solid.fa-trash
+                  else
+                    tr
+                      td.text-center.py-4(colspan='5') No hay ausencias registradas.
+
+        //- Tabla de Feriados Corta
+        .card.shadow-sm.mt-4
+          .card-body.p-0
+            table.table.table-sm.mb-0
+              thead.table-light
+                tr
+                  th(colspan="3").p-2 Feriados Nacionales
+              tbody
+                each f in feriados
+                  tr
+                    td.ps-3 #{new Date(f.fecha).toLocaleDateString()}
+                    td #{f.descripcion}
+                    td.text-end.pe-3
+                      a.text-danger(href=`/admin/feriados/eliminar/${f.id}`)
+                        i.fa-solid.fa-circle-xmark

@@ -1159,7 +1159,7 @@
 //             // Obtener total para los cálculos y los datos paginados
 //             const totalPacientes = await Paciente.countAll();
 //             const pacientes = await Paciente.getAllPaginated(limit, offset);
-            
+
 //             const totalPages = Math.ceil(totalPacientes / limit);
 
 //             const pacientesConFechaFormateada = pacientes.map(p => ({
@@ -1423,7 +1423,7 @@
 //             // 2. Obtener datos filtrados y total de registros
 //             const totalPacientes = await Paciente.countAll(search);
 //             const pacientes = await Paciente.getAllPaginated(limit, offset, search);
-            
+
 //             const totalPages = Math.ceil(totalPacientes / limit);
 
 //             // 3. Formatear fechas para la tabla
@@ -1672,7 +1672,7 @@
 //             // 2. Obtener datos filtrados y total de registros (On-Demand)
 //             const totalPacientes = await Paciente.countAll(search);
 //             const pacientes = await Paciente.getAllPaginated(limit, offset, search);
-            
+
 //             const totalPages = Math.ceil(totalPacientes / limit);
 
 //             // 3. Formatear fechas para la tabla
@@ -1877,7 +1877,7 @@
 //     async inactivar(req, res, next) {
 //     try {
 //         await Paciente.inactivarPaciente(req.params.id);
-        
+
 //         // Si viene de la edición, podrías querer volver ahí. 
 //         // Por ahora lo enviamos al index con el mensaje como ya lo tenías:
 //         res.redirect(`/pacientes?nombreInactivo=true`);
@@ -1910,39 +1910,23 @@ class PacientesController {
 
     // ===========================================
     // BUSCADOR DINÁMICO (AJAX)
-    // ===========================================
-    // async buscar(req, res) {
-    //     try {
-    //         const { query } = req.query;
-    //         if (!query || query.length < 2) {
-    //             return res.json([]);
-    //         }
-
-    //         // Llama al método estático que pusimos en el modelo
-    //         const resultados = await Paciente.buscar(query);
-            
-    //         res.json(resultados);
-    //     } catch (error) {
-    //         console.error("Error en PacientesController.buscar:", error);
-    //         res.status(500).json({ error: "Error en la búsqueda" });
-    //     }
-    // }
+    // ===========================================   
     async buscar(req, res) {
-    try {
-        // Acepta tanto ?q=... como ?query=...
-        const texto = req.query.q || req.query.query; 
-        
-        if (!texto || texto.length < 2) {
-            return res.json([]);
-        }
+        try {
+            // Acepta tanto ?q=... como ?query=...
+            const texto = req.query.q || req.query.query;
 
-        const resultados = await Paciente.buscar(texto);
-        res.json(resultados);
-    } catch (error) {
-        console.error("Error en PacientesController.buscar:", error);
-        res.status(500).json({ error: "Error en la búsqueda" });
+            if (!texto || texto.length < 2) {
+                return res.json([]);
+            }
+
+            const resultados = await Paciente.buscar(texto);
+            res.json(resultados);
+        } catch (error) {
+            console.error("Error en PacientesController.buscar:", error);
+            res.status(500).json({ error: "Error en la búsqueda" });
+        }
     }
-}
 
     // ===========================================
     // LISTAR PACIENTES (PAGINACIÓN + BUSCADOR)
@@ -1950,13 +1934,13 @@ class PacientesController {
     async get(req, res, next) {
         try {
             const page = parseInt(req.query.page) || 1;
-            const search = req.query.q || ''; 
-            const limit = parseInt(req.query.limit) || 10; 
+            const search = req.query.q || '';
+            const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
 
             const totalPacientes = await Paciente.countAll(search);
             const pacientes = await Paciente.getAllPaginated(limit, offset, search);
-            
+
             const totalPages = Math.ceil(totalPacientes / limit);
 
             const pacientesConFechaFormateada = pacientes.map(p => ({
@@ -1971,14 +1955,14 @@ class PacientesController {
             else if (nombreUpdate) mensaje = 'Paciente Actualizado correctamente';
             else if (nombreStore) mensaje = 'Paciente Creado correctamente';
 
-            res.render('pacientes/index', { 
-                pacientes: pacientesConFechaFormateada, 
+            res.render('pacientes/index', {
+                pacientes: pacientesConFechaFormateada,
                 mensaje,
                 currentPage: page,
                 totalPages: totalPages,
                 totalPacientes: totalPacientes,
                 limit: limit,
-                search: search 
+                search: search
             });
 
         } catch (error) {
@@ -2004,10 +1988,10 @@ class PacientesController {
     // ===========================================
     async store(req, res, next) {
         try {
-            const { 
-                dni, nombre, apellido, nacimiento, 
-                email, password, repeatPassword, 
-                id_rol, estado, telefonos, obra_sociales 
+            const {
+                dni, nombre, apellido, nacimiento,
+                email, password, repeatPassword,
+                id_rol, estado, telefonos, obra_sociales
             } = req.body;
 
             const result = validatePacientes({

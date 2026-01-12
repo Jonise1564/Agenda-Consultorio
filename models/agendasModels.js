@@ -1,6 +1,3 @@
-
-
-
 const createConnection = require('../config/configDb');
 
 class Agenda {
@@ -200,25 +197,34 @@ class Agenda {
     // 6. BUSCAR AGENDA ESPECÍFICA (Para el Panel de Turnos)
     // =====================================================
     static async obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha) {
-        const partes = fecha.split('-'); 
+        // Obtenemos el día de la semana (1-7)
+        const partes = fecha.split('-');
         const fechaLocal = new Date(partes[0], partes[1] - 1, partes[2]);
-        
-        const jsDay = fechaLocal.getDay(); 
-        const idDia = jsDay === 0 ? 7 : jsDay; 
+        const jsDay = fechaLocal.getDay();
+        const idDia = jsDay === 0 ? 7 : jsDay;
 
         let conn;
         try {
             conn = await createConnection();
-            const [rows] = await conn.query(`
+
+            // Usamos DATE() para limpiar las fechas de horas/minutos/segundos
+            let sql = `
                 SELECT a.*
                 FROM agendas a
                 JOIN agenda_dias ad ON a.id = ad.id_agenda
                 WHERE a.id_medico = ?
-                  AND a.id_especialidad = ?
-                  AND ? BETWEEN a.fecha_creacion AND a.fecha_fin
+                  AND DATE(?) BETWEEN DATE(a.fecha_creacion) AND DATE(a.fecha_fin)
                   AND ad.id_dia = ?
-            `, [id_medico, id_especialidad, fecha, idDia]);
+            `;
 
+            const params = [id_medico, fecha, idDia];
+
+            if (id_especialidad) {
+                sql += ` AND a.id_especialidad = ?`;
+                params.push(id_especialidad);
+            }
+
+            const [rows] = await conn.query(sql, params);
             return rows;
         } catch (error) {
             console.error('Error obtenerAgendaPorMedicoYFecha:', error);
@@ -227,6 +233,8 @@ class Agenda {
             if (conn) conn.end();
         }
     }
+
+
 
     // =====================================================
     // 7. VALIDAR SOLAPAMIENTOS (NUEVA CREACIÓN)
@@ -291,6 +299,103 @@ class Agenda {
             if (conn) conn.end();
         }
     }
+
+
+    // =====================================================
+    // 9. VERIFICAR FERIADO (Global)
+    // =====================================================
+    static async esFeriado(fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query('SELECT descripcion FROM FERIADOS WHERE fecha = ?', [fecha]);
+            return rows.length > 0 ? rows[0].descripcion : null;
+        } catch (error) {
+            console.error('Error en esFeriado:', error);
+            return null;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    // =====================================================
+    // 10. VERIFICAR AUSENCIA DEL MÉDICO (Vacaciones/Imprevistos)
+    // =====================================================
+    static async obtenerAusencia(id_medico, fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const query = `
+                SELECT tipo, descripcion FROM AUSENCIAS 
+                WHERE id_medico = ? 
+                AND ? BETWEEN fecha_inicio AND fecha_fin
+                LIMIT 1`;
+            const [rows] = await conn.query(query, [id_medico, fecha]);
+            return rows.length > 0 ? rows[0] : null;
+        } catch (error) {
+            console.error('Error en obtenerAusencia:', error);
+            return null;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    // =====================================================
+    // 11. REGISTRAR AUSENCIA (Vacaciones, Licencias, etc.)
+    // =====================================================
+    static async registrarAusencia(data) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const { id_medico, fecha_inicio, fecha_fin, tipo, descripcion } = data;
+
+            const query = `
+                INSERT INTO AUSENCIAS (id_medico, fecha_inicio, fecha_fin, tipo, descripcion)
+                VALUES (?, ?, ?, ?, ?)
+            `;
+
+            const [result] = await conn.query(query, [
+                id_medico,
+                fecha_inicio,
+                fecha_fin,
+                tipo,
+                descripcion || null
+            ]);
+
+            return result.insertId;
+        } catch (error) {
+            console.error('Error en registrarAusencia:', error);
+            throw new Error('No se pudo registrar la ausencia en la base de datos');
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    // =====================================================
+    // 12. VERIFICAR TURNOS AFECTADOS POR AUSENCIA
+    // =====================================================
+    static async verificarTurnosAfectados(id_medico, fecha_inicio, fecha_fin) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const query = `
+                SELECT COUNT(*) as total 
+                FROM turnos 
+                WHERE id_medico = ? 
+                AND fecha_turno BETWEEN ? AND ?
+                AND estado != 'cancelado'`;
+            const [rows] = await conn.query(query, [id_medico, fecha_inicio, fecha_fin]);
+            return rows[0].total;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+
+
+
+
 }
 
 module.exports = Agenda;

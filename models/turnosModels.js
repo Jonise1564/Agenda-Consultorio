@@ -1,4 +1,3 @@
-
 const createConnection = require('../config/configDb');
 
 class Turno {
@@ -14,7 +13,7 @@ class Turno {
     }
 
     // ============================================
-    // GET ALL TURNOS DE UNA AGENDA
+    // OBTENER TODOS LOS TURNOS DE UNA AGENDA
     // ============================================
     static async getAll(id_agenda) {
         let conn;
@@ -48,7 +47,7 @@ class Turno {
     }
 
     // ============================================
-    // GET TURNO POR ID (MÉTODO QUE DABA ERROR)
+    // OBTENER TURNO POR ID
     // ============================================
     static async getById(id) {
         let conn;
@@ -97,21 +96,39 @@ class Turno {
     }
 
     // ============================================
-    // ACTUALIZAR TURNO
-    // ============================================
-    static async update(id, data) {
+    // ACTUALIZAR / TRASLADAR TURNO INDIVIDUAL
+    // ============================================    
+    static async actualizar(id, datos) {
         let conn;
         try {
             conn = await createConnection();
-            const { fecha, hora_inicio, motivo, estado, id_paciente } = data;
-            await conn.query(`
-                UPDATE turnos
-                SET fecha = ?, hora_inicio = ?, motivo = ?, estado = ?, id_paciente = ?
-                WHERE id = ?;
-            `, [fecha, hora_inicio, motivo, estado, id_paciente, id]);
-            return true;
+            const { fecha, hora_inicio, id_agenda, estado, motivo } = datos;
+
+            // Usamos un UPDATE directo para asegurar que los valores nuevos entren
+            const sql = `
+                UPDATE turnos 
+                SET fecha = ?, 
+                    hora_inicio = ?, 
+                    id_agenda = ?, 
+                    estado = ?,
+                    motivo = ?
+                WHERE id = ?
+            `;
+
+            // Si hora_inicio viene como "10:00", MySQL lo acepta bien como TIME
+            const [result] = await conn.query(sql, [
+                fecha,
+                hora_inicio,
+                id_agenda,
+                estado || 'Reservado',
+                motivo || 'Traslado de turno',
+                id
+            ]);
+
+            console.log("Filas afectadas en DB:", result.affectedRows);
+            return result.affectedRows > 0;
         } catch (error) {
-            console.error("Error actualizando turno:", error);
+            console.error("Error real en DB al actualizar:", error);
             throw error;
         } finally {
             if (conn) conn.end();
@@ -165,34 +182,30 @@ class Turno {
         }
     }
 
-
-    //=====================================================
-    // AGENDAR (CREA EL REGISTRO SI NO EXISTE Y LO RESERVA)
-    //=====================================================
+    // ============================================
+    // AGENDAR TURNO VIRTUAL
+    // ============================================
     static async agendarTurnoVirtual(data) {
         let conn;
         try {
             conn = await createConnection();
             const { fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni } = data;
 
-            // 1. Verificamos si por casualidad ya existe (evitar duplicados)
             const [existe] = await conn.query(
                 "SELECT id FROM turnos WHERE id_agenda = ? AND fecha = ? AND hora_inicio = ?",
                 [id_agenda, fecha, hora_inicio]
             );
 
             if (existe.length > 0) {
-                // Si existe, lo actualizamos a Reservado
                 await conn.query(
                     `UPDATE turnos SET estado = 'Reservado', id_paciente = ?, motivo = ?, archivo_dni = ? WHERE id = ?`,
                     [id_paciente, motivo, archivo_dni, existe[0].id]
                 );
                 return existe[0].id;
             } else {
-                // 2. Si no existe (es virtual), lo insertamos directamente como Reservado
                 const [result] = await conn.query(
                     `INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda, archivo_dni)
-                 VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?)`,
+                     VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?)`,
                     [fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni]
                 );
                 return result.insertId;
@@ -206,57 +219,15 @@ class Turno {
     }
 
     // ============================================
-    // LISTAR CON FILTROS (PARA LA TABLA CELESTE)
+    // LISTAR CON FILTROS (VISTA SECRETARÍA)
     // ============================================
-    // static async listarConFiltros(filtros) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         let sql = `
-    //             SELECT 
-    //                 t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado, t.motivo,
-    //                 p_per.nombre AS paciente_nombre, p_per.apellido AS paciente_apellido, p_per.dni AS paciente_dni,
-    //                 m_per.nombre AS medico_nombre, m_per.apellido AS medico_apellido,
-    //                 e.nombre AS especialidad_nombre
-    //             FROM turnos t
-    //             LEFT JOIN pacientes p ON t.id_paciente = p.id
-    //             LEFT JOIN personas p_per ON p.id_persona = p_per.id
-    //             LEFT JOIN agendas a ON t.id_agenda = a.id
-    //             LEFT JOIN medicos m ON a.id_medico = m.id_medico
-    //             LEFT JOIN personas m_per ON m.id_persona = m_per.id
-    //             LEFT JOIN especialidades e ON a.id_especialidad = e.id
-    //             WHERE 1=1
-    //         `;
-
-    //         const params = [];
-    //         if (filtros.paciente) {
-    //             sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
-    //             params.push(`%${filtros.paciente}%`, `%${filtros.paciente}%`, `%${filtros.paciente}%`);
-    //         }
-    //         if (filtros.profesional) {
-    //             sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
-    //             params.push(`%${filtros.profesional}%`, `%${filtros.profesional}%`);
-    //         }
-
-    //         sql += ` ORDER BY t.fecha DESC, t.hora_inicio ASC LIMIT 200`;
-
-    //         const [rows] = await conn.query(sql, params);
-    //         return rows;
-    //     } catch (error) {
-    //         console.error('Error en listarConFiltros:', error);
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
-
     static async listarConFiltros(filtros) {
-    let conn;
-    try {
-        conn = await createConnection();
-        let sql = `
+        let conn;
+        try {
+            conn = await createConnection();
+            let sql = `
             SELECT 
-                t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado, t.motivo,
+                t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado, t.motivo, t.archivo_dni,
                 p_per.nombre AS paciente_nombre, p_per.apellido AS paciente_apellido, p_per.dni AS paciente_dni,
                 m_per.nombre AS medico_nombre, m_per.apellido AS medico_apellido,
                 e.nombre AS especialidad_nombre
@@ -268,39 +239,36 @@ class Turno {
             LEFT JOIN personas m_per ON m.id_persona = m_per.id
             LEFT JOIN especialidades e ON a.id_especialidad = e.id
             WHERE 1=1
-        `;
+            `;
 
-        const params = [];
+            const params = [];
 
-        // Filtro por Paciente
-        if (filtros.paciente) {
-            sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
-            params.push(`%${filtros.paciente}%`, `%${filtros.paciente}%`, `%${filtros.paciente}%`);
+            if (filtros.paciente) {
+                sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
+                params.push(`%${filtros.paciente}%`, `%${filtros.paciente}%`, `%${filtros.paciente}%`);
+            }
+
+            if (filtros.profesional) {
+                sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
+                params.push(`%${filtros.profesional}%`, `%${filtros.profesional}%`);
+            }
+
+            if (filtros.fecha) {
+                sql += ` AND t.fecha = ?`;
+                params.push(filtros.fecha);
+            }
+
+            sql += ` ORDER BY t.fecha DESC, t.hora_inicio ASC LIMIT 200`;
+
+            const [rows] = await conn.query(sql, params);
+            return rows;
+        } catch (error) {
+            console.error('Error en listarConFiltros:', error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
         }
-
-        // Filtro por Profesional
-        if (filtros.profesional) {
-            sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
-            params.push(`%${filtros.profesional}%`, `%${filtros.profesional}%`);
-        }
-
-        // === NUEVO: Filtro por Fecha ===
-        if (filtros.fecha) {
-            sql += ` AND t.fecha = ?`;
-            params.push(filtros.fecha);
-        }
-
-        sql += ` ORDER BY t.fecha DESC, t.hora_inicio ASC LIMIT 200`;
-
-        const [rows] = await conn.query(sql, params);
-        return rows;
-    } catch (error) {
-        console.error('Error en listarConFiltros:', error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
     }
-}
 
     // ============================================
     // TRANSFERENCIA MASIVA DE AGENDAS
@@ -309,26 +277,20 @@ class Turno {
         let conn;
         try {
             conn = await createConnection();
-            const { origen, destino, fecha, especialidad } = data;
+            const { origen, fecha, especialidad, nueva_agenda_id } = data;
 
-            /* Esta lógica busca los turnos del médico origen en una fecha y especialidad 
-               y los mueve a la agenda del médico destino para esa misma fecha.
-            */
+            // Actualiza todos los turnos del médico origen hacia la nueva agenda del médico destino
             const sql = `
                 UPDATE turnos t
                 INNER JOIN agendas a_orig ON t.id_agenda = a_orig.id
-                SET t.id_agenda = (
-                    SELECT id FROM agendas 
-                    WHERE id_medico = ? AND id_especialidad = ? AND fecha_inicio <= ? AND fecha_fin >= ? 
-                    LIMIT 1
-                )
+                SET t.id_agenda = ?
                 WHERE a_orig.id_medico = ? 
                 AND t.fecha = ? 
                 AND a_orig.id_especialidad = ?
                 AND t.estado IN ('Pendiente', 'Confirmado', 'Reservado')
             `;
 
-            const [result] = await conn.query(sql, [destino, especialidad, fecha, fecha, origen, fecha, especialidad]);
+            const [result] = await conn.query(sql, [nueva_agenda_id, origen, fecha, especialidad]);
             return result.affectedRows;
         } catch (error) {
             console.error('Error en transferirMasivo:', error);

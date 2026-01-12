@@ -6,39 +6,23 @@ class Especialidad {
     // ======================================================
     // OBTENER TODAS LAS ESPECIALIDADES
     // ======================================================
-    // static async getAll() {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         const [rows] = await conn.query(`
-    //             SELECT id, nombre 
-    //             FROM especialidades
-    //         `);
-    //         return rows;
-    //     } catch (error) {
-    //         console.error("Error fetching especialidades:", error);
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
-static async getAll() {
-    let conn;
-    try {
-        conn = await createConnection();
-        const [rows] = await conn.query(`
+    static async getAll() {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
             SELECT id, nombre, estado 
             FROM especialidades
             ORDER BY nombre ASC
         `); // Agregamos 'estado' y un orden alfabético para que se vea mejor
-        return rows;
-    } catch (error) {
-        console.error("Error fetching especialidades:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+            return rows;
+        } catch (error) {
+            console.error("Error fetching especialidades:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
     // ======================================================
     // CREAR NUEVA ESPECIALIDAD
     // ======================================================
@@ -289,7 +273,7 @@ static async getAll() {
         }
     }
 
-    
+
     // ============================================================
     // ESPECIALIDADES ACTIVAS DE UN MÉDICO
     // ============================================================
