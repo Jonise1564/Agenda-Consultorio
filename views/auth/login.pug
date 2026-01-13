@@ -81,95 +81,697 @@
 //-       Swal.fire('Error', 'Credenciales incorrectas', 'error');
 //-     }
 
+//- extends ../layout
+
+//- block contenido
+//-   //- Estilos específicos para esta vista (puedes moverlos a tu CSS)
+//-   style.
+//-     body { background-color: #f8f9fa; }
+//-     .auth-container { max-width: 450px; margin: 50px auto; }
+//-     .card-auth { border-radius: 15px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+//-     .nav-pills-auth { background: #e9ecef; border-radius: 10px; padding: 5px; }
+//-     .nav-pills-auth .nav-link { color: #495057; border-radius: 8px; font-weight: 500; }
+//-     .nav-pills-auth .nav-link.active { background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+//-     .btn-auth { background-color: #5ba4d5; border: none; padding: 12px; border-radius: 8px; font-weight: 500; }
+//-     .btn-auth:hover { background-color: #4a93c4; }
+//-     .medical-logo { width: 120px; margin-bottom: 30px; }
+
+//-   .container
+//-     .auth-container.text-center
+//-       //- Logo Médico Central
+//-       img.medical-logo(src="/images/logo.png" alt="Logo Médico" onerror="this.src='https://cdn-icons-png.flaticon.com/512/822/822143.png'")
+
+//-       .card.card-auth
+//-         .card-body.p-4.p-lg-5
+//-           //- Selector de Pestañas
+//-           ul.nav.nav-pills.nav-justified.nav-pills-auth.mb-4#pills-tab(role="tablist")
+//-             li.nav-item(role="presentation")
+//-               button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab") Iniciar Sesión
+//-             li.nav-item(role="presentation")
+//-               button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab") Registrarse
+
+//-           .tab-content#pills-tabContent
+//-             //- ---------------- SECCIÓN LOGIN ----------------
+//-             .tab-pane.fade.show.active#pills-login(role="tabpanel")
+//-               h2.fw-bold.mb-1 Bienvenido
+//-               p.text-muted.small.mb-4 Iniciá sesión para continuar
+              
+//-               if error
+//-                 .alert.alert-danger.py-2.small #{error}
+              
+//-               form(action="/auth/login" method="POST").text-start
+//-                 .mb-3
+//-                   label.form-label.small.fw-bold Email
+//-                   input.form-control(type="email" name="email" placeholder="Correo electrónico" required)
+//-                 .mb-3
+//-                   label.form-label.small.fw-bold Contraseña
+//-                   input.form-control(type="password" name="password" placeholder="Contraseña" required)
+//-                   .text-end.mt-1
+//-                     a.small.text-decoration-none(href="#") ¿Olvidaste tu contraseña?
+                
+//-                 button.btn.btn-primary.btn-auth.w-100.mt-3(type="submit") Iniciar Sesión
+
+//-             //- ---------------- SECCIÓN REGISTRO ----------------
+//-             .tab-pane.fade#pills-register(role="tabpanel")
+//-               h2.fw-bold.mb-4.text-start Crear Cuenta
+              
+//-               form#formRegistro(action="/auth/registro-paciente" method="POST").text-start
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Nombre completo:
+//-                   input.form-control(type="text" name="nombre" placeholder="Nombre completo" required)
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Correo electrónico:
+//-                   input.form-control(type="email" name="email" placeholder="Correo electrónico" required)
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold DNI:
+//-                   input.form-control(type="number" name="dni" placeholder="DNI" required)
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Mutual:
+//-                   input.form-control(type="text" name="mutual" placeholder="Mutual o Ninguna")
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Dirección:
+//-                   input.form-control(type="text" name="direccion" placeholder="Dirección")
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Teléfono:
+//-                   input.form-control(type="tel" name="telefono" placeholder="Teléfono")
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Fecha de Nacimiento:
+//-                   input.form-control(type="date" name="nacimiento" required)
+//-                 .mb-2
+//-                   label.form-label.small.fw-bold Contraseña:
+//-                   input.form-control(type="password" name="password" placeholder="Contraseña" required)
+//-                 .mb-4
+//-                   label.form-label.small.fw-bold Confirmar contraseña:
+//-                   input.form-control(type="password" name="confirmPassword" placeholder="Confirmar contraseña" required)
+                
+//-                 button.btn.btn-primary.btn-auth.w-100(type="submit") Registrarse
+
+//-   script.
+//-     // Lógica para que si vienes de un error de registro, se mantenga la pestaña de registro abierta
+//-     const urlParams = new URLSearchParams(window.location.search);
+//-     if (urlParams.has('register')) {
+//-       const triggerEl = document.querySelector('#pills-register-tab')
+//-       bootstrap.Tab.getInstance(triggerEl).show()
+//-     }
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     body { background-color: #f8f9fa; overflow-x: hidden; }
+    
+//-     /* Contenedor Split Screen */
+//-     .split-screen {
+//-       display: flex;
+//-       flex-direction: row;
+//-       min-height: 100vh;
+//-       width: 100%;
+//-     }
+
+//-     /* Lado Izquierdo: Imagen Profesional con Overlay */
+//-     .left-side {
+//-       flex: 1.2;
+//-       background: linear-gradient(135deg, rgba(10, 61, 98, 0.85) 0%, rgba(30, 127, 92, 0.6) 100%), 
+//-                   url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1350&q=80');
+//-       background-size: cover;
+//-       background-position: center;
+//-       display: none; 
+//-       flex-direction: column;
+//-       justify-content: center;
+//-       padding: 60px;
+//-       color: white;
+//-     }
+
+//-     /* Lado Derecho: Formulario */
+//-     .right-side {
+//-       flex: 0.8;
+//-       display: flex;
+//-       align-items: center;
+//-       justify-content: center;
+//-       padding: 40px;
+//-       background-color: #f8f9fa;
+//-     }
+
+//-     .auth-card-wrapper { max-width: 480px; width: 100%; }
+    
+//-     .card-auth { 
+//-       border-radius: 20px; 
+//-       border: none; 
+//-       box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+//-       background: #ffffff;
+//-     }
+
+//-     .nav-pills-auth { background: #f1f3f5; border-radius: 12px; padding: 6px; }
+//-     .nav-pills-auth .nav-link { color: #495057; border-radius: 10px; font-weight: 500; transition: 0.3s; }
+//-     .nav-pills-auth .nav-link.active { background: #ffffff; color: #0a3d62; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    
+//-     .btn-auth { 
+//-       background-color: #5ba4d5; 
+//-       border: none; 
+//-       padding: 14px; 
+//-       border-radius: 10px; 
+//-       font-weight: 600; 
+//-     }
+//-     .btn-auth:hover { background-color: #4a93c4; transform: translateY(-1px); }
+
+//-     .medical-logo { width: 80px; margin-bottom: 20px; }
+//-     .form-label { font-size: 0.85rem; }
+
+//-     @media (min-width: 992px) {
+//-       .left-side { display: flex; }
+//-     }
+
+//-   .split-screen
+//-     //- SECCIÓN IZQUIERDA
+//-     .left-side
+//-       h1.fw-bold.display-4 Consultorio Médico
+//-       p.lead.mb-4 Gestión profesional
+//-       .mt-4
+//-         .d-flex.align-items-center.mb-3
+//-           i.bi.bi-check-circle-fill.me-3.text-info.fs-4
+//-           span Agendas actualizadas en tiempo real.
+//-         .d-flex.align-items-center.mb-3
+//-           i.bi.bi-check-circle-fill.me-3.text-info.fs-4
+//-           span Registro seguro de pacientes.
+
+//-     //- SECCIÓN DERECHA
+//-     .right-side
+//-       .auth-card-wrapper.text-center
+//-         img.medical-logo(src="/images/logo.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/822/822143.png'")
+        
+//-         .card.card-auth
+//-           .card-body.p-4.p-lg-5
+//-             //- Selector de Pestañas
+//-             ul.nav.nav-pills.nav-justified.nav-pills-auth.mb-4#pills-tab(role="tablist")
+//-               li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+//-               li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+//-             .tab-content#pills-tabContent
+//-               //- ---------------- SECCIÓN LOGIN ----------------
+//-               .tab-pane.fade.show.active#pills-login(role="tabpanel")
+//-                 h3.fw-bold.mb-1 Bienvenido
+//-                 p.text-muted.small.mb-4 Ingrese sus credenciales para continuar
+                
+//-                 if error
+//-                   .alert.alert-danger.py-2.small #{error}
+                
+//-                 form(action="/auth/login" method="POST").text-start
+//-                   .mb-3
+//-                     label.form-label.fw-bold Email
+//-                     .input-group
+//-                       span.input-group-text.bg-white: i.bi.bi-envelope
+//-                       input.form-control(type="email" name="email" placeholder="correo@ejemplo.com" required)
+//-                   .mb-3
+//-                     label.form-label.fw-bold Contraseña
+//-                     .input-group
+//-                       span.input-group-text.bg-white: i.bi.bi-lock
+//-                       input.form-control(type="password" name="password" placeholder="••••••••" required)
+                  
+//-                   button.btn.btn-primary.btn-auth.w-100.mt-3(type="submit") Entrar al Sistema
+
+//-               //- ---------------- SECCIÓN REGISTRO ----------------
+//-               .tab-pane.fade#pills-register(role="tabpanel")
+//-                 h3.fw-bold.mb-3.text-start Crear Cuenta
+//-                 form#formRegistro(action="/auth/registro-paciente" method="POST").text-start
+//-                   .row.g-2
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold Nombre completo
+//-                       input.form-control.form-control-sm(type="text" name="nombre" required)
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold Correo electrónico
+//-                       input.form-control.form-control-sm(type="email" name="email" required)
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold DNI
+//-                       input.form-control.form-control-sm(type="number" name="dni" required)
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold Mutual
+//-                       input.form-control.form-control-sm(type="text" name="mutual" placeholder="O ninguna")
+//-                     .col-md-12.mb-2
+//-                       label.form-label.fw-bold Dirección
+//-                       input.form-control.form-control-sm(type="text" name="direccion")
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold Teléfono
+//-                       input.form-control.form-control-sm(type="tel" name="telefono")
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold Fec. Nacimiento
+//-                       input.form-control.form-control-sm(type="date" name="nacimiento" required)
+//-                     .col-md-6.mb-2
+//-                       label.form-label.fw-bold Contraseña
+//-                       input.form-control.form-control-sm(type="password" name="password" required)
+//-                     .col-md-6.mb-4
+//-                       label.form-label.fw-bold Confirmar
+//-                       input.form-control.form-control-sm(type="password" name="confirmPassword" required)
+                  
+//-                   button.btn.btn-primary.btn-auth.w-100(type="submit") Finalizar Registro
+
+//-   script.
+//-     // Manejo de pestañas por URL
+//-     const urlParams = new URLSearchParams(window.location.search);
+//-     if (urlParams.has('register')) {
+//-       const triggerEl = document.querySelector('#pills-register-tab')
+//-       bootstrap.Tab.getOrCreateInstance(triggerEl).show()
+//-     }
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     :root {
+//-       --primary-dark: #0a3d62;
+//-       --accent-blue: #5ba4d5;
+//-       --soft-bg: #f4f7f9;
+//-     }
+
+//-     body { 
+//-       background-color: var(--soft-bg); 
+//-       overflow-x: hidden;
+//-       font-family: 'Inter', sans-serif;
+//-     }
+    
+//-     .split-screen {
+//-       display: flex;
+//-       min-height: 100vh;
+//-       width: 100%;
+//-     }
+
+//-     /* Lado Izquierdo: Visual Impact */
+//-     .left-side {
+//-       flex: 1.2;
+//-       background: linear-gradient(135deg, rgba(10, 61, 98, 0.9) 0%, rgba(30, 127, 92, 0.7) 100%), 
+//-                   url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1350&q=80');
+//-       background-size: cover;
+//-       background-position: center;
+//-       display: none; 
+//-       flex-direction: column;
+//-       justify-content: center;
+//-       padding: 80px;
+//-       color: white;
+//-       position: relative;
+//-     }
+
+//-     .left-side::after {
+//-       content: "";
+//-       position: absolute;
+//-       bottom: 0; left: 0; right: 0; height: 150px;
+//-       background: linear-gradient(to top, rgba(10, 61, 98, 0.5), transparent);
+//-     }
+
+//-     /* Lado Derecho: Modern Form */
+//-     .right-side {
+//-       flex: 0.8;
+//-       display: flex;
+//-       align-items: center;
+//-       justify-content: center;
+//-       padding: 2rem;
+//-     }
+
+//-     .auth-card { 
+//-       width: 100%;
+//-       max-width: 500px;
+//-       background: #ffffff;
+//-       border-radius: 24px; 
+//-       border: 1px solid rgba(0,0,0,0.05);
+//-       box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+//-       padding: 2.5rem;
+//-     }
+
+//-     .nav-pills-custom {
+//-       background: #f1f3f5;
+//-       border-radius: 14px;
+//-       padding: 4px;
+//-       margin-bottom: 2rem;
+//-     }
+
+//-     .nav-pills-custom .nav-link {
+//-       color: #6c757d;
+//-       border-radius: 10px;
+//-       font-weight: 600;
+//-       font-size: 0.9rem;
+//-       padding: 10px;
+//-       transition: all 0.3s ease;
+//-     }
+
+//-     .nav-pills-custom .nav-link.active {
+//-       background: #ffffff;
+//-       color: var(--primary-dark);
+//-       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+//-     }
+
+//-     .form-control {
+//-       border-radius: 12px;
+//-       padding: 0.75rem 1rem;
+//-       border: 1px solid #dee2e6;
+//-       background-color: #fcfcfc;
+//-     }
+
+//-     .form-control:focus {
+//-       box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.15);
+//-       border-color: var(--accent-blue);
+//-     }
+
+//-     .btn-auth { 
+//-       background: var(--primary-dark);
+//-       border: none;
+//-       padding: 14px;
+//-       border-radius: 12px;
+//-       font-weight: 700;
+//-       color: white;
+//-       transition: transform 0.2s;
+//-     }
+
+//-     .btn-auth:hover {
+//-       background: #0d4d7a;
+//-       transform: translateY(-2px);
+//-       color: white;
+//-     }
+
+//-     .medical-logo-container {
+//-       margin-bottom: 1.5rem;
+//-     }
+
+//-     .medical-logo-container img {
+//-       width: 70px;
+//-       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+//-     }
+
+//-     @media (min-width: 992px) { .left-side { display: flex; } }
+//-     @media (max-width: 576px) { .auth-card { padding: 1.5rem; } }
+
+//-   .split-screen
+//-     .left-side
+//-       span.badge.bg-info.mb-3.w-fit-content(style="width: fit-content") Sistema de Gestión Médica v2.0
+//-       h1.fw-bold.display-4.mb-3 Cuidamos cada detalle de tu salud
+//-       p.lead.text-white-50 La plataforma integral para profesionales y pacientes.
+      
+//-       .mt-5.d-grid.gap-4
+//-         .d-flex.align-items-start
+//-           .icon-box.me-3: i.bi.bi-shield-check.fs-3.text-info
+//-           div
+//-             h5.mb-1 Seguridad de Datos
+//-             p.small.text-white-50 Cumplimos con estándares internacionales de privacidad.
+//-         .d-flex.align-items-start
+//-           .icon-box.me-3: i.bi.bi-lightning-charge.fs-3.text-info
+//-           div
+//-             h5.mb-1 Acceso Inmediato
+//-             p.small.text-white-50 Consulta tus turnos y resultados desde cualquier dispositivo.
+
+//-     .right-side
+//-       .auth-card
+//-         .medical-logo-container.text-center
+//-           img(src="/images/logo.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/822/822143.png'")
+        
+//-         ul.nav.nav-pills.nav-justified.nav-pills-custom#pills-tab(role="tablist")
+//-           li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+//-           li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+//-         .tab-content
+//-           //- LOGIN
+//-           .tab-pane.fade.show.active#pills-login
+//-             if error
+//-               .alert.alert-danger.border-0.small.mb-4(style="background-color: #fff5f5; color: #e53e3e;") 
+//-                 i.bi.bi-exclamation-circle.me-2
+//-                 | #{error}
+            
+//-             form(action="/auth/login" method="POST")
+//-               .mb-3
+//-                 label.form-label.fw-semibold Correo Electrónico
+//-                 input.form-control(type="email" name="email" placeholder="ejemplo@correo.com" required)
+//-               .mb-4
+//-                 label.form-label.fw-semibold Contraseña
+//-                 input.form-control(type="password" name="password" placeholder="••••••••" required)
+              
+//-               button.btn.btn-auth.w-100(type="submit") Iniciar Sesión Directa
+              
+//-               .text-center.mt-4
+//-                 a.small.text-muted.text-decoration-none(href="#") ¿Problemas para entrar? Contactar soporte
+
+//-           //- REGISTRO (Optimizado en 2 columnas)
+//-           .tab-pane.fade#pills-register
+//-             form#formRegistro(action="/auth/registro-paciente" method="POST")
+//-               .row.g-3
+//-                 .col-md-12
+//-                   label.form-label.fw-semibold Nombre Completo
+//-                   input.form-control(type="text" name="nombre" required)
+//-                 .col-md-6
+//-                   label.form-label.fw-semibold Email
+//-                   input.form-control(type="email" name="email" required)
+//-                 .col-md-6
+//-                   label.form-label.fw-semibold DNI
+//-                   input.form-control(type="number" name="dni" required)
+//-                 .col-md-6
+//-                   label.form-label.fw-semibold Mutual
+//-                   input.form-control(type="text" name="mutual")
+//-                 .col-md-6
+//-                   label.form-label.fw-semibold Teléfono
+//-                   input.form-control(type="tel" name="telefono")
+//-                 .col-md-12
+//-                   label.form-label.fw-semibold Dirección
+//-                   input.form-control(type="text" name="direccion")
+//-                 .col-md-12
+//-                   label.form-label.fw-semibold Fecha de Nacimiento
+//-                   input.form-control(type="date" name="nacimiento" required)
+//-                 .col-md-6
+//-                   label.form-label.fw-semibold Contraseña
+//-                   input.form-control(type="password" name="password" required)
+//-                 .col-md-6
+//-                   label.form-label.fw-semibold Confirmar
+//-                   input.form-control(type="password" name="confirmPassword" required)
+              
+//-               button.btn.btn-auth.w-100.mt-4(type="submit") Crear Cuenta de Paciente
+
+//-   script.
+//-     const urlParams = new URLSearchParams(window.location.search);
+//-     if (urlParams.has('register')) {
+//-       bootstrap.Tab.getOrCreateInstance(document.querySelector('#pills-register-tab')).show();
+//-     }
+
 extends ../layout
 
 block contenido
-  //- Estilos específicos para esta vista (puedes moverlos a tu CSS)
   style.
-    body { background-color: #f8f9fa; }
-    .auth-container { max-width: 450px; margin: 50px auto; }
-    .card-auth { border-radius: 15px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-    .nav-pills-auth { background: #e9ecef; border-radius: 10px; padding: 5px; }
-    .nav-pills-auth .nav-link { color: #495057; border-radius: 8px; font-weight: 500; }
-    .nav-pills-auth .nav-link.active { background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .btn-auth { background-color: #5ba4d5; border: none; padding: 12px; border-radius: 8px; font-weight: 500; }
-    .btn-auth:hover { background-color: #4a93c4; }
-    .medical-logo { width: 120px; margin-bottom: 30px; }
+    :root {
+      --primary: #0a3d62;
+      --accent: #5ba4d5;
+      --success: #1e7f5c;
+      --glass: rgba(255, 255, 255, 0.95);
+    }
 
-  .container
-    .auth-container.text-center
-      //- Logo Médico Central
-      img.medical-logo(src="/images/logo.png" alt="Logo Médico" onerror="this.src='https://cdn-icons-png.flaticon.com/512/822/822143.png'")
+    body { 
+      background-color: #f0f4f8; 
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .main-wrapper {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
 
-      .card.card-auth
-        .card-body.p-4.p-lg-5
-          //- Selector de Pestañas
-          ul.nav.nav-pills.nav-justified.nav-pills-auth.mb-4#pills-tab(role="tablist")
-            li.nav-item(role="presentation")
-              button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab") Iniciar Sesión
-            li.nav-item(role="presentation")
-              button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab") Registrarse
+    /* --- Panel Izquierdo: Branding & Trust --- */
+    .brand-section {
+      flex: 1.2;
+      background: linear-gradient(135deg, rgba(10, 61, 98, 0.92) 0%, rgba(13, 71, 112, 0.8) 100%), 
+                  url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80');
+      background-size: cover;
+      background-position: center;
+      display: none; 
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 5rem;
+      color: white;
+    }
 
-          .tab-content#pills-tabContent
-            //- ---------------- SECCIÓN LOGIN ----------------
-            .tab-pane.fade.show.active#pills-login(role="tabpanel")
-              h2.fw-bold.mb-1 Bienvenido
-              p.text-muted.small.mb-4 Iniciá sesión para continuar
+    .brand-content h1 { font-size: 3.5rem; letter-spacing: -1px; }
+    .feature-item { 
+      background: rgba(255,255,255,0.1); 
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: 0.3s;
+    }
+    .feature-item:hover { transform: translateY(-5px); background: rgba(255,255,255,0.15); }
+
+    /* --- Panel Derecho: Login Card --- */
+    .form-section {
+      flex: 0.8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: #f8fafc;
+    }
+
+    .auth-card { 
+      width: 100%;
+      max-width: 460px;
+      background: var(--glass);
+      border-radius: 28px; 
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+      padding: 3rem;
+      border: 1px solid white;
+    }
+
+    .nav-tabs-custom {
+      border: none;
+      background: #edf2f7;
+      border-radius: 16px;
+      padding: 5px;
+      margin-bottom: 2.5rem;
+    }
+
+    .nav-tabs-custom .nav-link {
+      border: none;
+      border-radius: 12px;
+      color: #64748b;
+      font-weight: 600;
+      padding: 12px;
+      transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-tabs-custom .nav-link.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .input-group-custom {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group-custom i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      z-index: 10;
+    }
+
+    .form-control-custom {
+      width: 100%;
+      padding: 14px 14px 14px 45px;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      transition: 0.3s;
+    }
+
+    .form-control-custom:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      width: 100%;
+      box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3);
+      transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(10, 61, 98, 0.4);
+      filter: brightness(1.1);
+    }
+
+    @media (min-width: 992px) { .brand-section { display: flex; } }
+
+  .main-wrapper
+    //- IZQUIERDA: DISEÑO DE MARCA
+    .brand-section
+      .top-logo
+        img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
+      
+      .brand-content
+        span.text-uppercase.fw-bold.ls-2.small.text-info.mb-2(style="letter-spacing: 2px") Plataforma Profesional
+        h1.fw-bold Gestión de Salud Inteligente
+        p.lead.text-white-50 Simplificamos la administración médica para que usted se enfoque en lo que importa: la vida.
+        
+        .row.mt-5.g-4
+          .col-6
+            .feature-item
+              i.bi.bi-calendar2-check.fs-3.mb-2.d-block
+              h6.fw-bold Agendas
+              p.small.mb-0 Sincronización automática.
+          .col-6
+            .feature-item
+              i.bi.bi-shield-lock.fs-3.mb-2.d-block
+              h6.fw-bold Seguridad
+              p.small.mb-0 Encriptación de datos.
+
+      .bottom-info
+        p.small.text-white-50 © 2026 Consultorio Médico Integral. Todos los derechos reservados.
+
+    //- DERECHA: FORMULARIO
+    .form-section
+      .auth-card
+        .text-center.mb-5
+          img(src="/images/logo.png" alt="Logo" style="width: 80px;")
+          h4.fw-bold.mt-3.text-dark ¡Hola de nuevo!
+          p.text-muted Por favor, ingrese sus datos.
+
+        ul.nav.nav-pills.nav-justified.nav-tabs-custom#pills-tab(role="tablist")
+          li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+          li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+        .tab-content
+          //- LOGIN
+          .tab-pane.fade.show.active#pills-login
+            if error
+              .alert.alert-danger.border-0.small.rounded-3.mb-4 #{error}
+            
+            form(action="/auth/login" method="POST")
+              .input-group-custom
+                i.bi.bi-envelope-at
+                input.form-control-custom(type="email" name="email" placeholder="Correo electrónico" required)
+              .input-group-custom
+                i.bi.bi-key
+                input.form-control-custom(type="password" name="password" placeholder="Contraseña" required)
               
-              if error
-                .alert.alert-danger.py-2.small #{error}
+              button.btn-submit(type="submit") Acceder al Sistema
               
-              form(action="/auth/login" method="POST").text-start
-                .mb-3
-                  label.form-label.small.fw-bold Email
-                  input.form-control(type="email" name="email" placeholder="Correo electrónico" required)
-                .mb-3
-                  label.form-label.small.fw-bold Contraseña
-                  input.form-control(type="password" name="password" placeholder="Contraseña" required)
-                  .text-end.mt-1
-                    a.small.text-decoration-none(href="#") ¿Olvidaste tu contraseña?
-                
-                button.btn.btn-primary.btn-auth.w-100.mt-3(type="submit") Iniciar Sesión
+              .text-center.mt-4
+                a.small.text-primary.fw-semibold.text-decoration-none(href="#") ¿Olvidó su contraseña?
 
-            //- ---------------- SECCIÓN REGISTRO ----------------
-            .tab-pane.fade#pills-register(role="tabpanel")
-              h2.fw-bold.mb-4.text-start Crear Cuenta
+          //- REGISTRO
+          .tab-pane.fade#pills-register
+            form#formRegistro(action="/auth/registro-paciente" method="POST")
+              .row.g-2
+                .col-12
+                  input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre completo" required)
+                .col-md-6
+                  input.form-control-custom.ps-3(type="email" name="email" placeholder="Email" required)
+                .col-md-6
+                  input.form-control-custom.ps-3(type="number" name="dni" placeholder="DNI" required)
+                .col-12
+                  input.form-control-custom.ps-3(type="text" name="direccion" placeholder="Dirección")
+                .col-md-6
+                  input.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
+                .col-md-6
+                  input.form-control-custom.ps-3(type="password" name="confirmPassword" placeholder="Confirmar" required)
               
-              form#formRegistro(action="/auth/registro-paciente" method="POST").text-start
-                .mb-2
-                  label.form-label.small.fw-bold Nombre completo:
-                  input.form-control(type="text" name="nombre" placeholder="Nombre completo" required)
-                .mb-2
-                  label.form-label.small.fw-bold Correo electrónico:
-                  input.form-control(type="email" name="email" placeholder="Correo electrónico" required)
-                .mb-2
-                  label.form-label.small.fw-bold DNI:
-                  input.form-control(type="number" name="dni" placeholder="DNI" required)
-                .mb-2
-                  label.form-label.small.fw-bold Mutual:
-                  input.form-control(type="text" name="mutual" placeholder="Mutual o Ninguna")
-                .mb-2
-                  label.form-label.small.fw-bold Dirección:
-                  input.form-control(type="text" name="direccion" placeholder="Dirección")
-                .mb-2
-                  label.form-label.small.fw-bold Teléfono:
-                  input.form-control(type="tel" name="telefono" placeholder="Teléfono")
-                .mb-2
-                  label.form-label.small.fw-bold Fecha de Nacimiento:
-                  input.form-control(type="date" name="nacimiento" required)
-                .mb-2
-                  label.form-label.small.fw-bold Contraseña:
-                  input.form-control(type="password" name="password" placeholder="Contraseña" required)
-                .mb-4
-                  label.form-label.small.fw-bold Confirmar contraseña:
-                  input.form-control(type="password" name="confirmPassword" placeholder="Confirmar contraseña" required)
-                
-                button.btn.btn-primary.btn-auth.w-100(type="submit") Registrarse
+              button.btn-submit.mt-4(type="submit") Crear mi Cuenta
 
   script.
-    // Lógica para que si vienes de un error de registro, se mantenga la pestaña de registro abierta
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('register')) {
-      const triggerEl = document.querySelector('#pills-register-tab')
-      bootstrap.Tab.getInstance(triggerEl).show()
-    }
+    // Animación de entrada
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelector('.auth-card').style.opacity = '0';
+      document.querySelector('.auth-card').style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        document.querySelector('.auth-card').style.transition = 'all 0.6s ease';
+        document.querySelector('.auth-card').style.opacity = '1';
+        document.querySelector('.auth-card').style.transform = 'translateY(0)';
+      }, 100);
+    });
