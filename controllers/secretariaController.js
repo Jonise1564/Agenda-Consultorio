@@ -581,19 +581,84 @@ const Especialidad = require('../models/especialidadesModels');
 class SecretariaController {
 
     // Panel Principal de Secretaría
-    async index(req, res, next) {
-        try {
-            const especialidades = await Especialidad.getAll();
-            const medicos = await Medico.listar();
-            res.render('secretaria/index', {
-                especialidades,
-                medicos,
-                status: req.query.status || null
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
+    // async index(req, res, next) {
+    //     try {
+    //         const especialidades = await Especialidad.getAll();
+    //         const medicos = await Medico.listar();
+    //         res.render('secretaria/index', {
+    //             especialidades,
+    //             medicos,
+    //             status: req.query.status || null
+    //         });
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
+    // Panel Principal de Secretaría
+    // async index(req, res, next) {
+    //     try {
+    //         const especialidades = await Especialidad.getAll();
+    //         const medicos = await Medico.listar();
+
+    //         // AGREGAR ESTA LÍNEA:
+    //         // Necesitamos obtener todas las ausencias registradas
+    //         const ausencias = await Agenda.listarAusencias(); 
+
+    //         res.render('secretaria/index', {
+    //             especialidades,
+    //             medicos,
+    //             ausencias, // <--- La pasamos a la vista
+    //             status: req.query.status || null
+    //         });
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
+    // Panel Principal de Secretaría
+    // async index(req, res, next) {
+    //     try {
+    //         const especialidades = await Especialidad.getAll();
+    //         const medicos = await Medico.listar();
+
+    //         // AGREGAMOS LA LLAMADA AL NUEVO MÉTODO
+    //         const ausencias = await Agenda.listarAusencias();
+
+    //         res.render('secretaria/index', {
+    //             especialidades,
+    //             medicos,
+    //             ausencias, // <--- Ahora los datos viajan a la vista
+    //             status: req.query.status || null
+    //         });
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
+    // En SecretariaController.js
+
+// 1. Limpiamos el index (Ya no carga ausencias)
+async index(req, res, next) {
+    try {
+        const especialidades = await Especialidad.getAll();
+        const medicos = await Medico.listar();
+        res.render('secretaria/index', {
+            especialidades, medicos,
+            status: req.query.status || null
+        });
+    } catch (error) { next(error); }
+}
+
+// 2. Nuevo método para la vista exclusiva
+async verAusencias(req, res, next) {
+    try {
+        const ausencias = await Agenda.listarAusencias();
+        const medicos = await Medico.listar(); // Para el modal de carga
+        res.render('secretaria/lista_ausencias', { ausencias, medicos });
+    } catch (error) { next(error); }
+}
+
+
+
+
 
     // Consulta de slots horarios disponibles (AJAX)
     async disponibilidad(req, res, next) {
@@ -830,6 +895,27 @@ class SecretariaController {
             next(error);
         }
     }
+
+
+    // ELIMINAR O CANCELAR AUSENCIA
+    async eliminarAusencia(req, res, next) {
+        try {
+            const { id } = req.params;
+            
+            // Llamamos al método que agregamos antes en el modelo Agenda
+            await Agenda.eliminarAusencia(id);
+
+            // Redirigimos al panel con un mensaje de éxito
+            res.redirect('/secretaria?status=ausencia_eliminada');
+        } catch (error) {
+            console.error("Error al eliminar ausencia:", error);
+            next(error);
+        }
+    }
+
+
+
+
 }
 
 module.exports = new SecretariaController();

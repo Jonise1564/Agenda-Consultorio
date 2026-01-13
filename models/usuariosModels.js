@@ -109,6 +109,36 @@ class Usuario extends Persona {
             throw error;
         }
     }
+
+    static async getByEmail(email) {
+        console.log(`Model Usuario: buscando por email: ${email}`);
+        let conn;
+        try {
+            conn = await createConnection();
+            // Corregido: p.id en lugar de p.id_persona
+            const [rows] = await conn.query(`
+                SELECT 
+                    u.id, 
+                    u.id_persona, 
+                    u.email, 
+                    u.password, 
+                    u.id_rol, 
+                    p.nombre, 
+                    p.apellido
+                FROM usuarios u
+                JOIN personas p ON u.id_persona = p.id
+                WHERE u.email = ?
+            `, [email]);
+            
+            return rows[0] || null;
+        } catch (error) {
+            console.error("Error en getByEmail:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
 }
 
 module.exports = Usuario;

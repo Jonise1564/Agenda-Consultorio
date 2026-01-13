@@ -1,0 +1,155 @@
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     .row.mb-4
+//-       .col-md-8
+//-         h2.fw-bold.text-dark
+//-           i.fa-solid.fa-user-slash.me-2.text-secondary
+//-           | Gestión de Ausencias y Licencias
+//-         p.text-muted Administre los bloqueos de agenda de los profesionales.
+//-       .col-md-4.text-md-end.align-self-center
+//-         a.btn.btn-outline-secondary.rounded-pill.me-2(href="/secretaria")
+//-           i.fa-solid.fa-arrow-left.me-1
+//-           | Volver al Panel
+//-         button.btn.btn-secondary.rounded-pill(data-bs-toggle="modal" data-bs-target="#modalAusencia")
+//-           i.fa-solid.fa-plus.me-1
+//-           | Nueva Ausencia
+
+//-     .card.shadow-sm.border-0.rounded-4
+//-       .card-body.p-0
+//-         .table-responsive
+//-           table.table.table-hover.align-middle.mb-0
+//-             thead.bg-light
+//-               tr.text-uppercase.small.fw-bold
+//-                 th.ps-4 Profesional
+//-                 th Periodo
+//-                 th Motivo
+//-                 th Observaciones
+//-                 th Estado
+//-                 th.text-center Acciones
+//-             tbody
+//-               if ausencias && ausencias.length > 0
+//-                 each aus in ausencias
+//-                   - const hoy = new Date().setHours(0,0,0,0)
+//-                   - const fin = new Date(aus.fecha_fin).setHours(0,0,0,0)
+//-                   tr
+//-                     td.ps-4
+//-                       span.fw-bold.text-dark #{aus.apellido}, #{aus.nombre}
+//-                     td
+//-                       .small
+//-                         i.fa-solid.fa-calendar-day.me-1.text-muted
+//-                         | #{new Date(aus.fecha_inicio).toLocaleDateString('es-AR')} al #{new Date(aus.fecha_fin).toLocaleDateString('es-AR')}
+//-                     td: span.badge.bg-light.text-secondary.border #{aus.tipo}
+//-                     td.small.text-muted #{aus.descripcion || '-'}
+//-                     td
+//-                       if fin < hoy
+//-                         span.badge.bg-secondary.bg-opacity-10.text-secondary Expirada
+//-                       else
+//-                         span.badge.bg-success.bg-opacity-10.text-success Vigente
+//-                     td.text-center
+//-                       form(action=`/secretaria/ausencias/eliminar/${aus.id}` method="POST" onsubmit="return confirm('¿Habilitar agenda?')")
+//-                         button.btn.btn-sm.btn-outline-danger.rounded-circle(type="submit")
+//-                           i.fa-solid.fa-trash-can
+//-               else
+//-                 tr: td.text-center.py-5(colspan="6") No hay ausencias registradas.
+
+//-     //- Incluimos el mismo modal que ya tenías para poder cargar desde aquí
+//-     include ./modals/modal_ausencia.pug
+
+extends ../layout
+
+block contenido
+  .container-fluid.py-4
+    .row.mb-4
+      .col-md-8
+        h2.fw-bold.text-dark
+          i.fa-solid.fa-user-slash.me-2.text-secondary
+          | Gestión de Ausencias y Licencias
+        p.text-muted Administre los bloqueos de agenda de los profesionales.
+      .col-md-4.text-md-end.align-self-center
+        a.btn.btn-outline-secondary.rounded-pill.me-2(href="/secretaria")
+          i.fa-solid.fa-arrow-left.me-1
+          | Volver al Panel
+        button.btn.btn-secondary.rounded-pill(data-bs-toggle="modal" data-bs-target="#modalAusencia")
+          i.fa-solid.fa-plus.me-1
+          | Nueva Ausencia
+
+    .card.shadow-sm.border-0.rounded-4
+      .card-body.p-0
+        .table-responsive
+          table.table.table-hover.align-middle.mb-0
+            thead.bg-light
+              tr.text-uppercase.small.fw-bold
+                th.ps-4 Profesional
+                th Periodo
+                th Motivo
+                th Observaciones
+                th Estado
+                th.text-center Acciones
+            tbody
+              if ausencias && ausencias.length > 0
+                each aus in ausencias
+                  - const hoy = new Date().setHours(0,0,0,0)
+                  - const fin = new Date(aus.fecha_fin).setHours(0,0,0,0)
+                  tr
+                    td.ps-4
+                      span.fw-bold.text-dark #{aus.apellido}, #{aus.nombre}
+                    td
+                      .small
+                        i.fa-solid.fa-calendar-day.me-1.text-muted
+                        | #{new Date(aus.fecha_inicio).toLocaleDateString('es-AR')} al #{new Date(aus.fecha_fin).toLocaleDateString('es-AR')}
+                    td: span.badge.bg-light.text-secondary.border #{aus.tipo}
+                    td.small.text-muted #{aus.descripcion || '-'}
+                    td
+                      if fin < hoy
+                        span.badge.bg-secondary.bg-opacity-10.text-secondary Expirada
+                      else
+                        span.badge.bg-success.bg-opacity-10.text-success Vigente
+                    td.text-center
+                      form(action=`/secretaria/ausencias/eliminar/${aus.id}` method="POST" onsubmit="return confirm('¿Confirmas que deseas habilitar la agenda del médico?')")
+                        button.btn.btn-sm.btn-outline-danger.rounded-circle(type="submit")
+                          i.fa-solid.fa-trash-can
+              else
+                tr: td.text-center.py-5(colspan="6") No hay ausencias registradas.
+
+  //- ===============================
+  //- MODAL DE AUSENCIAS INTEGRADO
+  //- ===============================
+  #modalAusencia.modal.fade(tabindex="-1")
+    .modal-dialog.modal-dialog-centered
+      .modal-content.border-0.shadow-lg
+        .modal-header.bg-secondary.text-white.py-3
+          h5.modal-title.fw-bold
+            i.fa-solid.fa-user-slash.me-2
+            | Registrar Ausencia de Profesional
+          button.btn-close.btn-close-white(data-bs-dismiss="modal")
+        form(action="/secretaria/ausencias/registrar" method="POST")
+          .modal-body.p-4
+            .mb-3
+              label.form-label.small.fw-bold Profesional
+              select.form-select(name="id_medico" required)
+                option(value="" disabled selected) Seleccionar médico...
+                if medicos
+                  each med in medicos
+                    option(value=med.id) #{med.apellido}, #{med.nombre}
+            .row
+              .col-6.mb-3
+                label.form-label.small.fw-bold Desde
+                input.form-control(type="date" name="fecha_inicio" required)
+              .col-6.mb-3
+                label.form-label.small.fw-bold Hasta
+                input.form-control(type="date" name="fecha_fin" required)
+            .mb-3
+              label.form-label.small.fw-bold Motivo de la Ausencia
+              select.form-select(name="tipo" required)
+                option(value="Licencia") Licencia Médica
+                option(value="Congreso") Congreso / Capacitación
+                option(value="Vacaciones") Vacaciones
+                option(value="Particular") Asuntos Particulares
+            .mb-3
+              label.form-label.small.fw-bold Observaciones (opcional)
+              textarea.form-control(name="descripcion" rows="2" style="resize:none")
+          .modal-footer.bg-light
+            button.btn.btn-light.rounded-pill(type="button" data-bs-dismiss="modal") Cancelar
+            button.btn.btn-secondary.px-4.rounded-pill(type="submit") Bloquear Agenda

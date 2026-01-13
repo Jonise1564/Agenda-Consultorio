@@ -1,19 +1,175 @@
+//- extends ../layout
+
+//- block contenido
+//-     .container.mt-5(style="max-width:400px")
+//-         h2.text-center Iniciar Sesión
+
+//-         if error
+//-             .alert.alert-danger= error
+
+//-         form(action="/login" method="POST")
+//-             .mb-3
+//-                 label.form-label Email
+//-                 input.form-control(type="email" name="email" required)
+
+//-             .mb-3
+//-                 label.form-label Contraseña
+//-                 input.form-control(type="password" name="password" required)
+
+//-             button.btn.btn-primary.w-100(type="submit") Ingresar
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.py-5
+//-     .row.justify-content-center
+//-       .col-md-10.col-lg-8
+//-         .card.border-0.shadow-lg.rounded-4.overflow-hidden
+//-           .row.g-0
+//-             // --- LADO IZQUIERDO: LOGIN ---
+//-             .col-md-5.bg-primary.text-white.p-4.p-lg-5.d-flex.flex-column.justify-content-center
+//-               h2.fw-bold.mb-3 Iniciar Sesión
+//-               p.small.mb-4 Ingrese sus credenciales para acceder al sistema médico.
+              
+//-               if error
+//-                 .alert.alert-danger.py-2.small #{error}
+//-               if success
+//-                 .alert.alert-success.py-2.small #{success}
+
+//-               form(action="/auth/login" method="POST")
+//-                 .mb-3
+//-                   label.form-label.small Email
+//-                   input.form-control.form-control-sm(type="email" name="email" required)
+//-                 .mb-3
+//-                   label.form-label.small Contraseña
+//-                   input.form-control.form-control-sm(type="password" name="password" required)
+//-                 button.btn.btn-light.w-100.fw-bold.mt-3(type="submit") Entrar
+
+//-             // --- LADO DERECHO: REGISTRO PACIENTES ---
+//-             .col-md-7.p-4.p-lg-5.bg-white
+//-               h3.fw-bold.text-primary.mb-4 Registro de Paciente
+//-               form#formRegistro.row.g-3(action="/auth/registro-paciente" method="POST")
+//-                 .col-md-6
+//-                   label.form-label.small Nombre
+//-                   input.form-control(type="text" name="nombre" required)
+//-                 .col-md-6
+//-                   label.form-label.small Apellido
+//-                   input.form-control(type="text" name="apellido" required)
+//-                 .col-md-6
+//-                   label.form-label.small DNI
+//-                   input.form-control(type="number" name="dni" required)
+//-                 .col-md-6
+//-                   label.form-label.small Fec. Nacimiento
+//-                   input.form-control(type="date" name="nacimiento" required)
+//-                 .col-md-12
+//-                   label.form-label.small Correo Electrónico
+//-                   input.form-control(type="email" name="email" required)
+//-                 .col-md-12
+//-                   label.form-label.small Crear Contraseña
+//-                   input.form-control(type="password" name="password" required minlength="6")
+                
+//-                 .col-12.mt-4
+//-                   button.btn.btn-outline-primary.w-100(type="submit") 
+//-                     i.bi.bi-person-plus.me-2
+//-                     | Crear mi cuenta de Paciente
+
+//-   script.
+//-     // Opcional: SweetAlert si hay errores por URL
+//-     const urlParams = new URLSearchParams(window.location.search);
+//-     if (urlParams.has('error')) {
+//-       Swal.fire('Error', 'Credenciales incorrectas', 'error');
+//-     }
+
 extends ../layout
 
 block contenido
-    .container.mt-5(style="max-width:400px")
-        h2.text-center Iniciar Sesión
+  //- Estilos específicos para esta vista (puedes moverlos a tu CSS)
+  style.
+    body { background-color: #f8f9fa; }
+    .auth-container { max-width: 450px; margin: 50px auto; }
+    .card-auth { border-radius: 15px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .nav-pills-auth { background: #e9ecef; border-radius: 10px; padding: 5px; }
+    .nav-pills-auth .nav-link { color: #495057; border-radius: 8px; font-weight: 500; }
+    .nav-pills-auth .nav-link.active { background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn-auth { background-color: #5ba4d5; border: none; padding: 12px; border-radius: 8px; font-weight: 500; }
+    .btn-auth:hover { background-color: #4a93c4; }
+    .medical-logo { width: 120px; margin-bottom: 30px; }
 
-        if error
-            .alert.alert-danger= error
+  .container
+    .auth-container.text-center
+      //- Logo Médico Central
+      img.medical-logo(src="/images/logo.png" alt="Logo Médico" onerror="this.src='https://cdn-icons-png.flaticon.com/512/822/822143.png'")
 
-        form(action="/login" method="POST")
-            .mb-3
-                label.form-label Email
-                input.form-control(type="email" name="email" required)
+      .card.card-auth
+        .card-body.p-4.p-lg-5
+          //- Selector de Pestañas
+          ul.nav.nav-pills.nav-justified.nav-pills-auth.mb-4#pills-tab(role="tablist")
+            li.nav-item(role="presentation")
+              button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab") Iniciar Sesión
+            li.nav-item(role="presentation")
+              button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab") Registrarse
 
-            .mb-3
-                label.form-label Contraseña
-                input.form-control(type="password" name="password" required)
+          .tab-content#pills-tabContent
+            //- ---------------- SECCIÓN LOGIN ----------------
+            .tab-pane.fade.show.active#pills-login(role="tabpanel")
+              h2.fw-bold.mb-1 Bienvenido
+              p.text-muted.small.mb-4 Iniciá sesión para continuar
+              
+              if error
+                .alert.alert-danger.py-2.small #{error}
+              
+              form(action="/auth/login" method="POST").text-start
+                .mb-3
+                  label.form-label.small.fw-bold Email
+                  input.form-control(type="email" name="email" placeholder="Correo electrónico" required)
+                .mb-3
+                  label.form-label.small.fw-bold Contraseña
+                  input.form-control(type="password" name="password" placeholder="Contraseña" required)
+                  .text-end.mt-1
+                    a.small.text-decoration-none(href="#") ¿Olvidaste tu contraseña?
+                
+                button.btn.btn-primary.btn-auth.w-100.mt-3(type="submit") Iniciar Sesión
 
-            button.btn.btn-primary.w-100(type="submit") Ingresar
+            //- ---------------- SECCIÓN REGISTRO ----------------
+            .tab-pane.fade#pills-register(role="tabpanel")
+              h2.fw-bold.mb-4.text-start Crear Cuenta
+              
+              form#formRegistro(action="/auth/registro-paciente" method="POST").text-start
+                .mb-2
+                  label.form-label.small.fw-bold Nombre completo:
+                  input.form-control(type="text" name="nombre" placeholder="Nombre completo" required)
+                .mb-2
+                  label.form-label.small.fw-bold Correo electrónico:
+                  input.form-control(type="email" name="email" placeholder="Correo electrónico" required)
+                .mb-2
+                  label.form-label.small.fw-bold DNI:
+                  input.form-control(type="number" name="dni" placeholder="DNI" required)
+                .mb-2
+                  label.form-label.small.fw-bold Mutual:
+                  input.form-control(type="text" name="mutual" placeholder="Mutual o Ninguna")
+                .mb-2
+                  label.form-label.small.fw-bold Dirección:
+                  input.form-control(type="text" name="direccion" placeholder="Dirección")
+                .mb-2
+                  label.form-label.small.fw-bold Teléfono:
+                  input.form-control(type="tel" name="telefono" placeholder="Teléfono")
+                .mb-2
+                  label.form-label.small.fw-bold Fecha de Nacimiento:
+                  input.form-control(type="date" name="nacimiento" required)
+                .mb-2
+                  label.form-label.small.fw-bold Contraseña:
+                  input.form-control(type="password" name="password" placeholder="Contraseña" required)
+                .mb-4
+                  label.form-label.small.fw-bold Confirmar contraseña:
+                  input.form-control(type="password" name="confirmPassword" placeholder="Confirmar contraseña" required)
+                
+                button.btn.btn-primary.btn-auth.w-100(type="submit") Registrarse
+
+  script.
+    // Lógica para que si vienes de un error de registro, se mantenga la pestaña de registro abierta
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('register')) {
+      const triggerEl = document.querySelector('#pills-register-tab')
+      bootstrap.Tab.getInstance(triggerEl).show()
+    }

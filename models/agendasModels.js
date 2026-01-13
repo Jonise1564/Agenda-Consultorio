@@ -391,7 +391,54 @@ class Agenda {
         }
     }
 
+// =====================================================
+    // 13. LISTAR TODAS LAS AUSENCIAS (Para el Panel de Administración)
+    // =====================================================
+    static async listarAusencias() {
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+                SELECT 
+                    a.id, 
+                    a.id_medico, 
+                    a.fecha_inicio, 
+                    a.fecha_fin, 
+                    a.tipo, 
+                    a.descripcion,
+                    p.nombre, 
+                    p.apellido 
+                FROM AUSENCIAS a
+                JOIN medicos m ON a.id_medico = m.id_medico
+                JOIN personas p ON m.id_persona = p.id
+                ORDER BY a.fecha_inicio DESC
+            `;
+            const [rows] = await conn.query(sql);
+            return rows;
+        } catch (error) {
+            console.error('Error en listarAusencias:', error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
+    // =====================================================
+    // 14. ELIMINAR AUSENCIA (Para liberar la agenda)
+    // =====================================================
+    static async eliminarAusencia(id) {
+        let conn;
+        try {
+            conn = await createConnection();
+            await conn.query('DELETE FROM AUSENCIAS WHERE id = ?', [id]);
+            return true;
+        } catch (error) {
+            console.error('Error en eliminarAusencia:', error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
 
 
