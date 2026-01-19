@@ -265,19 +265,129 @@
 // };
 
 
+
+// const Usuario = require('../models/usuariosModels');
+// const Persona = require('../models/personasModels');
+// const bcrypt = require('bcryptjs');
+// const jwt = require('jsonwebtoken');
+
+// // Usamos la misma clave que en app.js para evitar errores de validación
+// const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta';
+
+// // --- LOGIN ---
+// exports.login = async (req, res) => {
+//     const { email, password } = req.body;
+//     try {
+//         // Buscamos al usuario por email
+//         const usuario = await Usuario.getByEmail(email);
+        
+//         if (!usuario) {
+//             console.log("Usuario no encontrado:", email);
+//             return res.render('auth/login', { error: 'Credenciales inválidas' });
+//         }
+
+//         // Validación de contraseña (Texto plano para desarrollo o Bcrypt para producción)
+//         const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
+        
+//         if (!esValida) {
+//             console.log("Contraseña incorrecta para:", email);
+//             return res.render('auth/login', { error: 'Credenciales inválidas' });
+//         }
+
+//         // Generar JWT incluyendo el NOMBRE y ROL para la Navbar y Redirecciones
+//         const token = jwt.sign(
+//             { 
+//                 id_usuario: usuario.id, 
+//                 id_rol: usuario.id_rol, 
+//                 id_persona: usuario.id_persona,
+//                 nombre: usuario.nombre || 'Usuario' 
+//             },
+//             JWT_SECRET,
+//             { expiresIn: '1d' }
+//         );
+
+//         // Guardar en Cookie
+//         res.cookie('token_acceso', token, { 
+//             httpOnly: true, 
+//             secure: process.env.NODE_ENV === 'production', 
+//             sameSite: 'lax',
+//             maxAge: 24 * 60 * 60 * 1000 // 1 día
+//         });
+
+//         /**
+//          * REDIRECCIÓN DINÁMICA SEGÚN TU TABLA DE ROLES:
+//          * 1: Admin
+//          * 2: Profesional
+//          * 3: Secretaria
+//          * 4: Paciente
+//          */
+//         const rutas = { 
+//             1: '/',             // Admin al inicio
+//             2: '/medicos',      
+//             3: '/secretaria',   // Lucia entra aquí (Secretaria)
+//             4: '/paciente'      // Pacientes a su área
+//         };
+
+//         const destino = rutas[usuario.id_rol] || '/';
+        
+//         console.log(`Model Usuario: buscando por email: ${email}`);
+//         console.log(`Login exitoso: ${email}. Rol: ${usuario.id_rol}. Redirigiendo a ${destino}`);
+        
+//         res.redirect(destino);
+
+//     } catch (error) {
+//         console.error("Error en el proceso de Login:", error);
+//         res.render('auth/login', { error: 'Error interno del servidor' });
+//     }
+// };
+
+// // --- REGISTRO DE PACIENTE ---
+// exports.registroPaciente = async (req, res) => {
+//     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
+    
+//     try {
+//         // 1. Crear la Persona
+//         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
+//         const id_persona = nuevaPersona.id || nuevaPersona.insertId;
+
+//         // 2. Hashear la contraseña
+//         const salt = await bcrypt.genSalt(10);
+//         const hashedPassword = await bcrypt.hash(password, salt);
+
+//         // 3. Crear el Usuario (Rol 4 = Paciente según tu tabla)
+//         await Usuario.create({
+//             id_persona,
+//             email,
+//             password: hashedPassword,
+//             id_rol: 4
+//         });
+
+//         res.render('auth/login', { success: 'Registro exitoso. Ya puede iniciar sesión.' });
+
+//     } catch (error) {
+//         console.error("Error en registro:", error);
+//         res.render('auth/login', { error: 'Error al registrarse. El DNI o Email podrían ya existir.' });
+//     }
+// };
+
+// // --- CERRAR SESIÓN ---
+// exports.logout = (req, res) => {
+//     res.clearCookie('token_acceso');
+//     res.redirect('/auth/login');
+// };
+
+
 const Usuario = require('../models/usuariosModels');
 const Persona = require('../models/personasModels');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Usamos la misma clave que en app.js para evitar errores de validación
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta';
 
 // --- LOGIN ---
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
-        // Buscamos al usuario por email
         const usuario = await Usuario.getByEmail(email);
         
         if (!usuario) {
@@ -285,7 +395,6 @@ exports.login = async (req, res) => {
             return res.render('auth/login', { error: 'Credenciales inválidas' });
         }
 
-        // Validación de contraseña (Texto plano para desarrollo o Bcrypt para producción)
         const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
         
         if (!esValida) {
@@ -293,10 +402,10 @@ exports.login = async (req, res) => {
             return res.render('auth/login', { error: 'Credenciales inválidas' });
         }
 
-        // Generar JWT incluyendo el NOMBRE y ROL para la Navbar y Redirecciones
+        // Generar JWT
         const token = jwt.sign(
             { 
-                id_usuario: usuario.id, 
+                id: usuario.id, // Cambiado a 'id' para consistencia con los modelos
                 id_rol: usuario.id_rol, 
                 id_persona: usuario.id_persona,
                 nombre: usuario.nombre || 'Usuario' 
@@ -305,33 +414,21 @@ exports.login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        // Guardar en Cookie
         res.cookie('token_acceso', token, { 
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
             sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000 // 1 día
+            maxAge: 24 * 60 * 60 * 1000 
         });
 
-        /**
-         * REDIRECCIÓN DINÁMICA SEGÚN TU TABLA DE ROLES:
-         * 1: Admin
-         * 2: Profesional
-         * 3: Secretaria
-         * 4: Paciente
-         */
-        const rutas = { 
-            1: '/',             // Admin al inicio
-            2: '/medicos',      // Profesional a su panel (ajustar si es otra ruta)
-            3: '/secretaria',   // Lucia entra aquí (Secretaria)
-            4: '/paciente'      // Pacientes a su área
-        };
-
-        const destino = rutas[usuario.id_rol] || '/';
+        // =====================================================
+        // REDIRECCIÓN CENTRALIZADA
+        // Mandamos a todos a '/' para que app.js gestione el rol.
+        // Esto evita el error 404 de '/paciente'
+        // =====================================================
+        const destino = '/';
         
-        console.log(`Model Usuario: buscando por email: ${email}`);
         console.log(`Login exitoso: ${email}. Rol: ${usuario.id_rol}. Redirigiendo a ${destino}`);
-        
         res.redirect(destino);
 
     } catch (error) {
@@ -345,15 +442,12 @@ exports.registroPaciente = async (req, res) => {
     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
     
     try {
-        // 1. Crear la Persona
         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
         const id_persona = nuevaPersona.id || nuevaPersona.insertId;
 
-        // 2. Hashear la contraseña
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 3. Crear el Usuario (Rol 4 = Paciente según tu tabla)
         await Usuario.create({
             id_persona,
             email,

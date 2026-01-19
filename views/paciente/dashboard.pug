@@ -1,0 +1,555 @@
+//- //- //- extends ../layout
+
+//- //- //- block contenido
+//- //- //-   .container.mt-4
+//- //- //-     .row
+//- //- //-       .col-md-4
+//- //- //-         .card.shadow-sm.border-0.mb-4
+//- //- //-           .card-body.text-center
+//- //- //-             img.rounded-circle.mb-3(src="/images/user_icon_004.png" width="100")
+//- //- //-             h4.fw-bold= usuario.nombre + ' ' + usuario.apellido
+//- //- //-             p.text-muted Paciente
+//- //- //-             hr
+//- //- //-             .d-grid
+//- //- //-               a.btn.btn-primary(href="/mi-panel/nuevo-turno") 
+//- //- //-                 i.bi.bi-plus-circle.me-2
+//- //- //-                 | Solicitar Turno
+
+//- //- //-       .col-md-8
+//- //- //-         .card.shadow-sm.border-0
+//- //- //-           .card-header.bg-white.py-3
+//- //- //-             h5.mb-0.fw-bold Mis Turnos Agendados
+//- //- //-           .card-body
+//- //- //-             if turnos && turnos.length > 0
+//- //- //-               .table-responsive
+//- //- //-                 table.table.table-hover
+//- //- //-                   thead.table-light
+//- //- //-                     tr
+//- //- //-                       th Fecha
+//- //- //-                       th Especialidad
+//- //- //-                       th Médico
+//- //- //-                       th Estado
+//- //- //-                   tbody
+//- //- //-                     each turno in turnos
+//- //- //-                       tr
+//- //- //-                         td= turno.fecha_formateada
+//- //- //-                         td= turno.especialidad
+//- //- //-                         td= turno.medico_nombre
+//- //- //-                         td
+//- //- //-                           span.badge(class=turno.estado === 'pendiente' ? 'bg-warning' : 'bg-success')= turno.estado
+//- //- //-             else
+//- //- //-               .text-center.py-5
+//- //- //-                 i.bi.bi-calendar-x.display-1.text-muted
+//- //- //-                 p.mt-3 Todavía no tienes turnos programados.
+
+
+
+//- //- extends ../layout
+
+//- //- block contenido
+//- //-   .container.mt-4
+//- //-     .row
+//- //-       .col-md-4
+//- //-         .card.shadow-sm.border-0.mb-4
+//- //-           .card-body.text-center
+//- //-             img.rounded-circle.mb-3(src="/images/user_icon_004.png" width="100")
+//- //-             //- Cambiado 'usuario' por 'paciente'
+//- //-             h4.fw-bold= paciente.nombre + ' ' + paciente.apellido
+//- //-             p.text-muted Paciente
+//- //-             hr
+//- //-             .d-grid
+//- //-               a.btn.btn-primary(href="/pacientes/nuevo-turno") 
+//- //-                 i.bi.bi-plus-circle.me-2
+//- //-                 | Solicitar Turno
+
+//- //-       .col-md-8
+//- //-         .card.shadow-sm.border-0
+//- //-           .card-header.bg-white.py-3
+//- //-             h5.mb-0.fw-bold Mis Turnos Agendados
+//- //-           .card-body
+//- //-             if turnos && turnos.length > 0
+//- //-               .table-responsive
+//- //-                 table.table.table-hover
+//- //-                   thead.table-light
+//- //-                     tr
+//- //-                       th Fecha
+//- //-                       th Hora
+//- //-                       th Especialidad
+//- //-                       th Médico
+//- //-                       th Estado
+//- //-                   tbody
+//- //-                     each turno in turnos
+//- //-                       tr
+//- //-                         //- Ajustado a los nombres del SQL que escribimos antes
+//- //-                         td= turno.fecha.toLocaleDateString()
+//- //-                         td= turno.hora
+//- //-                         td= turno.especialidad_nombre
+//- //-                         td= turno.medico_nombre + ' ' + turno.medico_apellido
+//- //-                         td
+//- //-                           span.badge(class=(turno.estado === 'pendiente' || turno.estado === 'Reservado') ? 'bg-warning' : 'bg-success')= turno.estado
+//- //-             else
+//- //-               .text-center.py-5
+//- //-                 i.bi.bi-calendar-x.display-1.text-muted
+//- //-                 p.mt-3 Todavía no tienes turnos programados.
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4
+//-     if !paciente
+//-       .alert.alert-warning No se encontró información del perfil.
+//-     else
+//-       .row
+//-         .col-md-4
+//-           .card.shadow-sm.border-0.mb-4
+//-             .card-body.text-center
+//-               img.rounded-circle.mb-3(src="/images/user_icon_004.png" width="100")
+//-               //- IMPORTANTE: Usamos 'paciente' porque así lo envía el controller
+//-               h4.fw-bold= paciente.nombre + ' ' + paciente.apellido
+//-               p.text-muted Paciente
+//-               hr
+//-               .d-grid
+//-                 a.btn.btn-primary(href="/pacientes/nuevo-turno") 
+//-                   i.bi.bi-plus-circle.me-2
+//-                   | Solicitar Turno
+
+//-         .col-md-8
+//-           .card.shadow-sm.border-0
+//-             .card-header.bg-white.py-3
+//-               h5.mb-0.fw-bold Mis Turnos Agendados
+//-             .card-body
+//-               //- Verificamos que 'turnos' exista y tenga datos
+//-               if turnos && turnos.length > 0
+//-                 .table-responsive
+//-                   table.table.table-hover
+//-                     thead.table-light
+//-                       tr
+//-                         th Fecha
+//-                         th Hora
+//-                         th Especialidad
+//-                         th Médico
+//-                         th Estado
+//-                     tbody
+//-                       each turno in turnos
+//-                         tr
+//-                           //- Ajustamos a los nombres de columna del SQL que agregamos antes
+//-                           td= new Date(turno.fecha).toLocaleDateString('es-AR')
+//-                           td= turno.hora
+//-                           td= turno.especialidad_nombre
+//-                           td= turno.medico_nombre + ' ' + turno.medico_apellido
+//-                           td
+//-                             span.badge(class=(turno.estado === 'pendiente' || turno.estado === 'Reservado') ? 'bg-warning text-dark' : 'bg-success')= turno.estado
+//-               else
+//-                 .text-center.py-5
+//-                   i.bi.bi-calendar-x.display-1.text-muted
+//-                   p.mt-3 Todavía no tienes turnos programados.
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4
+//-     .row
+//-       .col-md-4
+//-         .card.shadow-sm.border-0.mb-4
+//-           .card-body.text-center
+//-             //- Imagen (corregida la ruta si no existe)
+//-             img.rounded-circle.mb-3(src="https://ui-avatars.com/api/?name=Marisol+Moreno&background=random" width="100")
+            
+//-             //- Usamos los nombres del DEBUG
+//-             h4.fw-bold= paciente.nombre + ' ' + paciente.apellido
+//-             p.badge.bg-info.text-dark= paciente.obra_social_nombre
+//-             p.text-muted Paciente
+//-             hr
+//-             .d-grid
+//-               //- Corregido el link que daba 404
+//-               a.btn.btn-primary(href="/turnos") 
+//-                 i.bi.bi-plus-circle.me-2
+//-                 | Solicitar Turno
+
+//-       .col-md-8
+//-         .card.shadow-sm.border-0
+//-           .card-header.bg-white.py-3
+//-             h5.mb-0.fw-bold Mis Turnos Agendados
+//-           .card-body
+//-             if turnos && turnos.length > 0
+//-               .table-responsive
+//-                 table.table.table-hover
+//-                   thead.table-light
+//-                     tr
+//-                       th Fecha
+//-                       th Hora
+//-                       th Especialidad
+//-                       th Médico
+//-                       th Estado
+//-                   tbody
+//-                     each turno in turnos
+//-                       tr
+//-                         td= new Date(turno.fecha).toLocaleDateString()
+//-                         td= turno.hora
+//-                         td= turno.especialidad_nombre
+//-                         td= turno.medico_nombre + ' ' + turno.medico_apellido
+//-                         td
+//-                           span.badge(class=(turno.estado === 'pendiente') ? 'bg-warning' : 'bg-success')= turno.estado
+//-             else
+//-               .text-center.py-5
+//-                 i.bi.bi-calendar-x.display-1.text-muted
+//-                 p.mt-3 Todavía no tienes turnos programados.
+
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     .row.mb-4
+//-       .col-12
+//-         h2.fw-bold.text-dark
+//-           i.fa-solid.fa-chalkboard-user.me-2.text-primary
+//-           | Mi Panel de Salud
+//-         p.text-muted Hola, #{paciente.nombre}. Aquí puedes gestionar tus citas médicas.
+
+//-     .row.g-4
+//-       //- COLUMNA IZQUIERDA: RESERVA DE TURNO (Estilo Secretaría)
+//-       .col-xl-5
+//-         .card.border-0.shadow-sm.rounded-4
+//-           .card-header.bg-primary.text-white.py-3.rounded-top-4
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-calendar-plus.me-2
+//-               | Solicitar Nuevo Turno
+//-           .card-body.p-4
+//-             form#formReserva(method="POST" action="/pacientes/confirmar-reserva")
+//-               input#agendaIdHidden(type="hidden" name="id_agenda")
+//-               input(type="hidden" name="id_paciente" value=paciente.id_paciente)
+
+//-               .mb-3
+//-                 label.form-label.small.fw-bold.text-uppercase.text-muted Profesional
+//-                 .input-group
+//-                   span.input-group-text.bg-light: i.fa-solid.fa-user-doctor.text-primary
+//-                   input#buscarMedico.form-control.bg-light(type="text" placeholder="Buscar médico..." autocomplete="off")
+//-                 #sugerenciasMedico.list-group.position-absolute.w-100.shadow-lg.z-3
+//-                 input#medicoId(type="hidden" name="id_medico")
+              
+//-               .mb-3
+//-                 label.form-label.small.fw-bold.text-uppercase.text-muted Especialidad
+//-                 select#especialidadSelect.form-select.bg-light(name="id_especialidad" required disabled)
+//-                   option(value="" selected disabled) Primero busca un médico
+
+//-               .row
+//-                 .col-6.mb-3
+//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Fecha
+//-                   input#fecha.form-control.bg-light(type="date" name="fecha" required)
+//-                 .col-6.mb-3
+//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Hora
+//-                   input#horaSeleccionadaInput.form-control.bg-white.border-primary.fw-bold(type="text" name="hora_inicio" placeholder="--:--" readonly required)
+
+//-               hr
+//-               label.form-label.small.fw-bold.text-uppercase.text-muted Disponibilidad
+//-               #slotsContainer.d-flex.flex-wrap.gap-2.mb-4.justify-content-start
+//-                 small.text-muted Selecciona profesional y fecha...
+
+//-               button#btnGuardar.btn.btn-primary.w-100.py-3.fw-bold.text-uppercase.rounded-pill(type="submit" disabled)
+//-                 | Confirmar Turno
+
+//-       //- COLUMNA DERECHA: MIS TURNOS ACTUALES
+//-       .col-xl-7
+//-         .card.border-0.shadow-sm.rounded-4
+//-           .card-header.bg-white.py-3.rounded-top-4.border-bottom
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-rectangle-list.me-2.text-success
+//-               | Mis Turnos Agendados
+//-           .card-body
+//-             if turnos && turnos.length > 0
+//-               .table-responsive
+//-                 table.table.table-hover.align-middle
+//-                   thead.table-light
+//-                     tr
+//-                       th Fecha / Hora
+//-                       th Especialidad
+//-                       th Médico
+//-                       th Estado
+//-                   tbody
+//-                     each turno in turnos
+//-                       tr
+//-                         td
+//-                           div.fw-bold= new Date(turno.fecha).toLocaleDateString()
+//-                           small.text-muted= turno.hora
+//-                         td= turno.especialidad_nombre
+//-                         td= turno.medico_nombre + ' ' + turno.medico_apellido
+//-                         td
+//-                           span.badge.rounded-pill(class=(turno.estado === 'pendiente' ? 'bg-warning text-dark' : 'bg-success'))= turno.estado
+//-             else
+//-               .text-center.py-5
+//-                 i.fa-solid.fa-calendar-day.display-1.text-light.mb-3
+//-                 p.text-muted No tienes turnos programados. ¡Reserva uno a la izquierda!
+
+//-   style.
+//-     .card { transition: all 0.3s ease; }
+//-     .list-group.position-absolute { max-height: 200px; overflow-y: auto; z-index: 1050; width: 90% !important; }
+//-     .slot-hora {
+//-       width: 80px; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px 0;
+//-       text-align: center; cursor: pointer; background: #f8f9fa; font-size: 0.85rem; font-weight: bold;
+//-     }
+//-     .slot-hora:hover:not(.ocupado) { border-color: #0d6efd; background: #e7f1ff; }
+//-     .slot-hora.selected { background: #0d6efd !important; color: white !important; border-color: #0d6efd; }
+//-     .slot-hora.ocupado { cursor: not-allowed; opacity: 0.3; background: #eee; }
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       // Reutilizamos la lógica de autocompletado y disponibilidad que ya tienes
+//-       const fechaInput = document.getElementById('fecha');
+//-       const hoy = new Date().toISOString().split('T')[0];
+//-       fechaInput.setAttribute('min', hoy);
+
+//-       // --- LÓGICA AUTOCOMPLETE MÉDICO ---
+//-       const inputMed = document.getElementById('buscarMedico');
+//-       const suggMed = document.getElementById('sugerenciasMedico');
+//-       const hiddenMed = document.getElementById('medicoId');
+//-       const espSelect = document.getElementById('especialidadSelect');
+
+//-       inputMed.addEventListener('input', async () => {
+//-         const query = inputMed.value.trim();
+//-         if (query.length < 2) { suggMed.innerHTML = ''; return; }
+//-         const res = await fetch(`/medicos/buscar?q=${query}`);
+//-         const data = await res.json();
+//-         suggMed.innerHTML = data.map(m => `
+//-           <button type="button" class="list-group-item list-group-item-action" data-id="${m.id_medico}" data-name="${m.nombre} ${m.apellido}">
+//-             ${m.nombre} ${m.apellido}
+//-           </button>`).join('');
+
+//-         suggMed.querySelectorAll('button').forEach(btn => {
+//-           btn.onclick = async () => {
+//-             inputMed.value = btn.dataset.name;
+//-             hiddenMed.value = btn.dataset.id;
+//-             suggMed.innerHTML = '';
+//-             espSelect.disabled = false;
+//-             const respEsp = await fetch(`/medicos/${btn.dataset.id}/especialidades`);
+//-             const esps = await respEsp.json();
+//-             espSelect.innerHTML = '<option value="" selected disabled>Selecciona especialidad</option>' + 
+//-               esps.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+//-             buscarDisponibilidad();
+//-           };
+//-         });
+//-       });
+
+//-       // --- LÓGICA DISPONIBILIDAD ---
+//-       async function buscarDisponibilidad() {
+//-         const id_medico = hiddenMed.value;
+//-         const id_especialidad = espSelect.value;
+//-         const fecha = fechaInput.value;
+//-         if (!id_medico || !id_especialidad || !fecha) return;
+
+//-         const slotsContainer = document.getElementById('slotsContainer');
+//-         slotsContainer.innerHTML = '<small class="text-primary">Buscando horarios...</small>';
+
+//-         try {
+//-           const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fecha}`);
+//-           const data = await res.json();
+          
+//-           if (data.status === 'success' && data.horarios) {
+//-             slotsContainer.innerHTML = data.horarios.map(h => `
+//-               <div class="slot-hora ${h.ocupado ? 'ocupado' : ''}" data-hora="${h.hora}" data-agenda="${h.id_agenda}">
+//-                 ${h.hora}
+//-               </div>`).join('');
+
+//-             document.querySelectorAll('.slot-hora').forEach(slot => {
+//-               slot.addEventListener('click', function() {
+//-                 if (this.classList.contains('ocupado')) return;
+//-                 document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
+//-                 this.classList.add('selected');
+//-                 document.getElementById('horaSeleccionadaInput').value = this.dataset.hora;
+//-                 document.getElementById('agendaIdHidden').value = this.dataset.agenda;
+//-                 document.getElementById('btnGuardar').disabled = false;
+//-               });
+//-             });
+//-           } else {
+//-             slotsContainer.innerHTML = '<small class="text-danger">Sin turnos para esta fecha.</small>';
+//-           }
+//-         } catch (err) { slotsContainer.innerHTML = 'Error al cargar.'; }
+//-       }
+
+//-       espSelect.addEventListener('change', buscarDisponibilidad);
+//-       fechaInput.addEventListener('change', buscarDisponibilidad);
+//-     });
+
+extends ../layout
+
+block contenido
+  .container-fluid.py-4
+    .row.mb-4
+      .col-12
+        h2.fw-bold.text-dark
+          i.fa-solid.fa-chalkboard-user.me-2.text-primary
+          | Mi Panel de Salud
+        p.text-muted Hola, #{paciente.nombre}. Aquí puedes gestionar tus citas médicas.
+
+    .row.g-4
+      //- COLUMNA IZQUIERDA: RESERVA DE TURNO
+      .col-xl-5
+        .card.border-0.shadow-sm.rounded-4
+          .card-header.bg-primary.text-white.py-3.rounded-top-4
+            h5.mb-0.fw-bold 
+              i.fa-solid.fa-calendar-plus.me-2
+              | Solicitar Nuevo Turno
+          .card-body.p-4
+            form#formReserva(method="POST" action="/pacientes/confirmar-reserva")
+              input#agendaIdHidden(type="hidden" name="id_agenda")
+              input(type="hidden" name="id_paciente" value=paciente.id_paciente)
+
+              .mb-3
+                label.form-label.small.fw-bold.text-uppercase.text-muted Profesional
+                .input-group
+                  span.input-group-text.bg-light: i.fa-solid.fa-user-doctor.text-primary
+                  input#buscarMedico.form-control.bg-light(type="text" placeholder="Buscar médico..." autocomplete="off")
+                #sugerenciasMedico.list-group.position-absolute.w-100.shadow-lg.z-3
+                input#medicoId(type="hidden" name="id_medico")
+              
+              .mb-3
+                label.form-label.small.fw-bold.text-uppercase.text-muted Especialidad
+                select#especialidadSelect.form-select.bg-light(name="id_especialidad" required disabled)
+                  option(value="" selected disabled) Primero busca un médico
+
+              .row
+                .col-6.mb-3
+                  label.form-label.small.fw-bold.text-uppercase.text-muted Fecha
+                  input#fecha.form-control.bg-light(type="date" name="fecha" required)
+                .col-6.mb-3
+                  label.form-label.small.fw-bold.text-uppercase.text-muted Hora
+                  input#horaSeleccionadaInput.form-control.bg-white.border-primary.fw-bold(type="text" name="hora_inicio" placeholder="--:--" readonly required)
+
+              hr
+              label.form-label.small.fw-bold.text-uppercase.text-muted Disponibilidad
+              #slotsContainer.d-flex.flex-wrap.gap-2.mb-4.justify-content-start
+                small.text-muted Selecciona profesional y fecha...
+
+              button#btnGuardar.btn.btn-primary.w-100.py-3.fw-bold.text-uppercase.rounded-pill(type="submit" disabled)
+                | Confirmar Turno
+
+      //- COLUMNA DERECHA: MIS TURNOS ACTUALES
+      .col-xl-7
+        .card.border-0.shadow-sm.rounded-4
+          .card-header.bg-white.py-3.rounded-top-4.border-bottom
+            h5.mb-0.fw-bold 
+              i.fa-solid.fa-rectangle-list.me-2.text-success
+              | Mis Turnos Agendados
+          .card-body
+            if turnos && turnos.length > 0
+              .table-responsive
+                table.table.table-hover.align-middle
+                  thead.table-light
+                    tr
+                      th Fecha / Hora
+                      th Especialidad
+                      th Médico
+                      th Estado
+                  tbody
+                    each turno in turnos
+                      tr
+                        td
+                          div.fw-bold= new Date(turno.fecha).toLocaleDateString()
+                          small.text-muted= turno.hora
+                        td= turno.especialidad_nombre
+                        td= turno.medico_nombre + ' ' + turno.medico_apellido
+                        td
+                          span.badge.rounded-pill(class=(turno.estado === 'pendiente' ? 'bg-warning text-dark' : 'bg-success'))= turno.estado
+            else
+              .text-center.py-5
+                i.fa-solid.fa-calendar-day.display-1.text-light.mb-3
+                p.text-muted No tienes turnos programados.
+
+  style.
+    .card { transition: all 0.3s ease; }
+    .list-group.position-absolute { max-height: 200px; overflow-y: auto; z-index: 1050; width: 90% !important; }
+    .slot-hora {
+      width: 80px; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px 0;
+      text-align: center; cursor: pointer; background: #f8f9fa; font-size: 0.85rem; font-weight: bold;
+    }
+    .slot-hora:hover:not(.ocupado) { border-color: #0d6efd; background: #e7f1ff; }
+    .slot-hora.selected { background: #0d6efd !important; color: white !important; border-color: #0d6efd; }
+    .slot-hora.ocupado { cursor: not-allowed; opacity: 0.3; background: #eee; }
+
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. GESTIÓN DE ALERTAS (SWEETALERT)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('status') === 'success') {
+          Swal.fire({
+              title: '¡Turno Confirmado!',
+              text: 'Tu cita ha sido agendada correctamente. Te esperamos.',
+              icon: 'success',
+              confirmButtonColor: '#0d6efd'
+          });
+          window.history.replaceState({}, document.title, "/pacientes/dashboard");
+      }
+
+      // 2. LÓGICA DEL BUSCADOR Y FECHAS
+      const fechaInput = document.getElementById('fecha');
+      const hoy = new Date().toISOString().split('T')[0];
+      fechaInput.setAttribute('min', hoy);
+
+      const inputMed = document.getElementById('buscarMedico');
+      const suggMed = document.getElementById('sugerenciasMedico');
+      const hiddenMed = document.getElementById('medicoId');
+      const espSelect = document.getElementById('especialidadSelect');
+
+      inputMed.addEventListener('input', async () => {
+        const query = inputMed.value.trim();
+        if (query.length < 2) { suggMed.innerHTML = ''; return; }
+        const res = await fetch(`/medicos/buscar?q=${query}`);
+        const data = await res.json();
+        suggMed.innerHTML = data.map(m => `
+          <button type="button" class="list-group-item list-group-item-action" data-id="${m.id_medico}" data-name="${m.nombre} ${m.apellido}">
+            ${m.nombre} ${m.apellido}
+          </button>`).join('');
+
+        suggMed.querySelectorAll('button').forEach(btn => {
+          btn.onclick = async () => {
+            inputMed.value = btn.dataset.name;
+            hiddenMed.value = btn.dataset.id;
+            sugerenciasMedico.innerHTML = '';
+            espSelect.disabled = false;
+            const respEsp = await fetch(`/medicos/${btn.dataset.id}/especialidades`);
+            const esps = await respEsp.json();
+            espSelect.innerHTML = '<option value="" selected disabled>Selecciona especialidad</option>' + 
+              esps.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+            buscarDisponibilidad();
+          };
+        });
+      });
+
+      // 3. LÓGICA DE DISPONIBILIDAD
+      async function buscarDisponibilidad() {
+        const id_medico = hiddenMed.value;
+        const id_especialidad = espSelect.value;
+        const fecha = fechaInput.value;
+        if (!id_medico || !id_especialidad || !fecha) return;
+
+        const slotsContainer = document.getElementById('slotsContainer');
+        slotsContainer.innerHTML = '<small class="text-primary">Buscando horarios...</small>';
+
+        try {
+          const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fecha}`);
+          const data = await res.json();
+          
+          if (data.status === 'success' && data.horarios) {
+            slotsContainer.innerHTML = data.horarios.map(h => `
+              <div class="slot-hora ${h.ocupado ? 'ocupado' : ''}" data-hora="${h.hora}" data-agenda="${h.id_agenda}">
+                ${h.hora}
+              </div>`).join('');
+
+            document.querySelectorAll('.slot-hora').forEach(slot => {
+              slot.addEventListener('click', function() {
+                if (this.classList.contains('ocupado')) return;
+                document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('horaSeleccionadaInput').value = this.dataset.hora;
+                document.getElementById('agendaIdHidden').value = this.dataset.agenda;
+                document.getElementById('btnGuardar').disabled = false;
+              });
+            });
+          } else {
+            slotsContainer.innerHTML = '<small class="text-danger">Sin turnos disponibles.</small>';
+          }
+        } catch (err) { slotsContainer.innerHTML = 'Error al cargar.'; }
+      }
+
+      espSelect.addEventListener('change', buscarDisponibilidad);
+      fechaInput.addEventListener('change', buscarDisponibilidad);
+    });

@@ -547,6 +547,710 @@
 //-       bootstrap.Tab.getOrCreateInstance(document.querySelector('#pills-register-tab')).show();
 //-     }
 
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     :root {
+//-       --primary: #0a3d62;
+//-       --accent: #5ba4d5;
+//-       --success: #1e7f5c;
+//-       --glass: rgba(255, 255, 255, 0.95);
+//-     }
+
+//-     body { 
+//-       background-color: #f0f4f8; 
+//-       font-family: 'Inter', sans-serif;
+//-       overflow-x: hidden;
+//-     }
+    
+//-     .main-wrapper {
+//-       display: flex;
+//-       min-height: 100vh;
+//-       width: 100%;
+//-     }
+
+//-     /* --- Panel Izquierdo: Branding & Trust --- */
+//-     .brand-section {
+//-       flex: 1.2;
+//-       background: linear-gradient(135deg, rgba(10, 61, 98, 0.92) 0%, rgba(13, 71, 112, 0.8) 100%), 
+//-                   url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80');
+//-       background-size: cover;
+//-       background-position: center;
+//-       display: none; 
+//-       flex-direction: column;
+//-       justify-content: space-between;
+//-       padding: 5rem;
+//-       color: white;
+//-     }
+
+//-     .brand-content h1 { font-size: 3.5rem; letter-spacing: -1px; }
+//-     .feature-item { 
+//-       background: rgba(255,255,255,0.1); 
+//-       backdrop-filter: blur(5px);
+//-       border-radius: 15px;
+//-       padding: 1.5rem;
+//-       border: 1px solid rgba(255,255,255,0.1);
+//-       transition: 0.3s;
+//-     }
+//-     .feature-item:hover { transform: translateY(-5px); background: rgba(255,255,255,0.15); }
+
+//-     /* --- Panel Derecho: Login Card --- */
+//-     .form-section {
+//-       flex: 0.8;
+//-       display: flex;
+//-       align-items: center;
+//-       justify-content: center;
+//-       padding: 2rem;
+//-       background: #f8fafc;
+//-     }
+
+//-     .auth-card { 
+//-       width: 100%;
+//-       max-width: 460px;
+//-       background: var(--glass);
+//-       border-radius: 28px; 
+//-       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+//-       padding: 3rem;
+//-       border: 1px solid white;
+//-     }
+
+//-     .nav-tabs-custom {
+//-       border: none;
+//-       background: #edf2f7;
+//-       border-radius: 16px;
+//-       padding: 5px;
+//-       margin-bottom: 2.5rem;
+//-     }
+
+//-     .nav-tabs-custom .nav-link {
+//-       border: none;
+//-       border-radius: 12px;
+//-       color: #64748b;
+//-       font-weight: 600;
+//-       padding: 12px;
+//-       transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+//-     }
+
+//-     .nav-tabs-custom .nav-link.active {
+//-       background: white;
+//-       color: var(--primary);
+//-       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+//-     }
+
+//-     .input-group-custom {
+//-       position: relative;
+//-       margin-bottom: 1.5rem;
+//-     }
+
+//-     .input-group-custom i {
+//-       position: absolute;
+//-       left: 15px;
+//-       top: 50%;
+//-       transform: translateY(-50%);
+//-       color: #94a3b8;
+//-       z-index: 10;
+//-     }
+
+//-     .form-control-custom {
+//-       width: 100%;
+//-       padding: 14px 14px 14px 45px;
+//-       border-radius: 14px;
+//-       border: 1.5px solid #e2e8f0;
+//-       background: #f8fafc;
+//-       transition: 0.3s;
+//-     }
+
+//-     .form-control-custom:focus {
+//-       outline: none;
+//-       border-color: var(--accent);
+//-       background: white;
+//-       box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1);
+//-     }
+
+//-     .btn-submit {
+//-       background: var(--primary);
+//-       color: white;
+//-       border: none;
+//-       padding: 16px;
+//-       border-radius: 14px;
+//-       font-weight: 700;
+//-       width: 100%;
+//-       box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3);
+//-       transition: 0.3s;
+//-     }
+
+//-     .btn-submit:hover {
+//-       transform: translateY(-2px);
+//-       box-shadow: 0 20px 25px -5px rgba(10, 61, 98, 0.4);
+//-       filter: brightness(1.1);
+//-     }
+
+//-     @media (min-width: 992px) { .brand-section { display: flex; } }
+
+//-   .main-wrapper
+//-     //- IZQUIERDA: DISEÑO DE MARCA
+//-     .brand-section
+//-       .top-logo
+//-         img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
+      
+//-       .brand-content
+//-         span.text-uppercase.fw-bold.ls-2.small.text-info.mb-2(style="letter-spacing: 2px") Plataforma Profesional
+//-         h1.fw-bold Gestión de Salud
+//-         //- p.lead.text-white-50 Simplificamos la administración médica para que usted se enfoque en lo que importa: la vida.
+        
+//-         //- .row.mt-5.g-4
+//-         //-   .col-6
+//-         //-     .feature-item
+//-         //-       i.bi.bi-calendar2-check.fs-3.mb-2.d-block
+//-         //-       h6.fw-bold Agendas
+//-         //-       p.small.mb-0 Sincronización automática.
+//-         //-   .col-6
+//-         //-     .feature-item
+//-         //-       i.bi.bi-shield-lock.fs-3.mb-2.d-block
+//-         //-       h6.fw-bold Seguridad
+//-         //-       p.small.mb-0 Encriptación de datos.
+
+//-       .bottom-info
+//-         p.small.text-white-50 © 2026 Consultorio Médico. Todos los derechos reservados.
+
+//-     //- DERECHA: FORMULARIO
+//-     .form-section
+//-       .auth-card
+//-         .text-center.mb-5
+//-           img(src="/images/logo.png" alt="Logo" style="width: 80px;")
+//-           h4.fw-bold.mt-3.text-dark ¡Hola de nuevo!
+//-           p.text-muted Por favor, ingrese sus datos.
+
+//-         ul.nav.nav-pills.nav-justified.nav-tabs-custom#pills-tab(role="tablist")
+//-           li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+//-           li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+//-         .tab-content
+//-           //- LOGIN
+//-           .tab-pane.fade.show.active#pills-login
+//-             if error
+//-               .alert.alert-danger.border-0.small.rounded-3.mb-4 #{error}
+            
+//-             form(action="/auth/login" method="POST")
+//-               .input-group-custom
+//-                 i.bi.bi-envelope-at
+//-                 input.form-control-custom(type="email" name="email" placeholder="Correo electrónico" required)
+//-               .input-group-custom
+//-                 i.bi.bi-key
+//-                 input.form-control-custom(type="password" name="password" placeholder="Contraseña" required)
+              
+//-               button.btn-submit(type="submit") Acceder al Sistema
+              
+//-               .text-center.mt-4
+//-                 a.small.text-primary.fw-semibold.text-decoration-none(href="#") ¿Olvidó su contraseña?
+
+//-           //- REGISTRO
+//-           .tab-pane.fade#pills-register
+//-             form#formRegistro(action="/auth/registro-paciente" method="POST")
+//-               .row.g-2
+//-                 .col-12
+//-                   input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre completo" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="email" name="email" placeholder="Email" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="number" name="dni" placeholder="DNI" required)
+//-                 .col-12
+//-                   input.form-control-custom.ps-3(type="text" name="direccion" placeholder="Dirección")
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="password" name="confirmPassword" placeholder="Confirmar" required)
+              
+//-               button.btn-submit.mt-4(type="submit") Crear mi Cuenta
+
+//-   script.
+//-     // Animación de entrada
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       document.querySelector('.auth-card').style.opacity = '0';
+//-       document.querySelector('.auth-card').style.transform = 'translateY(20px)';
+//-       setTimeout(() => {
+//-         document.querySelector('.auth-card').style.transition = 'all 0.6s ease';
+//-         document.querySelector('.auth-card').style.opacity = '1';
+//-         document.querySelector('.auth-card').style.transform = 'translateY(0)';
+//-       }, 100);
+//-     });
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     :root {
+//-       --primary: #0a3d62;
+//-       --accent: #5ba4d5;
+//-       --success: #1e7f5c;
+//-       --glass: rgba(255, 255, 255, 0.95);
+//-     }
+
+//-     body { 
+//-       background-color: #f0f4f8; 
+//-       font-family: 'Inter', sans-serif;
+//-       overflow-x: hidden;
+//-     }
+    
+//-     .main-wrapper {
+//-       display: flex;
+//-       min-height: 100vh;
+//-       width: 100%;
+//-     }
+
+//-     /* --- Panel Izquierdo: Branding --- */
+//-     .brand-section {
+//-       flex: 1.2;
+//-       background: linear-gradient(135deg, rgba(10, 61, 98, 0.92) 0%, rgba(13, 71, 112, 0.8) 100%), 
+//-                   url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80');
+//-       background-size: cover;
+//-       background-position: center;
+//-       display: none; 
+//-       flex-direction: column;
+//-       justify-content: space-between;
+//-       padding: 5rem;
+//-       color: white;
+//-     }
+
+//-     .brand-content h1 { font-size: 3.5rem; letter-spacing: -1px; }
+
+//-     /* --- Panel Derecho: Auth Card --- */
+//-     .form-section {
+//-       flex: 0.8;
+//-       display: flex;
+//-       align-items: center;
+//-       justify-content: center;
+//-       padding: 2rem;
+//-       background: #f8fafc;
+//-     }
+
+//-     .auth-card { 
+//-       width: 100%;
+//-       max-width: 500px;
+//-       background: var(--glass);
+//-       border-radius: 28px; 
+//-       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+//-       padding: 2.5rem;
+//-       border: 1px solid white;
+//-     }
+
+//-     .nav-tabs-custom {
+//-       border: none;
+//-       background: #edf2f7;
+//-       border-radius: 16px;
+//-       padding: 5px;
+//-       margin-bottom: 2rem;
+//-     }
+
+//-     .nav-tabs-custom .nav-link {
+//-       border: none;
+//-       border-radius: 12px;
+//-       color: #64748b;
+//-       font-weight: 600;
+//-       padding: 10px;
+//-       transition: 0.4s;
+//-     }
+
+//-     .nav-tabs-custom .nav-link.active {
+//-       background: white;
+//-       color: var(--primary);
+//-       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+//-     }
+
+//-     .input-group-custom {
+//-       position: relative;
+//-       margin-bottom: 1.2rem;
+//-     }
+
+//-     .input-group-custom i {
+//-       position: absolute;
+//-       left: 15px;
+//-       top: 50%;
+//-       transform: translateY(-50%);
+//-       color: #94a3b8;
+//-       z-index: 10;
+//-     }
+
+//-     .form-control-custom {
+//-       width: 100%;
+//-       padding: 12px 12px 12px 45px;
+//-       border-radius: 12px;
+//-       border: 1.5px solid #e2e8f0;
+//-       background: #f8fafc;
+//-       transition: 0.3s;
+//-     }
+
+//-     .form-control-custom:focus {
+//-       outline: none;
+//-       border-color: var(--accent);
+//-       background: white;
+//-       box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1);
+//-     }
+
+//-     .btn-submit {
+//-       background: var(--primary);
+//-       color: white;
+//-       border: none;
+//-       padding: 14px;
+//-       border-radius: 12px;
+//-       font-weight: 700;
+//-       width: 100%;
+//-       box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3);
+//-       transition: 0.3s;
+//-     }
+
+//-     .btn-submit:hover {
+//-       transform: translateY(-2px);
+//-       filter: brightness(1.1);
+//-     }
+
+//-     .x-small { font-size: 0.75rem; }
+
+//-     @media (min-width: 992px) { .brand-section { display: flex; } }
+
+//-   .main-wrapper
+//-     //- IZQUIERDA
+//-     .brand-section
+//-       .top-logo
+//-         img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
+      
+//-       .brand-content
+//-         span.text-uppercase.fw-bold.small.text-info.mb-2(style="letter-spacing: 2px") Sistema de Turnos Online
+//-         h1.fw-bold Atención Médica Preferencial
+//-         p.lead.text-white-50 Registrate una vez, valida tu identidad y gestiona tus turnos desde cualquier lugar.
+
+//-       .bottom-info
+//-         p.small.text-white-50 © 2026 Centro Médico. Todos los derechos reservados.
+
+//-     //- DERECHA
+//-     .form-section
+//-       .auth-card
+//-         .text-center.mb-4
+//-           img(src="/images/logo.png" alt="Logo" style="width: 60px;")
+//-           h4.fw-bold.mt-3.text-dark Bienvenido
+//-           p.text-muted Ingresa tus credenciales o crea una cuenta nueva.
+
+//-         ul.nav.nav-pills.nav-justified.nav-tabs-custom#pills-tab(role="tablist")
+//-           li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+//-           li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+//-         .tab-content
+//-           //- LOGIN
+//-           .tab-pane.fade.show.active#pills-login
+//-             if error
+//-               .alert.alert-danger.border-0.small.rounded-3.mb-4 #{error}
+//-             if status === 'registro_exitoso'
+//-               .alert.alert-success.border-0.small.rounded-3.mb-4 Registro completado. Tu cuenta será activada tras la validación de admisión.
+            
+//-             form(action="/auth/login" method="POST")
+//-               .input-group-custom
+//-                 i.bi.bi-envelope-at
+//-                 input.form-control-custom(type="email" name="email" placeholder="Correo electrónico" required)
+//-               .input-group-custom
+//-                 i.bi.bi-key
+//-                 input.form-control-custom(type="password" name="password" placeholder="Contraseña" required)
+              
+//-               button.btn-submit(type="submit") Acceder al Sistema
+              
+//-               .text-center.mt-3
+//-                 a.small.text-primary.fw-semibold.text-decoration-none(href="#") ¿Olvidó su contraseña?
+
+//-           //- REGISTRO
+//-           .tab-pane.fade#pills-register
+//-             form#formRegistro(action="/auth/registro-paciente" method="POST" enctype="multipart/form-data")
+//-               .row.g-2
+//-                 .col-12
+//-                   label.small.fw-bold.text-muted.ms-1 Datos Personales
+//-                   input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre completo" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="email" name="email" placeholder="Correo electrónico" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="number" name="dni" placeholder="Número de DNI" required)
+                
+//-                 .col-12.mt-2
+//-                   label.small.fw-bold.text-muted.ms-1 Validación de Identidad
+//-                   .input-group-custom.mb-1
+//-                     i.bi.bi-camera(style="left: 15px;")
+//-                     input.form-control-custom(type="file" name="archivo_dni" accept="image/*" required style="padding-top: 10px;")
+//-                   p.x-small.text-muted.ms-1 Requisito obligatorio: Adjunte una foto de su documento para validar su alta.
+
+//-                 .col-12.mt-1
+//-                   label.small.fw-bold.text-muted.ms-1 Seguridad
+//-                 .col-md-6
+//-                   input#regPassword.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
+//-                 .col-md-6
+//-                   input#regConfirm.form-control-custom.ps-3(type="password" name="confirmPassword" placeholder="Confirmar" required)
+              
+//-               button.btn-submit.mt-4(type="submit") Crear Cuenta y Solicitar Alta
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       // Animación de entrada
+//-       const card = document.querySelector('.auth-card');
+//-       card.style.opacity = '0';
+//-       card.style.transform = 'translateY(20px)';
+//-       setTimeout(() => {
+//-         card.style.transition = 'all 0.6s ease';
+//-         card.style.opacity = '1';
+//-         card.style.transform = 'translateY(0)';
+//-       }, 100);
+
+//-       // Validación de contraseñas
+//-       const form = document.getElementById('formRegistro');
+//-       const pass = document.getElementById('regPassword');
+//-       const confirm = document.getElementById('regConfirm');
+
+//-       form.addEventListener('submit', (e) => {
+//-         if (pass.value !== confirm.value) {
+//-           e.preventDefault();
+//-           alert('Atención: Las contraseñas no coinciden.');
+//-         }
+//-       });
+//-     });
+
+
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     :root {
+//-       --primary: #0a3d62;
+//-       --accent: #5ba4d5;
+//-       --success: #1e7f5c;
+//-       --glass: rgba(255, 255, 255, 0.95);
+//-     }
+
+//-     body { 
+//-       background-color: #f0f4f8; 
+//-       font-family: 'Inter', sans-serif;
+//-       overflow-x: hidden;
+//-     }
+    
+//-     .main-wrapper {
+//-       display: flex;
+//-       min-height: 100vh;
+//-       width: 100%;
+//-     }
+
+//-     /* --- Panel Izquierdo: Branding --- */
+//-     .brand-section {
+//-       flex: 1.2;
+//-       background: linear-gradient(135deg, rgba(10, 61, 98, 0.92) 0%, rgba(13, 71, 112, 0.8) 100%), 
+//-                   url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80');
+//-       background-size: cover;
+//-       background-position: center;
+//-       display: none; 
+//-       flex-direction: column;
+//-       justify-content: space-between;
+//-       padding: 5rem;
+//-       color: white;
+//-     }
+
+//-     .brand-content h1 { font-size: 3.5rem; letter-spacing: -1px; }
+
+//-     /* --- Panel Derecho: Auth Card --- */
+//-     .form-section {
+//-       flex: 0.8;
+//-       display: flex;
+//-       align-items: center;
+//-       justify-content: center;
+//-       padding: 2rem;
+//-       background: #f8fafc;
+//-     }
+
+//-     .auth-card { 
+//-       width: 100%;
+//-       max-width: 520px;
+//-       background: var(--glass);
+//-       border-radius: 28px; 
+//-       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+//-       padding: 2.5rem;
+//-       border: 1px solid white;
+//-     }
+
+//-     .nav-tabs-custom {
+//-       border: none;
+//-       background: #edf2f7;
+//-       border-radius: 16px;
+//-       padding: 5px;
+//-       margin-bottom: 2rem;
+//-     }
+
+//-     .nav-tabs-custom .nav-link {
+//-       border: none;
+//-       border-radius: 12px;
+//-       color: #64748b;
+//-       font-weight: 600;
+//-       padding: 10px;
+//-       transition: 0.4s;
+//-     }
+
+//-     .nav-tabs-custom .nav-link.active {
+//-       background: white;
+//-       color: var(--primary);
+//-       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+//-     }
+
+//-     .input-group-custom {
+//-       position: relative;
+//-       margin-bottom: 1.2rem;
+//-     }
+
+//-     .input-group-custom i {
+//-       position: absolute;
+//-       left: 15px;
+//-       top: 50%;
+//-       transform: translateY(-50%);
+//-       color: #94a3b8;
+//-       z-index: 10;
+//-     }
+
+//-     .form-control-custom {
+//-       width: 100%;
+//-       padding: 12px 12px 12px 45px;
+//-       border-radius: 12px;
+//-       border: 1.5px solid #e2e8f0;
+//-       background: #f8fafc;
+//-       transition: 0.3s;
+//-     }
+
+//-     .form-control-custom:focus {
+//-       outline: none;
+//-       border-color: var(--accent);
+//-       background: white;
+//-       box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1);
+//-     }
+
+//-     .btn-submit {
+//-       background: var(--primary);
+//-       color: white;
+//-       border: none;
+//-       padding: 14px;
+//-       border-radius: 12px;
+//-       font-weight: 700;
+//-       width: 100%;
+//-       box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3);
+//-       transition: 0.3s;
+//-     }
+
+//-     .btn-submit:hover {
+//-       transform: translateY(-2px);
+//-       filter: brightness(1.1);
+//-     }
+
+//-     .x-small { font-size: 0.75rem; }
+
+//-     @media (min-width: 992px) { .brand-section { display: flex; } }
+
+//-   .main-wrapper
+//-     //- IZQUIERDA
+//-     .brand-section
+//-       .top-logo
+//-         img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
+      
+//-       .brand-content
+//-         span.text-uppercase.fw-bold.small.text-info.mb-2(style="letter-spacing: 2px") Portal del Paciente
+//-         h1.fw-bold Gestión de Turnos Online
+//-         p.lead.text-white-50 Registrate, sube tu documentación y accede a una atención médica más ágil y moderna.
+
+//-       .bottom-info
+//-         p.small.text-white-50 © 2026 Consultorio Médico. Todos los derechos reservados.
+
+//-     //- DERECHA
+//-     .form-section
+//-       .auth-card
+//-         .text-center.mb-4
+//-           img(src="/images/logo.png" alt="Logo" style="width: 60px;")
+//-           h4.fw-bold.mt-3.text-dark ¡Bienvenido!
+//-           p.text-muted Ingresa tus datos para continuar.
+
+//-         ul.nav.nav-pills.nav-justified.nav-tabs-custom#pills-tab(role="tablist")
+//-           li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+//-           li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+//-         .tab-content
+//-           //- LOGIN
+//-           .tab-pane.fade.show.active#pills-login
+//-             if error
+//-               .alert.alert-danger.border-0.small.rounded-3.mb-4 #{error}
+//-             if status === 'registro_exitoso'
+//-               .alert.alert-success.border-0.small.rounded-3.mb-4 Registro exitoso. Tu cuenta está en proceso de validación por admisión.
+            
+//-             form(action="/auth/login" method="POST")
+//-               .input-group-custom
+//-                 i.bi.bi-envelope-at
+//-                 input.form-control-custom(type="email" name="email" placeholder="Correo electrónico" required)
+//-               .input-group-custom
+//-                 i.bi.bi-key
+//-                 input.form-control-custom(type="password" name="password" placeholder="Contraseña" required)
+              
+//-               button.btn-submit(type="submit") Acceder al Sistema
+              
+//-               .text-center.mt-3
+//-                 a.small.text-primary.fw-semibold.text-decoration-none(href="#") ¿Olvidó su contraseña?
+
+//-           //- REGISTRO (CON NOMBRE, APELLIDO Y ARCHIVO DNI)
+//-           .tab-pane.fade#pills-register
+//-             form#formRegistro(action="/auth/registro-paciente" method="POST" enctype="multipart/form-data")
+//-               .row.g-2
+//-                 .col-12
+//-                   label.small.fw-bold.text-muted.ms-1 Datos Personales
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre/s" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="text" name="apellido" placeholder="Apellido/s" required)
+                
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="email" name="email" placeholder="Correo electrónico" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="number" name="dni" placeholder="Número de DNI" required)
+                
+//-                 .col-12.mt-2
+//-                   label.small.fw-bold.text-muted.ms-1 Validación de Identidad
+//-                   .input-group-custom.mb-1
+//-                     i.bi.bi-camera(style="left: 15px;")
+//-                     input.form-control-custom(type="file" name="archivo_dni" accept="image/*" required style="padding-top: 10px;")
+//-                   p.x-small.text-muted.ms-1 Obligatorio: Adjunte una foto clara de su DNI (frente).
+
+//-                 .col-12.mt-1
+//-                   label.small.fw-bold.text-muted.ms-1 Seguridad
+//-                 .col-md-6
+//-                   input#regPassword.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
+//-                 .col-md-6
+//-                   input#regConfirm.form-control-custom.ps-3(type="password" name="confirmPassword" placeholder="Confirmar" required)
+              
+//-               button.btn-submit.mt-4(type="submit") Crear Cuenta y Solicitar Alta
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       // Animación suave de entrada de la tarjeta
+//-       const card = document.querySelector('.auth-card');
+//-       card.style.opacity = '0';
+//-       card.style.transform = 'translateY(20px)';
+//-       setTimeout(() => {
+//-         card.style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+//-         card.style.opacity = '1';
+//-         card.style.transform = 'translateY(0)';
+//-       }, 150);
+
+//-       // Validación de coincidencia de contraseñas en el registro
+//-       const formReg = document.getElementById('formRegistro');
+//-       const pass = document.getElementById('regPassword');
+//-       const confirm = document.getElementById('regConfirm');
+
+//-       formReg.addEventListener('submit', (e) => {
+//-         if (pass.value !== confirm.value) {
+//-           e.preventDefault();
+//-           alert('Las contraseñas no coinciden. Por favor, verifique.');
+//-           confirm.focus();
+//-         }
+//-       });
+//-     });
+
+
+
+
 extends ../layout
 
 block contenido
@@ -554,173 +1258,42 @@ block contenido
     :root {
       --primary: #0a3d62;
       --accent: #5ba4d5;
-      --success: #1e7f5c;
       --glass: rgba(255, 255, 255, 0.95);
     }
-
-    body { 
-      background-color: #f0f4f8; 
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-    }
-    
-    .main-wrapper {
-      display: flex;
-      min-height: 100vh;
-      width: 100%;
-    }
-
-    /* --- Panel Izquierdo: Branding & Trust --- */
+    body { background-color: #f0f4f8; font-family: 'Inter', sans-serif; }
+    .main-wrapper { display: flex; min-height: 100vh; width: 100%; }
     .brand-section {
       flex: 1.2;
       background: linear-gradient(135deg, rgba(10, 61, 98, 0.92) 0%, rgba(13, 71, 112, 0.8) 100%), 
                   url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80');
-      background-size: cover;
-      background-position: center;
-      display: none; 
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 5rem;
-      color: white;
+      background-size: cover; display: none; flex-direction: column; justify-content: space-between; padding: 5rem; color: white;
     }
-
-    .brand-content h1 { font-size: 3.5rem; letter-spacing: -1px; }
-    .feature-item { 
-      background: rgba(255,255,255,0.1); 
-      backdrop-filter: blur(5px);
-      border-radius: 15px;
-      padding: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: 0.3s;
-    }
-    .feature-item:hover { transform: translateY(-5px); background: rgba(255,255,255,0.15); }
-
-    /* --- Panel Derecho: Login Card --- */
-    .form-section {
-      flex: 0.8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      background: #f8fafc;
-    }
-
-    .auth-card { 
-      width: 100%;
-      max-width: 460px;
-      background: var(--glass);
-      border-radius: 28px; 
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-      padding: 3rem;
-      border: 1px solid white;
-    }
-
-    .nav-tabs-custom {
-      border: none;
-      background: #edf2f7;
-      border-radius: 16px;
-      padding: 5px;
-      margin-bottom: 2.5rem;
-    }
-
-    .nav-tabs-custom .nav-link {
-      border: none;
-      border-radius: 12px;
-      color: #64748b;
-      font-weight: 600;
-      padding: 12px;
-      transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .nav-tabs-custom .nav-link.active {
-      background: white;
-      color: var(--primary);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    .input-group-custom {
-      position: relative;
-      margin-bottom: 1.5rem;
-    }
-
-    .input-group-custom i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      z-index: 10;
-    }
-
-    .form-control-custom {
-      width: 100%;
-      padding: 14px 14px 14px 45px;
-      border-radius: 14px;
-      border: 1.5px solid #e2e8f0;
-      background: #f8fafc;
-      transition: 0.3s;
-    }
-
-    .form-control-custom:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: white;
-      box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1);
-    }
-
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      width: 100%;
-      box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3);
-      transition: 0.3s;
-    }
-
-    .btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 25px -5px rgba(10, 61, 98, 0.4);
-      filter: brightness(1.1);
-    }
-
+    .form-section { flex: 0.8; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #f8fafc; }
+    .auth-card { width: 100%; max-width: 520px; background: var(--glass); border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); padding: 2.5rem; border: 1px solid white; }
+    .nav-tabs-custom { border: none; background: #edf2f7; border-radius: 16px; padding: 5px; margin-bottom: 2rem; }
+    .nav-tabs-custom .nav-link { border: none; border-radius: 12px; color: #64748b; font-weight: 600; padding: 10px; transition: 0.4s; }
+    .nav-tabs-custom .nav-link.active { background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .input-group-custom { position: relative; margin-bottom: 1.2rem; }
+    .input-group-custom i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 10; }
+    .form-control-custom { width: 100%; padding: 12px 12px 12px 45px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc; transition: 0.3s; }
+    .form-control-custom:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1); }
+    .btn-submit { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; width: 100%; box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3); transition: 0.3s; }
     @media (min-width: 992px) { .brand-section { display: flex; } }
 
   .main-wrapper
-    //- IZQUIERDA: DISEÑO DE MARCA
     .brand-section
-      .top-logo
-        img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
-      
+      .top-logo: img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
       .brand-content
-        span.text-uppercase.fw-bold.ls-2.small.text-info.mb-2(style="letter-spacing: 2px") Plataforma Profesional
-        h1.fw-bold Gestión de Salud Inteligente
-        p.lead.text-white-50 Simplificamos la administración médica para que usted se enfoque en lo que importa: la vida.
-        
-        .row.mt-5.g-4
-          .col-6
-            .feature-item
-              i.bi.bi-calendar2-check.fs-3.mb-2.d-block
-              h6.fw-bold Agendas
-              p.small.mb-0 Sincronización automática.
-          .col-6
-            .feature-item
-              i.bi.bi-shield-lock.fs-3.mb-2.d-block
-              h6.fw-bold Seguridad
-              p.small.mb-0 Encriptación de datos.
+        span.text-uppercase.fw-bold.small.text-info.mb-2 Portal del Paciente
+        h1.fw-bold Gestión de Turnos Online
+        p.lead.text-white-50 Registrate y accede a una atención médica ágil.
+      .bottom-info: p.small.text-white-50 © 2026 Consultorio Médico.
 
-      .bottom-info
-        p.small.text-white-50 © 2026 Consultorio Médico Integral. Todos los derechos reservados.
-
-    //- DERECHA: FORMULARIO
     .form-section
       .auth-card
-        .text-center.mb-5
-          img(src="/images/logo.png" alt="Logo" style="width: 80px;")
-          h4.fw-bold.mt-3.text-dark ¡Hola de nuevo!
-          p.text-muted Por favor, ingrese sus datos.
+        .text-center.mb-4
+          img(src="/images/logo.png" alt="Logo" style="width: 60px;")
+          h4.fw-bold.mt-3.text-dark ¡Bienvenido!
 
         ul.nav.nav-pills.nav-justified.nav-tabs-custom#pills-tab(role="tablist")
           li.nav-item: button#pills-login-tab.nav-link.active(data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
@@ -730,8 +1303,7 @@ block contenido
           //- LOGIN
           .tab-pane.fade.show.active#pills-login
             if error
-              .alert.alert-danger.border-0.small.rounded-3.mb-4 #{error}
-            
+              .alert.alert-danger.small #{error}
             form(action="/auth/login" method="POST")
               .input-group-custom
                 i.bi.bi-envelope-at
@@ -739,39 +1311,50 @@ block contenido
               .input-group-custom
                 i.bi.bi-key
                 input.form-control-custom(type="password" name="password" placeholder="Contraseña" required)
-              
-              button.btn-submit(type="submit") Acceder al Sistema
-              
-              .text-center.mt-4
-                a.small.text-primary.fw-semibold.text-decoration-none(href="#") ¿Olvidó su contraseña?
+              button.btn-submit(type="submit") Acceder
 
-          //- REGISTRO
+          //- REGISTRO CORREGIDO
           .tab-pane.fade#pills-register
-            form#formRegistro(action="/auth/registro-paciente" method="POST")
+            form#formRegistro(action="/auth/registro-paciente" method="POST" enctype="multipart/form-data")
               .row.g-2
+                .col-12: label.small.fw-bold.text-muted Datos Personales
+                .col-md-6
+                  input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre/s" required)
+                .col-md-6
+                  input.form-control-custom.ps-3(type="text" name="apellido" placeholder="Apellido/s" required)
+                
                 .col-12
-                  input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre completo" required)
+                  label.small.fw-bold.text-muted Fecha de Nacimiento
+                  input.form-control-custom.ps-3(type="date" name="nacimiento" required)
+                
                 .col-md-6
                   input.form-control-custom.ps-3(type="email" name="email" placeholder="Email" required)
                 .col-md-6
                   input.form-control-custom.ps-3(type="number" name="dni" placeholder="DNI" required)
-                .col-12
-                  input.form-control-custom.ps-3(type="text" name="direccion" placeholder="Dirección")
+                
+                .col-12.mt-2
+                  label.small.fw-bold.text-muted Validación DNI (Foto)
+                  .input-group-custom
+                    i.bi.bi-camera(style="left: 15px;")
+                    input.form-control-custom(type="file" name="archivo_dni" accept="image/*" required style="padding-top: 10px;")
+
+                .col-12: label.small.fw-bold.text-muted Seguridad
                 .col-md-6
-                  input.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
+                  input#regPassword.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
                 .col-md-6
-                  input.form-control-custom.ps-3(type="password" name="confirmPassword" placeholder="Confirmar" required)
+                  input#regConfirm.form-control-custom.ps-3(type="password" name="repeatPassword" placeholder="Confirmar" required)
               
-              button.btn-submit.mt-4(type="submit") Crear mi Cuenta
+              button.btn-submit.mt-4(type="submit") Registrarme
 
   script.
-    // Animación de entrada
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelector('.auth-card').style.opacity = '0';
-      document.querySelector('.auth-card').style.transform = 'translateY(20px)';
-      setTimeout(() => {
-        document.querySelector('.auth-card').style.transition = 'all 0.6s ease';
-        document.querySelector('.auth-card').style.opacity = '1';
-        document.querySelector('.auth-card').style.transform = 'translateY(0)';
-      }, 100);
+      const formReg = document.getElementById('formRegistro');
+      formReg.addEventListener('submit', (e) => {
+        const pass = document.getElementById('regPassword').value;
+        const confirm = document.getElementById('regConfirm').value;
+        if (pass !== confirm) {
+          e.preventDefault();
+          alert('Las contraseñas no coinciden.');
+        }
+      });
     });

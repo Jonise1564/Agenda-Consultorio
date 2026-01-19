@@ -223,6 +223,41 @@ class Paciente {
         }
     }
 
+    // ======================================================
+    // OBTENER PERFIL POR ID DE USUARIO (PARA EL PANEL)
+    // ======================================================
+    static async getByUsuarioId(id_usuario) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+                SELECT 
+                    pa.id AS id_paciente,
+                    pa.id_persona,
+                    pa.id_usuario,
+                    pa.id_obra_social,
+                    pa.estado,
+                    pe.nombre,
+                    pe.apellido,
+                    pe.dni,
+                    pe.nacimiento,
+                    u.email,
+                    COALESCE(os.nombre, 'Sin obra social') AS obra_social_nombre
+                FROM pacientes pa
+                INNER JOIN personas pe ON pa.id_persona = pe.id
+                INNER JOIN usuarios u ON pa.id_usuario = u.id
+                LEFT JOIN obras_sociales os ON pa.id_obra_social = os.id
+                WHERE pa.id_usuario = ?
+            `;
+            const [rows] = await conn.query(sql, [id_usuario]);
+            return rows.length ? rows[0] : null;
+        } catch (error) {
+            console.error("Error en Paciente.getByUsuarioId:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
 
 

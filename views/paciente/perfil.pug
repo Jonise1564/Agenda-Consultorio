@@ -1,0 +1,28 @@
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4
+//-     .row
+//-       .col-md-4
+//-         .card.border-0.shadow-sm.text-center.p-4
+//-           .mb-3
+//-             img(src="/images/user_icon_004.png" width="80")
+//-           h4.fw-bold #{paciente.nombre} #{paciente.apellido}
+//-           p.text-muted DNI: #{paciente.dni}
+//-           hr
+//-           a.btn.btn-primary.w-100(href="/turnos/solicitar") 
+//-             i.bi.bi-calendar-plus.me-2
+//-             | Solicitar Nuevo Turno
+
+//-       .col-md-8
+//-         .card.border-0.shadow-sm
+//-           .card-header.bg-white.py-3
+//-             h5.mb-0.fw-bold Mis Turnos
+//-           .card-body
+//-             if turnos.length > 0
+//-               //- Aquí va tu tabla de turnos
+//-             else
+//-               .text-center.py-5
+//-                 p.text-muted No tienes turnos registrados actualmente.

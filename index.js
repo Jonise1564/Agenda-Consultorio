@@ -87,56 +87,116 @@
 //   console.log(` Servidor corriendo en: http://localhost:${PORT}`);
 // });
 
+
+
+// const express = require('express');
+// const path = require('path');
+// const morgan = require('morgan');
+// const cors = require('cors');
+// const cookieParser = require('cookie-parser');
+// const jwt = require('jsonwebtoken');
+// // require('dotenv').config();
+
+// const app = express();
+// const PORT = process.env.PORT ?? 3000;
+
+// // CONFIGURACIONES BÁSICAS
+// app.use(express.static(path.join(__dirname, 'public')));
+// app.set('view engine', 'pug');
+// app.set('views', path.join(__dirname, 'views'));
+// app.use(morgan('dev'));
+// app.use(cors());
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(cookieParser());
+
+// // MIDDLEWARE DE AUTENTICACIÓN (Recupera al usuario para todas las vistas)
+// app.use((req, res, next) => {
+//     const token = req.cookies.token_acceso;
+//     res.locals.usuario = null; 
+    
+//     if (token) {
+//         try {
+//             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
+//             res.locals.usuario = decoded; 
+//             req.user = decoded; // Esto es vital para los controladores
+//         } catch (err) {
+//             res.clearCookie('token_acceso');
+//         }
+//     }
+//     next();
+// });
+
+// // IMPORTACIÓN DE ROUTERS
+// const AuthRouter = require('./routes/authRoutes');
+// const MedicosRouter = require('./routes/medicosRoutes');
+// const PacientesRouter = require('./routes/pacientesRoutes');
+// const SecretariaRouter = require('./routes/secretariaRoutes');
+// // ... (agrega los demás que necesites aquí)
+
+// // REGISTRO DE RUTAS
+// app.use('/auth', AuthRouter);
+
+// // EL CEREBRO DE REDIRECCIÓN (Corregido para no fallar)
+// app.get('/', (req, res) => {
+//     const user = res.locals.usuario;
+//     if (!user) return res.redirect('/auth/login');
+
+//     console.log("Navegando al inicio. Rol detectado:", user.id_rol);
+
+//     if (user.id_rol === 4) return res.redirect('/pacientes/dashboard');
+//     if (user.id_rol === 3) return res.redirect('/secretaria');
+    
+//     // Si es Admin (1) o cualquier otro, al index principal
+//     res.render('principal/index', { page: 'inicio' });
+// });
+
+// // MONTAR LOS ROUTERS
+// app.use('/pacientes', PacientesRouter);
+// app.use('/secretaria', SecretariaRouter);
+// app.use('/medicos', MedicosRouter);
+// // ... (monta los demás aquí)
+
+// // MANEJO DE ERRORES (Simple para que no oculte el error real)
+// app.use((err, req, res, next) => {
+//     console.error("ERROR EN EL SERVIDOR:", err.stack);
+//     res.status(500).send(`Error interno: ${err.message}`);
+// });
+
+// app.listen(PORT, () => {
+//     console.log(`Servidor en http://localhost:${PORT}`);
+// });
+
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
-const fs = require('fs');
-const cookieParser = require('cookie-parser'); // 1. Importar
+const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+// require('dotenv').config(); // Descomenta si usas .env
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
-// =====================
-// CARPETAS Y ESTÁTICOS
-// =====================
+// CONFIGURACIONES BÁSICAS
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
-const uploadDir = path.join(__dirname, 'public/uploads/dnis');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// =====================
-// VIEW ENGINE
-// =====================
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
-
-// =====================
-// MIDDLEWARES BASE (IMPORTANTE EL ORDEN)
-// =====================
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // 2. Ejecutar antes de las rutas
+app.use(cookieParser());
 
-// =====================
-// MIDDLEWARE GLOBAL DE AUTENTICACIÓN
-// =====================
-// Esto extrae el usuario del token y lo inyecta en PUG automáticamente
+// MIDDLEWARE DE AUTENTICACIÓN
 app.use((req, res, next) => {
     const token = req.cookies.token_acceso;
-    res.locals.usuario = null; // Por defecto no hay usuario
-    
+    res.locals.usuario = null; 
     if (token) {
         try {
-            // Reemplaza 'tu_clave_secreta' por una variable en tu .env
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
             res.locals.usuario = decoded; 
+            req.user = decoded; 
         } catch (err) {
             res.clearCookie('token_acceso');
         }
@@ -145,53 +205,45 @@ app.use((req, res, next) => {
 });
 
 // =====================
-// ROUTERS
+// IMPORTACIÓN DE ROUTERS (¡Asegúrate que los archivos existan!)
 // =====================
-const AuthRouter = require('./routes/authRoutes'); // 3. Importar Auth
+const AuthRouter = require('./routes/authRoutes');
 const MedicosRouter = require('./routes/medicosRoutes');
-const EspecialidadesRoutes = require('./routes/especialidadesRoutes');
 const PacientesRouter = require('./routes/pacientesRoutes');
-const AgendasRouter = require('./routes/agendasRoutes');
-const TurnosRouter = require('./routes/turnosRoutes');
-const obrasSocialesRouter = require('./routes/obrassocialesRoutes');
 const SecretariaRouter = require('./routes/secretariaRoutes');
-const listaEsperaRoutes = require('./routes/listaEsperaRoutes');
+const AgendasRouter = require('./routes/agendasRoutes'); // AGREGADO
+const TurnosRouter = require('./routes/turnosRoutes'); // AGREGADO
+const EspecialidadesRouter = require('./routes/especialidadesRoutes'); // AGREGADO
 
 // =====================
 // REGISTRO DE RUTAS
 // =====================
-
-// Rutas de Login/Registro (Sin protección)
 app.use('/auth', AuthRouter);
 
-// Ruta Principal
 app.get('/', (req, res) => {
-    // Si está logueado va al inicio, si no al login
-    if (res.locals.usuario) {
-        res.render('principal/index', { page: 'inicio' });
-    } else {
-        res.redirect('/auth/login');
-    }
+    const user = res.locals.usuario;
+    if (!user) return res.redirect('/auth/login');
+
+    if (user.id_rol === 4) return res.redirect('/pacientes/dashboard');
+    if (user.id_rol === 3) return res.redirect('/secretaria');
+    
+    res.render('principal/index', { page: 'inicio' });
 });
 
-// Rutas Protegidas (El bloqueo se hace dentro de cada router con el middleware de roles)
-app.use('/medicos', MedicosRouter);
-app.use('/especialidades', EspecialidadesRoutes);
+// MONTAR LOS ROUTERS
 app.use('/pacientes', PacientesRouter);
-app.use('/agendas', AgendasRouter);
-app.use('/turnos', TurnosRouter);
-app.use('/obrassociales', obrasSocialesRouter);
 app.use('/secretaria', SecretariaRouter);
-app.use('/secretaria/lista-espera', listaEsperaRoutes);
+app.use('/medicos', MedicosRouter);
+app.use('/agendas', AgendasRouter); // AGREGADO - Esto quita el 404
+app.use('/turnos', TurnosRouter); // AGREGADO
+app.use('/especialidades', EspecialidadesRouter); // AGREGADO
 
-// =====================
 // MANEJO DE ERRORES
-// =====================
 app.use((err, req, res, next) => {
-    console.error(' Error detectado:', err.message);
-    res.status(500).send('Algo salió mal en el servidor.');
+    console.error("ERROR EN EL SERVIDOR:", err.stack);
+    res.status(500).send(`Error interno: ${err.message}`);
 });
 
 app.listen(PORT, () => {
-    console.log(` Servidor corriendo en: http://localhost:${PORT}`);
+    console.log(` Servidor en http://localhost:${PORT}`);
 });

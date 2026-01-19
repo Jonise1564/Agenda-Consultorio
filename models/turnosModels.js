@@ -299,6 +299,46 @@ class Turno {
             if (conn) conn.end();
         }
     }
+
+
+    // ============================================
+    // OBTENER TURNOS DE UN PACIENTE ESPECÍFICO
+    // ============================================
+    static async getByPacienteId(id_paciente) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+                SELECT 
+                    t.id, 
+                    t.fecha, 
+                    DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+                    t.estado, 
+                    t.motivo,
+                    m_per.nombre AS medico_nombre, 
+                    m_per.apellido AS medico_apellido,
+                    e.nombre AS especialidad_nombre
+                FROM turnos t
+                INNER JOIN agendas a ON t.id_agenda = a.id
+                INNER JOIN medicos m ON a.id_medico = m.id_medico
+                INNER JOIN personas m_per ON m.id_persona = m_per.id
+                INNER JOIN especialidades e ON a.id_especialidad = e.id
+                WHERE t.id_paciente = ?
+                ORDER BY t.fecha DESC, t.hora_inicio DESC;
+            `;
+            const [rows] = await conn.query(sql, [id_paciente]);
+            return rows;
+        } catch (error) {
+            console.error('Error en getByPacienteId:', error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+
+
 }
 
 module.exports = Turno;
