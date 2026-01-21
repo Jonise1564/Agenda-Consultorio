@@ -202,6 +202,31 @@ class Medico {
             if (conn) conn.end();
         }
     }
+
+
+    static async obtenerAusenciasActivas() {
+        let conn;
+        try {
+            conn = await createConnection();
+            // Buscamos si el día de hoy cae dentro del rango de alguna ausencia
+            const sql = `
+            SELECT DISTINCT id_medico 
+            FROM ausencias 
+            WHERE CURDATE() BETWEEN fecha_inicio AND fecha_fin
+        `;
+            const [rows] = await conn.query(sql);
+
+            const idsAusentes = rows.map(r => r.id_medico);
+            console.log("IDs de médicos ausentes hoy:", idsAusentes);
+
+            return idsAusentes;
+        } catch (error) {
+            console.error("Error al obtener ausencias en el modelo:", error);
+            return [];
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 }
 
 module.exports = Medico;

@@ -81,59 +81,119 @@
 // module.exports = router;
 
 
+    // const express = require('express');
+    // const router = express.Router();
+    // const path = require('path');
+    // const multer = require('multer');
+
+    // // --- IMPORTACIÓN DE CONTROLADORES ---
+    // const SecretariaController = require('../controllers/secretariaController');
+    // const ListaEsperaController = require('../controllers/listaEsperaController');
+
+    // // --- CONFIGURACIÓN DE MULTER ---
+    // const storage = multer.diskStorage({
+    //     destination: (req, file, cb) => {
+    //         cb(null, 'public/uploads/dnis/');
+    //     },
+    //     filename: (req, file, cb) => {
+    //         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    //         cb(null, 'dni-' + uniqueSuffix + path.extname(file.originalname));
+    //     }
+    // });
+    // const upload = multer({ storage: storage });
+
+    // // --- RUTAS DE SECRETARÍA GENERAL (Panel y Agendamiento) ---
+    // router.get('/', (req, res, next) => SecretariaController.index(req, res, next));
+    // router.get('/disponibilidad', (req, res, next) => SecretariaController.disponibilidad(req, res, next));
+    // router.get('/turnos', (req, res, next) => SecretariaController.verListaTurnos(req, res, next));
+
+    // // --- RUTAS DE TRASLADOS Y TRANSFERENCIAS masivas ---
+    // router.post('/trasladar-turno', (req, res, next) => SecretariaController.trasladarTurnoIndividual(req, res, next));
+    // router.post('/transferir-agenda', (req, res, next) => SecretariaController.transferirAgenda(req, res, next));
+
+    // // --- BÚSQUEDAS Y ACCIONES ---
+    // router.get('/pacientes/buscar', (req, res, next) => SecretariaController.buscarPacientePorDNI(req, res, next));
+    // router.get('/medicos/buscar', (req, res, next) => SecretariaController.buscarMedicos(req, res, next));
+    // router.post('/agendar', upload.single('archivo_dni'), (req, res, next) => SecretariaController.agendar(req, res, next));
+
+    // // --- RUTAS DE LISTA DE ESPERA ---
+    // router.get('/lista-espera', (req, res, next) => ListaEsperaController.index(req, res, next));
+    // router.get('/lista-espera/create', (req, res, next) => ListaEsperaController.create(req, res, next));
+    // router.get('/lista-espera/verificar', (req, res, next) => ListaEsperaController.verificarDuplicado(req, res, next));
+    // router.post('/lista-espera/store', (req, res, next) => ListaEsperaController.store(req, res, next));
+    // router.post('/lista-espera/actualizar-estado/:id', (req, res, next) => ListaEsperaController.actualizarEstado(req, res, next));
+    // router.post('/lista-espera/delete/:id', (req, res, next) => ListaEsperaController.eliminar(req, res, next));
+
+    // // --- RUTAS DE AUSENCIAS (Módulo Independiente) ---
+
+    // // 1. Ver el listado principal de ausencias 
+    // router.get('/ausencias', (req, res, next) => SecretariaController.verAusencias(req, res, next));
+
+    // // 2. Registrar nueva ausencia (Desde el modal)
+    // router.post('/ausencias/registrar', (req, res, next) => SecretariaController.registrarAusencia(req, res, next));
+
+    // // 3. Eliminar / Habilitar agenda (Botón basura)
+    // router.post('/ausencias/eliminar/:id', (req, res, next) => SecretariaController.eliminarAusencia(req, res, next));
+
+
+    // module.exports = router;
+
     const express = require('express');
-    const router = express.Router();
-    const path = require('path');
-    const multer = require('multer');
+const router = express.Router();
+const path = require('path');
+const multer = require('multer');
 
-    // --- IMPORTACIÓN DE CONTROLADORES ---
-    const SecretariaController = require('../controllers/secretariaController');
-    const ListaEsperaController = require('../controllers/listaEsperaController');
+// --- IMPORTACIÓN DE CONTROLADORES ---
+const SecretariaController = require('../controllers/secretariaController');
+const ListaEsperaController = require('../controllers/listaEsperaController');
 
-    // --- CONFIGURACIÓN DE MULTER ---
-    const storage = multer.diskStorage({
-        destination: (req, file, cb) => {
-            cb(null, 'public/uploads/dnis/');
-        },
-        filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            cb(null, 'dni-' + uniqueSuffix + path.extname(file.originalname));
-        }
-    });
-    const upload = multer({ storage: storage });
+// --- CONFIGURACIÓN DE MULTER ---
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/dnis/');
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'dni-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
-    // --- RUTAS DE SECRETARÍA GENERAL (Panel y Agendamiento) ---
-    router.get('/', (req, res, next) => SecretariaController.index(req, res, next));
-    router.get('/disponibilidad', (req, res, next) => SecretariaController.disponibilidad(req, res, next));
-    router.get('/turnos', (req, res, next) => SecretariaController.verListaTurnos(req, res, next));
+// --- RUTAS DE SECRETARÍA GENERAL (Panel y Agendamiento) ---
+router.get('/', (req, res, next) => SecretariaController.index(req, res, next));
+router.get('/disponibilidad', (req, res, next) => SecretariaController.disponibilidad(req, res, next));
+router.get('/turnos', (req, res, next) => SecretariaController.verListaTurnos(req, res, next));
 
-    // --- RUTAS DE TRASLADOS Y TRANSFERENCIAS masivas ---
-    router.post('/trasladar-turno', (req, res, next) => SecretariaController.trasladarTurnoIndividual(req, res, next));
-    router.post('/transferir-agenda', (req, res, next) => SecretariaController.transferirAgenda(req, res, next));
+// --- RUTAS DE TRASLADOS Y TRANSFERENCIAS masivas ---
+router.post('/trasladar-turno', (req, res, next) => SecretariaController.trasladarTurnoIndividual(req, res, next));
+router.post('/transferir-agenda', (req, res, next) => SecretariaController.transferirAgenda(req, res, next));
 
-    // --- BÚSQUEDAS Y ACCIONES ---
-    router.get('/pacientes/buscar', (req, res, next) => SecretariaController.buscarPacientePorDNI(req, res, next));
-    router.get('/medicos/buscar', (req, res, next) => SecretariaController.buscarMedicos(req, res, next));
-    router.post('/agendar', upload.single('archivo_dni'), (req, res, next) => SecretariaController.agendar(req, res, next));
+// --- BÚSQUEDAS Y ACCIONES ---
+router.get('/pacientes/buscar', (req, res, next) => SecretariaController.buscarPacientePorDNI(req, res, next));
+router.get('/medicos/buscar', (req, res, next) => SecretariaController.buscarMedicos(req, res, next));
+router.post('/agendar', upload.single('archivo_dni'), (req, res, next) => SecretariaController.agendar(req, res, next));
 
-    // --- RUTAS DE LISTA DE ESPERA ---
-    router.get('/lista-espera', (req, res, next) => ListaEsperaController.index(req, res, next));
-    router.get('/lista-espera/create', (req, res, next) => ListaEsperaController.create(req, res, next));
-    router.get('/lista-espera/verificar', (req, res, next) => ListaEsperaController.verificarDuplicado(req, res, next));
-    router.post('/lista-espera/store', (req, res, next) => ListaEsperaController.store(req, res, next));
-    router.post('/lista-espera/actualizar-estado/:id', (req, res, next) => ListaEsperaController.actualizarEstado(req, res, next));
-    router.post('/lista-espera/delete/:id', (req, res, next) => ListaEsperaController.eliminar(req, res, next));
+// --- RUTAS DE LISTA DE ESPERA ---
+router.get('/lista-espera', (req, res, next) => ListaEsperaController.index(req, res, next));
+router.get('/lista-espera/create', (req, res, next) => ListaEsperaController.create(req, res, next));
+router.get('/lista-espera/verificar', (req, res, next) => ListaEsperaController.verificarDuplicado(req, res, next));
+router.post('/lista-espera/store', (req, res, next) => ListaEsperaController.store(req, res, next));
+router.post('/lista-espera/actualizar-estado/:id', (req, res, next) => ListaEsperaController.actualizarEstado(req, res, next));
+router.post('/lista-espera/delete/:id', (req, res, next) => ListaEsperaController.eliminar(req, res, next));
 
-    // --- RUTAS DE AUSENCIAS (Módulo Independiente) ---
+// --- RUTAS DE AUSENCIAS (Módulo Independiente) ---
 
-    // 1. Ver el listado principal de ausencias (La nueva vista Pug)
-    router.get('/ausencias', (req, res, next) => SecretariaController.verAusencias(req, res, next));
+// 1. Ver el listado principal de ausencias 
+router.get('/ausencias', (req, res, next) => SecretariaController.verAusencias(req, res, next));
 
-    // 2. Registrar nueva ausencia (Desde el modal)
-    router.post('/ausencias/registrar', (req, res, next) => SecretariaController.registrarAusencia(req, res, next));
+// 2. Registrar nueva ausencia (Desde el modal de creación)
+router.post('/ausencias/registrar', (req, res, next) => SecretariaController.registrarAusencia(req, res, next));
 
-    // 3. Eliminar / Habilitar agenda (Botón basura)
-    router.post('/ausencias/eliminar/:id', (req, res, next) => SecretariaController.eliminarAusencia(req, res, next));
+// 3. Actualizar ausencia existente (Desde el modal de edición)
+router.post('/ausencias/update/:id', (req, res, next) => SecretariaController.actualizarAusencia(req, res, next));
+
+// 4. Eliminar / Habilitar agenda (Botón basura)
+router.post('/ausencias/eliminar/:id', (req, res, next) => SecretariaController.eliminarAusencia(req, res, next));
 
 
-    module.exports = router;
+module.exports = router;

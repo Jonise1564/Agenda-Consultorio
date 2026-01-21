@@ -423,51 +423,115 @@ block contenido
     //- ===============================
     //- ACCESOS RÁPIDOS
     //- ===============================
+    //- .row.g-3.mb-5
+    //-   .col-md
+    //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
+    //-       .card-body
+    //-         .icon-circle.bg-primary.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-days.fs-4
+    //-         h6.fw-bold Agendas
+    //-         a.btn.btn-primary.btn-sm.w-100.rounded-pill(href="/agendas") Ver
+      
+    //-   .col-md
+    //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
+    //-       .card-body
+    //-         .icon-circle.bg-success.text-white.mb-3.mx-auto: i.fa-solid.fa-rectangle-list.fs-4
+    //-         h6.fw-bold Turnos
+    //-         a.btn.btn-success.btn-sm.w-100.rounded-pill(href="/secretaria/turnos") Ver
+      
+    //-   .col-md
+    //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
+    //-       .card-body
+    //-         .icon-circle.bg-info.text-white.mb-3.mx-auto: i.fa-solid.fa-address-book.fs-4
+    //-         h6.fw-bold Pacientes
+    //-         a.btn.btn-outline-info.btn-sm.w-100.rounded-pill(href="/pacientes") Ver
+      
+    //-   .col-md
+    //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
+    //-       .card-body
+    //-         .icon-circle.bg-secondary.text-white.mb-3.mx-auto: i.fa-solid.fa-user-slash.fs-4
+    //-         h6.fw-bold Ausencias
+    //-         .d-flex.gap-2
+    //-           a.btn.btn-outline-secondary.btn-sm.rounded-pill(href="/secretaria/ausencias" title="Ver Listado de Ausencias") Gestionar
+    //-             i.fa-solid.fa-list-ul
+
+    //-   .col-md
+    //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
+    //-       .card-body
+    //-         .icon-circle.bg-warning.text-dark.mb-3.mx-auto: i.fa-solid.fa-hourglass-half.fs-4
+    //-         h6.fw-bold Lista Espera
+    //-         .d-flex.gap-2
+    //-           a.btn.btn-warning.btn-sm.flex-fill.fw-bold.rounded-pill(href="/secretaria/lista-espera") Gestionar
+
+    //-   .col-md
+    //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
+    //-       .card-body
+    //-         .icon-circle.bg-danger.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-minus.fs-4
+    //-         h6.fw-bold Traslados
+    //-         button.btn.btn-danger.btn-sm.w-100.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalTransferencia") Mover
+
+    //- hr.my-5.opacity-25
     .row.g-3.mb-5
+      //- Agendas
       .col-md
-        .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-          .card-body
-            .icon-circle.bg-primary.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-days.fs-4
-            h6.fw-bold Agendas
-            a.btn.btn-primary.btn-sm.w-100.rounded-pill(href="/agendas") Ver
-      
-      .col-md
-        .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-          .card-body
-            .icon-circle.bg-success.text-white.mb-3.mx-auto: i.fa-solid.fa-rectangle-list.fs-4
-            h6.fw-bold Turnos
-            a.btn.btn-success.btn-sm.w-100.rounded-pill(href="/secretaria/turnos") Ver
-      
-      .col-md
-        .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-          .card-body
-            .icon-circle.bg-info.text-white.mb-3.mx-auto: i.fa-solid.fa-address-book.fs-4
-            h6.fw-bold Pacientes
-            a.btn.btn-outline-info.btn-sm.w-100.rounded-pill(href="/pacientes") Ver
-      
-      .col-md
-        .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-          .card-body
-            .icon-circle.bg-secondary.text-white.mb-3.mx-auto: i.fa-solid.fa-user-slash.fs-4
-            h6.fw-bold Ausencias
-            .d-flex.gap-2
-              a.btn.btn-outline-secondary.btn-sm.rounded-pill(href="/secretaria/ausencias" title="Ver Listado de Ausencias") Gestionar
-                i.fa-solid.fa-list-ul
+        .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+          .card-body.d-flex.flex-column
+            .icon-circle.bg-primary.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
+              i.fa-solid.fa-calendar-days.fs-4
+            h6.fw-bold.mb-3 Agendas
+            .mt-auto
+              a.btn.btn-primary.btn-sm.w-100.rounded-pill(href="/agendas") Ver
 
+      //- Turnos
       .col-md
-        .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-          .card-body
-            .icon-circle.bg-warning.text-dark.mb-3.mx-auto: i.fa-solid.fa-hourglass-half.fs-4
-            h6.fw-bold Lista Espera
-            .d-flex.gap-2
-              a.btn.btn-warning.btn-sm.flex-fill.fw-bold.rounded-pill(href="/secretaria/lista-espera") Gestionar
+        .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+          .card-body.d-flex.flex-column
+            .icon-circle.bg-success.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
+              i.fa-solid.fa-rectangle-list.fs-4
+            h6.fw-bold.mb-3 Turnos
+            .mt-auto
+              a.btn.btn-success.btn-sm.w-100.rounded-pill(href="/secretaria/turnos") Ver
 
+      //- Pacientes
       .col-md
-        .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-          .card-body
-            .icon-circle.bg-danger.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-minus.fs-4
-            h6.fw-bold Traslados
-            button.btn.btn-danger.btn-sm.w-100.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalTransferencia") Mover
+        .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+          .card-body.d-flex.flex-column
+            .icon-circle.bg-info.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
+              i.fa-solid.fa-address-book.fs-4
+            h6.fw-bold.mb-3 Pacientes
+            .mt-auto
+              a.btn.btn-outline-info.btn-sm.w-100.rounded-pill(href="/pacientes") Ver
+
+      //- Ausencias (CORREGIDO)
+      .col-md
+        .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+          .card-body.d-flex.flex-column
+            .icon-circle.bg-secondary.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
+              i.fa-solid.fa-user-slash.fs-4
+            h6.fw-bold.mb-3 Ausencias
+            .mt-auto
+              a.btn.btn-outline-secondary.btn-sm.w-100.rounded-pill(href="/secretaria/ausencias") 
+                i.fa-solid.fa-list-ul.me-2
+                | Gestionar
+
+      //- Lista Espera
+      .col-md
+        .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+          .card-body.d-flex.flex-column
+            .icon-circle.bg-warning.text-dark.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
+              i.fa-solid.fa-hourglass-half.fs-4
+            h6.fw-bold.mb-3 Lista Espera
+            .mt-auto
+              a.btn.btn-warning.btn-sm.w-100.fw-bold.rounded-pill(href="/secretaria/lista-espera") Gestionar
+
+      //- Traslados
+      //- .col-md
+      //-   .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+      //-     .card-body.d-flex.flex-column
+      //-       .icon-circle.bg-danger.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
+      //-         i.fa-solid.fa-calendar-minus.fs-4
+      //-       h6.fw-bold.mb-3 Traslados
+      //-       .mt-auto
+      //-         button.btn.btn-danger.btn-sm.w-100.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalTransferencia") Mover
 
     hr.my-5.opacity-25
 
@@ -719,52 +783,7 @@ block contenido
 
       setupAutocomplete('buscarPaciente', 'sugerenciasPaciente', 'pacienteId', '/pacientes/buscar');
 
-      //- async function buscarDisponibilidad() {
-      //-   const id_medico = document.getElementById('medicoId').value;
-      //-   const id_especialidad = especialidadSelect.value;
-      //-   const fecha = fechaInput.value;
-      //-   const id_paciente = document.getElementById('pacienteId').value;
-
-      //-   if (!id_medico || !id_especialidad || !fecha) return;
-
-      //-   slotsContainer.innerHTML = '';
-      //-   document.getElementById('loader').classList.remove('d-none');
-      //-   mensajeVacio.classList.add('d-none');
-      //-   document.getElementById('instruccionInicial').classList.add('d-none');
-      //-   btnGuardar.disabled = true;
-      //-   horaInput.value = '';
-
-      //-   try {
-      //-     const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fecha}`);
-      //-     const html = await res.text();
-      //-     document.getElementById('loader').classList.add('d-none');
-
-      //-     if (html.trim() !== '' && html.includes('slot-hora')) {
-      //-       slotsContainer.innerHTML = html;
-      //-       document.querySelectorAll('.slot-hora').forEach(slot => {
-      //-         slot.addEventListener('click', function() {
-      //-           if (this.classList.contains('ocupado') || this.classList.contains('disabled')) return;
-      //-           document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
-      //-           this.classList.add('selected');
-      //-           horaInput.value = this.dataset.hora || this.innerText.trim();
-      //-           document.getElementById('agendaIdHidden').value = this.dataset.agenda || ''; 
-      //-           document.getElementById('turnoIdHidden').value = this.dataset.id || '';
-      //-           btnGuardar.disabled = false;
-      //-         });
-      //-       });
-      //-     } else {
-      //-       slotsContainer.innerHTML = html;
-      //-       if (!html.includes('fa-user-slash') && !html.includes('fa-umbrella-beach')) {
-      //-             mensajeVacio.classList.remove('d-none');
-      //-       }
-      //-       const params = new URLSearchParams({ id_medico, id_especialidad, id_paciente: id_paciente || '' });
-      //-       btnIrAListaEspera.href = `/secretaria/lista-espera/create?${params.toString()}`;
-      //-     }
-      //-   } catch (err) {
-      //-     console.error("Error:", err);
-      //-     document.getElementById('loader').classList.add('d-none');
-      //-   }
-      //- }
+      
     async function buscarDisponibilidad() {
       const id_medico = document.getElementById('medicoId').value;
       const id_especialidad = especialidadSelect.value;

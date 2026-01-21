@@ -173,11 +173,44 @@ class MedicosController {
     // ================================================================
     // EDITAR (FORM)
     // ================================================================
+    // async edit(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+    //         const medico = await Medico.obtenerPorId(id_medico);
+
+    //         if (!medico) return res.status(404).send('Médico no encontrado');
+
+    //         const persona = {
+    //             id: medico.id_persona,
+    //             nombre: medico.nombre,
+    //             apellido: medico.apellido,
+    //             nacimiento: medico.nacimiento ? new Date(medico.nacimiento) : null
+    //         };
+
+    //         const usuario = {
+    //             id: medico.id_usuario,
+    //             email: medico.email
+    //         };
+
+    //         const especialidades = await Especialidad.getAll();
+    //         const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
+
+    //         res.render('medicos/editar', {
+    //             medico,
+    //             persona,
+    //             usuario,
+    //             especialidades,
+    //             especialidadesAsignadas
+    //         });
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
     async edit(req, res, next) {
         try {
             const { id_medico } = req.params;
             const medico = await Medico.obtenerPorId(id_medico);
-            
+
             if (!medico) return res.status(404).send('Médico no encontrado');
 
             const persona = {
@@ -187,7 +220,8 @@ class MedicosController {
                 nacimiento: medico.nacimiento ? new Date(medico.nacimiento) : null
             };
 
-            const usuario = {
+            // Renombrado de 'usuario' a 'usuarioMedico' para evitar conflicto con layout.pug
+            const usuarioMedico = {
                 id: medico.id_usuario,
                 email: medico.email
             };
@@ -195,10 +229,15 @@ class MedicosController {
             const especialidades = await Especialidad.getAll();
             const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
 
+            // Obtener teléfonos para pasarlos a la vista (si no estaban ya en el objeto medico)
+            const telefonosDB = await Persona.getTelefonos(medico.id_persona);
+            const telefonos = telefonosDB.map(t => t.numero);
+
             res.render('medicos/editar', {
                 medico,
                 persona,
-                usuario,
+                usuarioMedico, // <--- CAMBIADO
+                telefonos,     // <--- Asegúrate de enviarlos
                 especialidades,
                 especialidadesAsignadas
             });
@@ -206,11 +245,65 @@ class MedicosController {
             next(err);
         }
     }
-
     // ================================================================
     // ACTUALIZAR (UPDATE)
     // ================================================================
-    async update(req, res, next) {
+    // async update(req, res, next) {
+    //     try {
+    //         const { id_medico } = req.params;
+    //         const {
+    //             nombre, apellido, nacimiento, email, password,
+    //             matricula, especialidades, especialidades_modificadas,
+    //             telefonos, telefonos_modificados
+    //         } = req.body;
+
+    //         const medico = await Medico.obtenerPorId(id_medico);
+    //         if (!medico) return res.status(404).send('Médico no encontrado');
+
+    //         // Actualizar Persona
+    //         await Persona.updatePersona(medico.id_persona, { nombre, apellido, nacimiento });
+
+    //         // Actualizar Usuario (Email y Password si existe)
+    //         const userUpdates = {};
+    //         if (email) userUpdates.email = email.trim();
+    //         if (password && password.trim() !== '') {
+    //             userUpdates.password = await bcrypt.hash(password.trim(), 10);
+    //         }
+    //         if (Object.keys(userUpdates).length > 0) {
+    //             await Usuario.updateUsuario(medico.id_usuario, userUpdates);
+    //         }
+
+    //         // Actualizar Matrícula
+    //         if (matricula) await Medico.updateMatricula(id_medico, matricula);
+
+    //         // Actualizar Especialidades si cambiaron
+    //         if (especialidades_modificadas === '1') {
+    //             const listaEspecialidades = Array.isArray(especialidades) ? especialidades : (especialidades ? [especialidades] : []);
+    //             await Especialidad.desactivarTodasPorMedico(id_medico);
+    //             for (const idEsp of listaEspecialidades) {
+    //                 await Especialidad.asignarAMedico(id_medico, idEsp);
+    //             }
+    //         }
+
+    //         // Actualizar Teléfonos si cambiaron
+    //         if (telefonos_modificados === '1') {
+    //             const telefonosArray = Array.isArray(telefonos) ? telefonos : (telefonos ? [telefonos] : []);
+    //             const telefonosLimpios = telefonosArray.map(t => t?.trim()).filter(Boolean);
+
+    //             await Persona.eliminarTelefonos(medico.id_persona);
+    //             for (const tel of telefonosLimpios) {
+    //                 await Persona.addTelefono(medico.id_persona, tel);
+    //             }
+    //         }
+
+    //         res.redirect('/medicos?nombreUpdate=1');
+    //     } catch (error) {
+    //         console.error('Error al actualizar médico:', error);
+    //         next(error);
+    //     }
+    // }
+
+async update(req, res, next) {
         try {
             const { id_medico } = req.params;
             const {
@@ -222,23 +315,39 @@ class MedicosController {
             const medico = await Medico.obtenerPorId(id_medico);
             if (!medico) return res.status(404).send('Médico no encontrado');
 
-            // Actualizar Persona
+            // 1. Validar Email Duplicado antes de operar
+            const nuevoEmail = email ? email.trim() : '';
+            if (nuevoEmail !== '' && nuevoEmail !== medico.email) {
+                // Buscamos si el email ya lo tiene OTRO usuario
+                const existeEmail = await Usuario.getByEmail(nuevoEmail);
+                if (existeEmail) {
+                    console.log('Intento de duplicado bloqueado:', nuevoEmail);
+                    // Redirigimos al index con un parámetro de error para mostrar un mensaje lindo
+                    return res.redirect(`/medicos?errorEmail=true&email=${nuevoEmail}`);
+                }
+            }
+
+            // 2. Actualizar Persona
             await Persona.updatePersona(medico.id_persona, { nombre, apellido, nacimiento });
 
-            // Actualizar Usuario (Email y Password si existe)
+            // 3. Preparar actualizaciones de Usuario
             const userUpdates = {};
-            if (email) userUpdates.email = email.trim();
+            if (nuevoEmail !== '' && nuevoEmail !== medico.email) {
+                userUpdates.email = nuevoEmail;
+            }
+
             if (password && password.trim() !== '') {
                 userUpdates.password = await bcrypt.hash(password.trim(), 10);
             }
+
             if (Object.keys(userUpdates).length > 0) {
                 await Usuario.updateUsuario(medico.id_usuario, userUpdates);
             }
 
-            // Actualizar Matrícula
+            // 4. Actualizar Matrícula
             if (matricula) await Medico.updateMatricula(id_medico, matricula);
 
-            // Actualizar Especialidades si cambiaron
+            // 5. Especialidades
             if (especialidades_modificadas === '1') {
                 const listaEspecialidades = Array.isArray(especialidades) ? especialidades : (especialidades ? [especialidades] : []);
                 await Especialidad.desactivarTodasPorMedico(id_medico);
@@ -247,11 +356,10 @@ class MedicosController {
                 }
             }
 
-            // Actualizar Teléfonos si cambiaron
+            // 6. Teléfonos
             if (telefonos_modificados === '1') {
                 const telefonosArray = Array.isArray(telefonos) ? telefonos : (telefonos ? [telefonos] : []);
                 const telefonosLimpios = telefonosArray.map(t => t?.trim()).filter(Boolean);
-                
                 await Persona.eliminarTelefonos(medico.id_persona);
                 for (const tel of telefonosLimpios) {
                     await Persona.addTelefono(medico.id_persona, tel);
@@ -260,11 +368,12 @@ class MedicosController {
 
             res.redirect('/medicos?nombreUpdate=1');
         } catch (error) {
-            console.error('Error al actualizar médico:', error);
+            console.error('Error crítico al actualizar médico:', error);
             next(error);
         }
     }
 
+    
     // ================================================================
     // ESTADO (ACTIVAR/INACTIVAR)
     // ================================================================

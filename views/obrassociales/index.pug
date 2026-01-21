@@ -152,9 +152,125 @@
 //-         }
 
 
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4.mb-5
+//-     // ---------- ENCABEZADO ----------
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-hospital.me-2
+//-             | Obras Sociales
+//-           p.text-muted Administre las coberturas médicas aceptadas en el consultorio.
+//-         //- a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-         //-   i.bi.bi-arrow-left.me-1
+//-         //-   | Volver a Pacientes
+
+//-     // ---------- ALERTAS ----------
+//-     if successMessage
+//-       script.
+//-         Swal.fire({
+//-           title: '¡Completado!',
+//-           text: '#{successMessage}',
+//-           icon: 'success',
+//-           confirmButtonColor: '#0d6efd'
+//-         });
+
+//-     // ---------- ACCIONES SUPERIORES ----------
+//-     .row.mb-3
+//-       .col-12.d-flex.justify-content-end
+//-         a.btn.btn-primary.shadow-sm(href="/obrasSociales/create")
+//-           i.bi.bi-plus-lg.me-1
+//-           | Nueva Obra Social
+
+//-     // ---------- LISTADO ----------
+//-     .row
+//-       .col-12
+//-         .card.border-0.shadow-sm
+//-           .card-body.p-0
+//-             .table-responsive
+//-               table.table.table-hover.align-middle.mb-0
+//-                 thead.bg-light
+//-                   tr
+//-                     th.ps-4 Nombre y Detalles
+//-                     th.text-center Estado
+//-                     th.text-end.pe-4 Acciones
+//-                 tbody
+//-                   each obraSocial in obrasSociales
+//-                     tr(class=obraSocial.estado == 0 ? 'opacity-50' : '')
+//-                       td.ps-4
+//-                         //- Vista normal
+//-                         .view-mode(id=`view-${obraSocial.id}`)
+//-                           .fw-bold.text-dark.fs-5= obraSocial.nombre
+//-                           .text-muted.small= obraSocial.descripcion
+//-                           .text-muted.small
+//-                             i.bi.bi-geo-alt.me-1
+//-                             | #{obraSocial.direccion}
+                        
+//-                         //- Formulario de edición rápida (oculto por defecto)
+//-                         .edit-mode(id=`edit-${obraSocial.id}` style="display:none;")
+//-                           form.row.g-2(action=`/obrasSociales/update/${obraSocial.id}` method="post")
+//-                             .col-md-4
+//-                               input.form-control.form-control-sm(type="text" name="nombre" value=obraSocial.nombre required)
+//-                             .col-md-4
+//-                               input.form-control.form-control-sm(type="text" name="direccion" value=obraSocial.direccion required)
+//-                             .col-md-4
+//-                               textarea.form-control.form-control-sm(name="descripcion" rows="1" required)= obraSocial.descripcion
+//-                             .col-12.mt-2
+//-                               button.btn.btn-success.btn-sm.me-2(type="submit")
+//-                                 i.bi.bi-check-lg.me-1
+//-                                 | Guardar
+//-                               button.btn.btn-light.btn-sm(type="button" onclick=`toggleEdit(${obraSocial.id})`) Cancelar
+
+//-                       td.text-center
+//-                         if obraSocial.estado == 1
+//-                           span.badge.rounded-pill.bg-success-subtle.text-success.border.border-success Activa
+//-                         else
+//-                           span.badge.rounded-pill.bg-danger-subtle.text-danger.border.border-danger Inactiva
+
+//-                       td.text-end.pe-4
+//-                         .btn-group.shadow-sm
+//-                           button.btn.btn-outline-primary.btn-sm(type="button" title="Editar" onclick=`toggleEdit(${obraSocial.id})`)
+//-                             i.bi.bi-pencil-square
+                          
+//-                           if obraSocial.estado == 1
+//-                             form(action=`/obrasSociales/inactivar/${obraSocial.id}` method="post" style="display:inline;")
+//-                               button.btn.btn-outline-danger.btn-sm(type="submit" title="Inactivar")
+//-                                 i.bi.bi-slash-circle
+//-                           else
+//-                             form(action=`/obrasSociales/activar/${obraSocial.id}` method="post" style="display:inline;")
+//-                               button.btn.btn-outline-success.btn-sm(type="submit" title="Activar")
+//-                                 i.bi.bi-check-circle
+
+//-   script.
+//-     function toggleEdit(id) {
+//-       const viewMode = document.getElementById(`view-${id}`);
+//-       const editMode = document.getElementById(`edit-${id}`);
+      
+//-       if (editMode.style.display === 'none') {
+//-         // Cerrar otros que puedan estar abiertos
+//-         document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
+//-         document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'block');
+        
+//-         editMode.style.display = 'block';
+//-         viewMode.style.display = 'none';
+//-       } else {
+//-         editMode.style.display = 'none';
+//-         viewMode.style.display = 'block';
+//-       }
+//-     }
+
+
 extends ../layout
 
 block contenido
+  //- Estilos internos para el modal
+  style.
+    .modal-content { border-radius: 15px; border: none; }
+    .modal-header { border-top-left-radius: 15px; border-top-right-radius: 15px; }
+
   .container.mt-4.mb-5
     // ---------- ENCABEZADO ----------
     .row.mb-4
@@ -164,31 +280,19 @@ block contenido
             i.bi.bi-hospital.me-2
             | Obras Sociales
           p.text-muted Administre las coberturas médicas aceptadas en el consultorio.
-        a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
-          i.bi.bi-arrow-left.me-1
-          | Volver a Pacientes
-
-    // ---------- ALERTAS ----------
-    if successMessage
-      script.
-        Swal.fire({
-          title: '¡Completado!',
-          text: '#{successMessage}',
-          icon: 'success',
-          confirmButtonColor: '#0d6efd'
-        });
-
+      
     // ---------- ACCIONES SUPERIORES ----------
     .row.mb-3
       .col-12.d-flex.justify-content-end
-        a.btn.btn-primary.shadow-sm(href="/obrasSociales/create")
+        //- Botón que dispara el Modal
+        button.btn.btn-primary.shadow-sm.rounded-pill.px-4(type="button" data-bs-toggle="modal" data-bs-target="#modalCrearObra")
           i.bi.bi-plus-lg.me-1
           | Nueva Obra Social
 
     // ---------- LISTADO ----------
     .row
       .col-12
-        .card.border-0.shadow-sm
+        .card.border-0.shadow-sm.rounded-4
           .card-body.p-0
             .table-responsive
               table.table.table-hover.align-middle.mb-0
@@ -198,62 +302,106 @@ block contenido
                     th.text-center Estado
                     th.text-end.pe-4 Acciones
                 tbody
-                  each obraSocial in obrasSociales
-                    tr(class=obraSocial.estado == 0 ? 'opacity-50' : '')
-                      td.ps-4
-                        //- Vista normal
-                        .view-mode(id=`view-${obraSocial.id}`)
-                          .fw-bold.text-dark.fs-5= obraSocial.nombre
-                          .text-muted.small= obraSocial.descripcion
-                          .text-muted.small
-                            i.bi.bi-geo-alt.me-1
-                            | #{obraSocial.direccion}
-                        
-                        //- Formulario de edición rápida (oculto por defecto)
-                        .edit-mode(id=`edit-${obraSocial.id}` style="display:none;")
-                          form.row.g-2(action=`/obrasSociales/update/${obraSocial.id}` method="post")
-                            .col-md-4
-                              input.form-control.form-control-sm(type="text" name="nombre" value=obraSocial.nombre required)
-                            .col-md-4
-                              input.form-control.form-control-sm(type="text" name="direccion" value=obraSocial.direccion required)
-                            .col-md-4
-                              textarea.form-control.form-control-sm(name="descripcion" rows="1" required)= obraSocial.descripcion
-                            .col-12.mt-2
-                              button.btn.btn-success.btn-sm.me-2(type="submit")
-                                i.bi.bi-check-lg.me-1
-                                | Guardar
-                              button.btn.btn-light.btn-sm(type="button" onclick=`toggleEdit(${obraSocial.id})`) Cancelar
-
-                      td.text-center
-                        if obraSocial.estado == 1
-                          span.badge.rounded-pill.bg-success-subtle.text-success.border.border-success Activa
-                        else
-                          span.badge.rounded-pill.bg-danger-subtle.text-danger.border.border-danger Inactiva
-
-                      td.text-end.pe-4
-                        .btn-group.shadow-sm
-                          button.btn.btn-outline-primary.btn-sm(type="button" title="Editar" onclick=`toggleEdit(${obraSocial.id})`)
-                            i.bi.bi-pencil-square
+                  if obrasSociales && obrasSociales.length > 0
+                    each obraSocial in obrasSociales
+                      tr(class=obraSocial.estado == 0 ? 'opacity-50' : '')
+                        td.ps-4
+                          //- Vista normal
+                          .view-mode(id=`view-${obraSocial.id}`)
+                            .fw-bold.text-dark.fs-5= obraSocial.nombre
+                            .text-muted.small= obraSocial.descripcion
+                            .text-muted.small
+                              i.bi.bi-geo-alt.me-1
+                              | #{obraSocial.direccion}
                           
-                          if obraSocial.estado == 1
-                            form(action=`/obrasSociales/inactivar/${obraSocial.id}` method="post" style="display:inline;")
-                              button.btn.btn-outline-danger.btn-sm(type="submit" title="Inactivar")
-                                i.bi.bi-slash-circle
-                          else
-                            form(action=`/obrasSociales/activar/${obraSocial.id}` method="post" style="display:inline;")
-                              button.btn.btn-outline-success.btn-sm(type="submit" title="Activar")
-                                i.bi.bi-check-circle
+                          //- Formulario de edición rápida
+                          .edit-mode(id=`edit-${obraSocial.id}` style="display:none;")
+                            form.row.g-2(action=`/obrasSociales/update/${obraSocial.id}` method="post")
+                              .col-md-4
+                                input.form-control.form-control-sm(type="text" name="nombre" value=obraSocial.nombre required)
+                              .col-md-4
+                                input.form-control.form-control-sm(type="text" name="direccion" value=obraSocial.direccion required)
+                              .col-md-4
+                                textarea.form-control.form-control-sm(name="descripcion" rows="1" required)= obraSocial.descripcion
+                              .col-12.mt-2
+                                button.btn.btn-success.btn-sm.me-2(type="submit")
+                                  i.bi.bi-check-lg.me-1
+                                  | Guardar
+                                button.btn.btn-light.btn-sm(type="button" onclick=`toggleEdit(${obraSocial.id})`) Cancelar
 
+                        td.text-center
+                          if obraSocial.estado == 1
+                            span.badge.rounded-pill.bg-success-subtle.text-success.border.border-success Activa
+                          else
+                            span.badge.rounded-pill.bg-danger-subtle.text-danger.border.border-danger Inactiva
+
+                        td.text-end.pe-4
+                          .btn-group.shadow-sm
+                            button.btn.btn-outline-primary.btn-sm(type="button" title="Editar" onclick=`toggleEdit(${obraSocial.id})`)
+                              i.bi.bi-pencil-square
+                            
+                            if obraSocial.estado == 1
+                              form(action=`/obrasSociales/inactivar/${obraSocial.id}` method="post" style="display:inline;")
+                                button.btn.btn-outline-danger.btn-sm(type="submit" title="Inactivar")
+                                  i.bi.bi-slash-circle
+                            else
+                              form(action=`/obrasSociales/activar/${obraSocial.id}` method="post" style="display:inline;")
+                                button.btn.btn-outline-success.btn-sm(type="submit" title="Activar")
+                                  i.bi.bi-check-circle
+                  else
+                    tr: td.text-center.py-5(colspan="3") No hay obras sociales registradas.
+
+  //- ---------- MODAL DE CREACIÓN ----------
+  #modalCrearObra.modal.fade(tabindex="-1" aria-labelledby="modalCrearObraLabel" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+      .modal-content.shadow-lg
+        .modal-header.bg-primary.text-white
+          h5#modalCrearObraLabel.modal-title.fw-bold
+            i.bi.bi-hospital.me-2
+            | Nueva Obra Social
+          button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        form(action="/obrasSociales/store" method="post")
+          .modal-body.p-4
+            .mb-3
+              label.form-label.fw-bold(for="nombre") Nombre de la Obra Social
+              input#nombre.form-control(type="text" name="nombre" placeholder="Ej: OSDE" required)
+            .mb-3
+              label.form-label.fw-bold(for="direccion") Dirección
+              input#direccion.form-control(type="text" name="direccion" placeholder="Ej: Av. Rivadavia 1234" required)
+            .mb-3
+              label.form-label.fw-bold(for="descripcion") Descripción/Observaciones
+              textarea#descripcion.form-control(name="descripcion" rows="3" style="resize:none;" placeholder="Detalles de cobertura..." required)
+          .modal-footer.bg-light
+            button.btn.btn-light.rounded-pill(type="button" data-bs-dismiss="modal") Cancelar
+            button.btn.btn-primary.px-4.rounded-pill(type="submit") 
+              i.bi.bi-save.me-1
+              | Guardar Entidad
+
+  //- ---------- SCRIPTS ----------
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
+    // Manejo de Alertas desde la URL o Mensajes del Servidor
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('success') || "#{successMessage}") {
+        Swal.fire({
+          title: '¡Completado!',
+          text: "#{successMessage}" || 'La operación se realizó con éxito',
+          icon: 'success',
+          timer: 2500,
+          showConfirmButton: false
+        });
+      }
+    });
+
+    // Función para toggle de edición rápida en la tabla
     function toggleEdit(id) {
       const viewMode = document.getElementById(`view-${id}`);
       const editMode = document.getElementById(`edit-${id}`);
       
       if (editMode.style.display === 'none') {
-        // Cerrar otros que puedan estar abiertos
         document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'block');
-        
         editMode.style.display = 'block';
         viewMode.style.display = 'none';
       } else {

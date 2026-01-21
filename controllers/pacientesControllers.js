@@ -159,33 +159,63 @@ class PacientesController {
     // ===========================================
     // FORM EDITAR PACIENTE
     // ===========================================
+    // async edit(req, res, next) {
+    //     try {
+    //         const { id } = req.params;
+    //         const paciente = await Paciente.getPacienteById(id);
+    //         if (!paciente) return res.status(404).send('Paciente no encontrado');
+
+    //         if (paciente.nacimiento) {
+    //             paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
+    //         }
+
+    //         const usuario = await Usuario.getById(paciente.id_usuario);
+    //         const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+    //         const telefonos = telefonosDB.map(t => t.numero);
+    //         const obra_social = await Paciente.getOSByPaciente(id);
+    //         const obrasSociales = await Paciente.getAllOS();
+
+    //         res.render('pacientes/editar', {
+    //             paciente,
+    //             usuario,
+    //             telefonos,
+    //             obra_social,
+    //             obrasSociales
+    //         });
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
+
     async edit(req, res, next) {
-        try {
-            const { id } = req.params;
-            const paciente = await Paciente.getPacienteById(id);
-            if (!paciente) return res.status(404).send('Paciente no encontrado');
+    try {
+        const { id } = req.params;
+        const paciente = await Paciente.getPacienteById(id);
+        if (!paciente) return res.status(404).send('Paciente no encontrado');
 
-            if (paciente.nacimiento) {
-                paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
-            }
-
-            const usuario = await Usuario.getById(paciente.id_usuario);
-            const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
-            const telefonos = telefonosDB.map(t => t.numero);
-            const obra_social = await Paciente.getOSByPaciente(id);
-            const obrasSociales = await Paciente.getAllOS();
-
-            res.render('pacientes/editar', {
-                paciente,
-                usuario,
-                telefonos,
-                obra_social,
-                obrasSociales
-            });
-        } catch (error) {
-            next(error);
+        if (paciente.nacimiento) {
+            paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
         }
+
+        // Renombramos la variable aquí para evitar conflictos con res.locals.usuario
+        const usuarioPaciente = await Usuario.getById(paciente.id_usuario); 
+        
+        const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+        const telefonos = telefonosDB.map(t => t.numero);
+        const obra_social = await Paciente.getOSByPaciente(id);
+        const obrasSociales = await Paciente.getAllOS();
+
+        res.render('pacientes/editar', {
+            paciente,
+            usuarioPaciente, // <--- CAMBIADO
+            telefonos,
+            obra_social,
+            obrasSociales
+        });
+    } catch (error) {
+        next(error);
     }
+}
 
     // ===========================================
     // ACTUALIZAR PACIENTE (UPDATE)

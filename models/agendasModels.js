@@ -12,6 +12,7 @@ class Agenda {
             const [agendas] = await conn.query(`        
             SELECT 
                 a.id,
+                a.id_medico,    
                 a.fecha_creacion,
                 a.fecha_fin,
                 p.nombre AS nombre,
@@ -435,6 +436,42 @@ class Agenda {
         } catch (error) {
             console.error('Error en eliminarAusencia:', error);
             throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+    // =====================================================
+    // 15. ACTUALIZAR AUSENCIA EXISTENTE
+    // =====================================================
+    static async actualizarAusencia(id, data) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const { id_medico, fecha_inicio, fecha_fin, tipo, descripcion } = data;
+
+            const query = `
+                UPDATE AUSENCIAS 
+                SET id_medico = ?, 
+                    fecha_inicio = ?, 
+                    fecha_fin = ?, 
+                    tipo = ?, 
+                    descripcion = ?
+                WHERE id = ?
+            `;
+
+            const [result] = await conn.query(query, [
+                id_medico,
+                fecha_inicio,
+                fecha_fin,
+                tipo,
+                descripcion || null,
+                id
+            ]);
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Error en actualizarAusencia (Modelo):', error);
+            throw new Error('No se pudo actualizar la ausencia en la base de datos');
         } finally {
             if (conn) conn.end();
         }

@@ -167,6 +167,175 @@
 //     console.log(`Servidor en http://localhost:${PORT}`);
 // });
 
+// const express = require('express');
+// const path = require('path');
+// const morgan = require('morgan');
+// const cors = require('cors');
+// const cookieParser = require('cookie-parser');
+// const jwt = require('jsonwebtoken');
+// // require('dotenv').config(); // Descomenta si usas .env
+
+// const app = express();
+// const PORT = process.env.PORT ?? 3000;
+
+// // CONFIGURACIONES BÁSICAS
+// app.use(express.static(path.join(__dirname, 'public')));
+// app.set('view engine', 'pug');
+// app.set('views', path.join(__dirname, 'views'));
+// app.use(morgan('dev'));
+// app.use(cors());
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(cookieParser());
+
+// // MIDDLEWARE DE AUTENTICACIÓN
+// app.use((req, res, next) => {
+//     const token = req.cookies.token_acceso;
+//     res.locals.usuario = null; 
+//     if (token) {
+//         try {
+//             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
+//             res.locals.usuario = decoded; 
+//             req.user = decoded; 
+//         } catch (err) {
+//             res.clearCookie('token_acceso');
+//         }
+//     }
+//     next();
+// });
+
+// // =====================
+// // IMPORTACIÓN DE ROUTERS
+// // =====================
+// const AuthRouter = require('./routes/authRoutes');
+// const MedicosRouter = require('./routes/medicosRoutes');
+// const PacientesRouter = require('./routes/pacientesRoutes');
+// const SecretariaRouter = require('./routes/secretariaRoutes');
+// const AgendasRouter = require('./routes/agendasRoutes'); 
+// const TurnosRouter = require('./routes/turnosRoutes'); 
+// const EspecialidadesRouter = require('./routes/especialidadesRoutes'); 
+
+// // =====================
+// // REGISTRO DE RUTAS
+// // =====================
+// app.use('/auth', AuthRouter);
+
+// app.get('/', (req, res) => {
+//     const user = res.locals.usuario;
+//     if (!user) return res.redirect('/auth/login');
+
+//     if (user.id_rol === 4) return res.redirect('/pacientes/dashboard');
+//     if (user.id_rol === 3) return res.redirect('/secretaria');
+    
+//     res.render('principal/index', { page: 'inicio' });
+// });
+
+// // MONTAR LOS ROUTERS
+// app.use('/pacientes', PacientesRouter);
+// app.use('/secretaria', SecretariaRouter);
+// app.use('/medicos', MedicosRouter);
+// app.use('/agendas', AgendasRouter); // AGREGADO - Esto quita el 404
+// app.use('/turnos', TurnosRouter); // AGREGADO
+// app.use('/especialidades', EspecialidadesRouter); // AGREGADO
+
+// // MANEJO DE ERRORES
+// app.use((err, req, res, next) => {
+//     console.error("ERROR EN EL SERVIDOR:", err.stack);
+//     res.status(500).send(`Error interno: ${err.message}`);
+// });
+
+// app.listen(PORT, () => {
+//     console.log(` Servidor en http://localhost:${PORT}`);
+// });
+
+
+// const express = require('express');
+// const path = require('path');
+// const morgan = require('morgan');
+// const cors = require('cors');
+// const cookieParser = require('cookie-parser');
+// const jwt = require('jsonwebtoken');
+// // require('dotenv').config(); // Descomenta si usas .env
+
+// const app = express();
+// const PORT = process.env.PORT ?? 3000;
+
+// // CONFIGURACIONES BÁSICAS
+// app.use(express.static(path.join(__dirname, 'public')));
+// app.set('view engine', 'pug');
+// app.set('views', path.join(__dirname, 'views'));
+// app.use(morgan('dev'));
+// app.use(cors());
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(cookieParser());
+
+// // MIDDLEWARE DE AUTENTICACIÓN
+// app.use((req, res, next) => {
+//     const token = req.cookies.token_acceso;
+//     res.locals.usuario = null; 
+//     if (token) {
+//         try {
+//             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
+//             res.locals.usuario = decoded; 
+//             req.user = decoded; 
+//         } catch (err) {
+//             res.clearCookie('token_acceso');
+//         }
+//     }
+//     next();
+// });
+
+// // =====================
+// // IMPORTACIÓN DE ROUTERS
+// // =====================
+// const AuthRouter = require('./routes/authRoutes');
+// const MedicosRouter = require('./routes/medicosRoutes');
+// const PacientesRouter = require('./routes/pacientesRoutes');
+// const SecretariaRouter = require('./routes/secretariaRoutes');
+// const AgendasRouter = require('./routes/agendasRoutes');
+// const TurnosRouter = require('./routes/turnosRoutes');
+// const EspecialidadesRouter = require('./routes/especialidadesRoutes');
+// // LÍNEA AGREGADA:
+// const ObrasSocialesRouter = require('./routes/obrasSocialesRoutes'); 
+
+// // =====================
+// // REGISTRO DE RUTAS
+// // =====================
+// app.use('/auth', AuthRouter);
+
+// app.get('/', (req, res) => {
+//     const user = res.locals.usuario;
+//     if (!user) return res.redirect('/auth/login');
+
+//     if (user.id_rol === 4) return res.redirect('/pacientes/dashboard');
+//     if (user.id_rol === 3) return res.redirect('/secretaria');
+    
+//     res.render('principal/index', { page: 'inicio' });
+// });
+
+// // MONTAR LOS ROUTERS
+// app.use('/pacientes', PacientesRouter);
+// app.use('/secretaria', SecretariaRouter);
+// app.use('/medicos', MedicosRouter);
+// app.use('/agendas', AgendasRouter);
+// app.use('/turnos', TurnosRouter);
+// app.use('/especialidades', EspecialidadesRouter);
+// // LÍNEA AGREGADA:
+// app.use('/obrassociales', ObrasSocialesRouter); 
+
+// // MANEJO DE ERRORES
+// app.use((err, req, res, next) => {
+//     console.error("ERROR EN EL SERVIDOR:", err.stack);
+//     res.status(500).send(`Error interno: ${err.message}`);
+// });
+
+// app.listen(PORT, () => {
+//     console.log(`\n Servidor corriendo con éxito`);
+//     console.log(` Acceso: http://localhost:${PORT}`);
+    
+// });
+
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
@@ -205,15 +374,18 @@ app.use((req, res, next) => {
 });
 
 // =====================
-// IMPORTACIÓN DE ROUTERS (¡Asegúrate que los archivos existan!)
+// IMPORTACIÓN DE ROUTERS
 // =====================
 const AuthRouter = require('./routes/authRoutes');
 const MedicosRouter = require('./routes/medicosRoutes');
 const PacientesRouter = require('./routes/pacientesRoutes');
 const SecretariaRouter = require('./routes/secretariaRoutes');
-const AgendasRouter = require('./routes/agendasRoutes'); // AGREGADO
-const TurnosRouter = require('./routes/turnosRoutes'); // AGREGADO
-const EspecialidadesRouter = require('./routes/especialidadesRoutes'); // AGREGADO
+const AgendasRouter = require('./routes/agendasRoutes');
+const TurnosRouter = require('./routes/turnosRoutes');
+const EspecialidadesRouter = require('./routes/especialidadesRoutes');
+const ObrasSocialesRouter = require('./routes/obrasSocialesRoutes'); 
+// NUEVA IMPORTACIÓN:
+const ListaEsperaRouter = require('./routes/listaEsperaRoutes'); 
 
 // =====================
 // REGISTRO DE RUTAS
@@ -234,9 +406,13 @@ app.get('/', (req, res) => {
 app.use('/pacientes', PacientesRouter);
 app.use('/secretaria', SecretariaRouter);
 app.use('/medicos', MedicosRouter);
-app.use('/agendas', AgendasRouter); // AGREGADO - Esto quita el 404
-app.use('/turnos', TurnosRouter); // AGREGADO
-app.use('/especialidades', EspecialidadesRouter); // AGREGADO
+app.use('/agendas', AgendasRouter);
+app.use('/turnos', TurnosRouter);
+app.use('/especialidades', EspecialidadesRouter);
+app.use('/obrassociales', ObrasSocialesRouter); 
+
+// NUEVO MONTAJE: Conecta el prefijo con el router
+app.use('/secretaria/lista-espera', ListaEsperaRouter); 
 
 // MANEJO DE ERRORES
 app.use((err, req, res, next) => {
@@ -245,5 +421,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log(` Servidor en http://localhost:${PORT}`);
+    console.log(`\n Servidor corriendo con éxito`);
+    console.log(` Acceso: http://localhost:${PORT}`);
 });

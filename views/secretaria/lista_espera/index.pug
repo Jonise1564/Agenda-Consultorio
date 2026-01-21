@@ -1,39 +1,353 @@
+//- extends ../../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- Cabecera con estadísticas rápidas
+//-     .row.mb-4.align-items-center
+//-       .col-md-6
+//-         h2.fw-bold.text-primary 
+//-           i.fa-solid.fa-rectangle-list.me-2
+//-           | Lista de Espera
+//-         p.text-muted.mb-0 Hay #{espera.length} pacientes pendientes de contacto.
+//-       .col-md-6.text-md-end
+//-         a.btn.btn-outline-secondary.me-2(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+         
+//-         a.btn.btn-primary.shadow-sm(href="/secretaria/lista-espera/create")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nueva Solicitud
+
+//-     //- Tabla de Registros
+//-     .card.border-0.shadow-sm
+//-       .card-body.p-0
+//-         .table-responsive
+//-           table.table.table-hover.align-middle.mb-0
+//-             thead.bg-light
+//-               tr.text-secondary.small.text-uppercase
+//-                 th.ps-4.py-3 Paciente / Contacto Rápido
+//-                 th Profesional / Especialidad
+//-                 th Fecha Registro
+//-                 th Prioridad
+//-                 th.text-end.pe-4 Acciones
+//-             tbody
+//-               if espera && espera.length > 0
+//-                 each item in espera
+//-                   tr
+//-                     //- Columna Paciente con Mensajería Automatizada
+//-                     td.ps-4
+//-                       .d-flex.flex-column
+//-                         span.fw-bold.text-dark #{item.paciente_apellido}, #{item.paciente_nombre}
+//-                         .d-flex.align-items-center.gap-2.mt-1
+//-                           span.badge.bg-light.text-dark.border.fw-normal DNI: #{item.paciente_dni}
+                          
+//-                           if item.paciente_telefono
+//-                             //- Botón de WhatsApp con limpieza de URL (Llamada a función JS)
+//-                             button.btn.btn-xs.btn-outline-success.py-0.px-1(
+//-                               type="button"
+//-                               onclick=`enviarWS('${item.paciente_telefono}', '${item.paciente_nombre}', '${item.especialidad_nombre}', '${item.medico_apellido}')`
+//-                               data-bs-toggle="tooltip" 
+//-                               title="Enviar propuesta por WhatsApp"
+//-                             )
+//-                               i.fa-brands.fa-whatsapp
+                            
+//-                             a.btn.btn-xs.btn-outline-primary.py-0.px-1(href=`tel:${item.paciente_telefono.replace(/[^0-9]/g, '')}` data-bs-toggle="tooltip" title="Llamar al paciente")
+//-                               i.fa-solid.fa-phone
+
+//-                           if item.paciente_email
+//-                             - const subEmail = encodeURIComponent(`Turno Disponible: ${item.especialidad_nombre}`)
+//-                             - const bodyEmail = encodeURIComponent(`Estimado/a ${item.paciente_nombre},\n\nLe informamos que contamos con una vacante para su solicitud de turno en ${item.especialidad_nombre}.\n\nPor favor, contáctenos para confirmar.\n\nSaludos.`)
+                            
+//-                             a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}?subject=${subEmail}&body=${bodyEmail}` data-bs-toggle="tooltip" title="Enviar correo formal")
+//-                               i.fa-solid.fa-envelope
+                    
+//-                     td
+//-                       .d-flex.flex-column
+//-                         span.fw-bold Dra/er. #{item.medico_apellido}
+//-                         span.badge.bg-info.text-dark.small(style="width: fit-content") #{item.especialidad_nombre}
+                    
+//-                     td
+//-                       span.d-block.small #{new Date(item.fecha_registro).toLocaleDateString('es-AR')}
+//-                       span.text-muted.x-small(style="font-size: 0.75rem") Registró: #{item.usuario_registro}
+                    
+//-                     td
+//-                       if item.prioridad === 'Alta'
+//-                         span.badge.rounded-pill.bg-danger.px-3 Alta
+//-                       else if item.prioridad === 'Media'
+//-                         span.badge.rounded-pill.bg-warning.text-dark.px-3 Media
+//-                       else
+//-                         span.badge.rounded-pill.bg-success.px-3 Baja
+                    
+//-                     td.text-end.pe-4
+//-                       .btn-group
+//-                         if item.observaciones
+//-                           button.btn.btn-sm.btn-light.text-primary(type="button" data-bs-toggle="tooltip" title=`Obs: ${item.observaciones}`)
+//-                             i.fa-solid.fa-circle-info
+                        
+//-                         form(id=`form-delete-${item.id}` action=`/secretaria/lista-espera/delete/${item.id}` method="POST" style="display:inline")
+//-                           button.btn.btn-sm.btn-outline-danger.ms-2(type="button" onclick=`confirmarBorrado(${item.id}, '${item.paciente_apellido}')` data-bs-toggle="tooltip" title="Quitar de la lista")
+//-                             i.fa-solid.fa-trash-can
+//-               else
+//-                 tr
+//-                   td.text-center.py-5(colspan="5")
+//-                     .text-muted
+//-                       i.fa-solid.fa-folder-open.fa-3x.mb-3
+//-                       p.mb-0 No hay solicitudes pendientes en la lista de espera.
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     // Función para enviar WhatsApp ocultando el mensaje de la URL del navegador
+//-     function enviarWS(telefono, nombre, especialidad, medico) {
+//-         const tel = telefono.replace(/[^0-9]/g, '');
+//-         const msg = `Hola ${nombre}, te contactamos del Consultorio. Tenemos un turno disponible para la especialidad de ${especialidad} con el/la Dr/a. ${medico}. ¿Te gustaría agendarlo?`;
+        
+//-         const url = `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`;
+        
+//-         // Abrimos en pestaña nueva sin dejar rastro en el historial de la página actual
+//-         window.open(url, '_blank', 'noopener,noreferrer');
+//-     }
+
+//-     function confirmarBorrado(id, apellido) {
+//-       Swal.fire({
+//-         title: '¿Remover paciente?',
+//-         text: `Se cancelará la solicitud de espera para el paciente ${apellido}.`,
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#d33',
+//-         cancelButtonColor: '#6c757d',
+//-         confirmButtonText: 'Sí, quitar',
+//-         cancelButtonText: 'Mantener',
+//-         reverseButtons: true
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           document.getElementById('form-delete-' + id).submit();
+//-         }
+//-       });
+//-     }
+
+//-     document.addEventListener('DOMContentLoaded', function () {
+//-       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+//-       tooltipTriggerList.map(function (el) {
+//-         return new bootstrap.Tooltip(el)
+//-       });
+//-     });
+
+//-   style.
+//-     .table th { border-top: none; }
+//-     .table tbody tr:last-child td { border-bottom: none; }
+//-     .badge { font-weight: 500; letter-spacing: 0.2px; }
+//-     .x-small { font-size: 0.7rem; }
+//-     .btn-xs { padding: 0.2rem 0.4rem; font-size: 0.75rem; transition: all 0.2s; border-radius: 4px; }
+//-     .btn-xs:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+//-     .fa-whatsapp { color: #25D366; }
+//-     .btn-outline-success:hover .fa-whatsapp { color: white; }
+
+//- extends ../../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- --- CABECERA ---
+//-     .row.mb-4.align-items-center
+//-       .col-md-6
+//-         h2.fw-bold.text-primary 
+//-           i.fa-solid.fa-rectangle-list.me-2
+//-           | Lista de Espera Inteligente
+//-         p.text-muted.mb-0 Se encontraron #{espera.length} pacientes pendientes. 
+//-       .col-md-6.text-md-end
+//-         a.btn.btn-outline-secondary.me-2(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+//-         a.btn.btn-primary.shadow-sm(href="/secretaria/lista-espera/create")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nueva Solicitud
+
+//-     //- --- TABLA DE REGISTROS ---
+//-     .card.border-0.shadow-sm
+//-       .card-body.p-0
+//-         .table-responsive
+//-           table.table.table-hover.align-middle.mb-0
+//-             thead.bg-light
+//-               tr.text-secondary.small.text-uppercase
+//-                 th.ps-4.py-3 Paciente / Contacto
+//-                 th Profesional / Especialidad
+//-                 th.text-center Próxima Disponibilidad
+//-                 th Prioridad
+//-                 th.text-end.pe-4 Acciones
+//-             tbody
+//-               if espera && espera.length > 0
+//-                 each item in espera
+//-                   tr
+//-                     //- Columna Paciente
+//-                     td.ps-4
+//-                       .d-flex.flex-column
+//-                         span.fw-bold.text-dark #{item.paciente_apellido}, #{item.paciente_nombre}
+//-                         .d-flex.align-items-center.gap-2.mt-1
+//-                           span.badge.bg-light.text-dark.border.fw-normal DNI: #{item.paciente_dni}
+                          
+//-                           if item.paciente_telefono
+//-                             button.btn.btn-xs.btn-outline-success.py-0.px-1(
+//-                               type="button"
+//-                               onclick=`enviarWS('${item.paciente_telefono}', '${item.paciente_nombre}', '${item.especialidad_nombre}', '${item.medico_apellido}')`
+//-                               data-bs-toggle="tooltip" 
+//-                               title="Enviar propuesta por WhatsApp"
+//-                             )
+//-                               i.fa-brands.fa-whatsapp
+                            
+//-                             a.btn.btn-xs.btn-outline-primary.py-0.px-1(href=`tel:${item.paciente_telefono.replace(/[^0-9]/g, '')}` data-bs-toggle="tooltip" title="Llamar al paciente")
+//-                               i.fa-solid.fa-phone
+
+//-                           if item.paciente_email
+//-                             - const subEmail = encodeURIComponent(`Turno Disponible: ${item.especialidad_nombre}`)
+//-                             - const bodyEmail = encodeURIComponent(`Estimado/a ${item.paciente_nombre},\n\nLe informamos que contamos con una vacante para su solicitud de turno.\n\nSaludos.`)
+//-                             a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}?subject=${subEmail}&body=${bodyEmail}` data-bs-toggle="tooltip" title="Enviar correo")
+//-                               i.fa-solid.fa-envelope
+                    
+//-                     //- Columna Médico
+//-                     td
+//-                       .d-flex.flex-column
+//-                         span.fw-bold Dra/er. #{item.medico_apellido}
+//-                         span.badge.bg-info.text-dark.small(style="width: fit-content") #{item.especialidad_nombre}
+                    
+//-                     //- --- COLUMNA DE DISPONIBILIDAD (PROACTIVA) ---
+//-                     td.text-center
+//-                       if item.hueco_disponible
+//-                         .p-2.rounded.bg-success.bg-opacity-10.border.border-success.border-opacity-25
+//-                           span.text-success.fw-bold.small 
+//-                             i.fa-solid.fa-calendar-check.me-1
+//-                             | ¡Turno Libre!
+//-                           .small.text-dark.fw-bold #{new Date(item.hueco_disponible.fecha).toLocaleDateString('es-AR')}
+//-                           .small.text-muted #{item.hueco_disponible.hora} hs
+//-                           button.btn.btn-sm.btn-success.w-100.mt-1.py-0(
+//-                             style="font-size: 0.7rem"
+//-                             onclick=`confirmarAsignacionDirecta('${item.id}', '${item.paciente_nombre}', '${item.hueco_disponible.fecha}', '${item.hueco_disponible.hora}', '${item.id_medico}')`
+//-                           ) Asignar Ya
+//-                       else
+//-                         span.text-muted.small 
+//-                           i.fa-solid.fa-spinner.fa-spin.me-1
+//-                           | Buscando...
+
+//-                     //- Columna Prioridad
+//-                     td
+//-                       if item.prioridad === 'Alta'
+//-                         span.badge.rounded-pill.bg-danger.px-3 Alta
+//-                       else if item.prioridad === 'Media'
+//-                         span.badge.rounded-pill.bg-warning.text-dark.px-3 Media
+//-                       else
+//-                         span.badge.rounded-pill.bg-success.px-3 Baja
+                    
+//-                     //- Acciones Finales
+//-                     td.text-end.pe-4
+//-                       .btn-group
+//-                         if item.observaciones
+//-                           button.btn.btn-sm.btn-light.text-primary(type="button" data-bs-toggle="tooltip" title=`Obs: ${item.observaciones}`)
+//-                             i.fa-solid.fa-circle-info
+                        
+//-                         form(id=`form-delete-${item.id}` action=`/secretaria/lista-espera/delete/${item.id}` method="POST" style="display:inline")
+//-                           button.btn.btn-sm.btn-outline-danger.ms-2(type="button" onclick=`confirmarBorrado(${item.id}, '${item.paciente_apellido}')` data-bs-toggle="tooltip" title="Quitar de la lista")
+//-                             i.fa-solid.fa-trash-can
+//-               else
+//-                 tr
+//-                   td.text-center.py-5(colspan="5")
+//-                     .text-muted
+//-                       i.fa-solid.fa-folder-open.fa-3x.mb-3
+//-                       p.mb-0 No hay solicitudes pendientes.
+
+//-   //- --- SCRIPTS ---
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     // 1. WhatsApp
+//-     function enviarWS(telefono, nombre, especialidad, medico) {
+//-         const tel = telefono.replace(/[^0-9]/g, '');
+//-         const msg = `Hola ${nombre}, te contactamos del Consultorio. Tenemos un turno disponible para ${especialidad} con el/la Dr/a. ${medico}. ¿Te gustaría agendarlo?`;
+//-         window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, '_blank');
+//-     }
+
+//-     // 2. Asignación Rápida
+//-     function confirmarAsignacionDirecta(esperaId, paciente, fecha, hora, medicoId) {
+//-       Swal.fire({
+//-         title: '¿Asignar este turno?',
+//-         html: `Se agendará a <b>${paciente}</b> para el día <b>${fecha}</b> a las <b>${hora}</b>.<br><small class="text-muted">Se removerá automáticamente de la lista de espera.</small>`,
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#198754',
+//-         confirmButtonText: 'Sí, agendar ahora',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           // Aquí realizas la petición al servidor para crear el turno y borrar la espera
+//-           window.location.href = `/secretaria/lista-espera/asignar-turno?esperaId=${esperaId}&fecha=${fecha}&hora=${hora}&medicoId=${medicoId}`;
+//-         }
+//-       });
+//-     }
+
+//-     // 3. Borrado
+//-     function confirmarBorrado(id, apellido) {
+//-       Swal.fire({
+//-         title: '¿Remover de la lista?',
+//-         text: `Se cancelará la solicitud para el paciente ${apellido}.`,
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#d33',
+//-         confirmButtonText: 'Sí, quitar',
+//-         reverseButtons: true
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           document.getElementById('form-delete-' + id).submit();
+//-         }
+//-       });
+//-     }
+
+//-     // Tooltips
+//-     document.addEventListener('DOMContentLoaded', function () {
+//-       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+//-       tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el) });
+//-     });
+
+//-   //- --- ESTILOS ADICIONALES ---
+//-   style.
+//-     .btn-xs { padding: 0.2rem 0.4rem; font-size: 0.75rem; border-radius: 4px; }
+//-     .x-small { font-size: 0.7rem; }
+//-     .fa-whatsapp { color: #25D366; }
+//-     .btn-outline-success:hover .fa-whatsapp { color: white; }
+//-     .fa-spin-hover:hover { animation: fa-spin 2s infinite linear; }
+//-     .bg-success.bg-opacity-10 { background-color: rgba(25, 135, 84, 0.1) !important; }
+
 extends ../../layout
 
 block contenido
   .container-fluid.py-4
-    //- Cabecera con estadísticas rápidas
+    //- --- CABECERA ---
     .row.mb-4.align-items-center
       .col-md-6
         h2.fw-bold.text-primary 
           i.fa-solid.fa-rectangle-list.me-2
-          | Lista de Espera
-        p.text-muted.mb-0 Hay #{espera.length} pacientes pendientes de contacto.
+          | Lista de Espera Inteligente
+        p.text-muted.mb-0 Se encontraron #{espera.length} pacientes pendientes. 
       .col-md-6.text-md-end
         a.btn.btn-outline-secondary.me-2(href="/secretaria")
-          i.fa-solid.fa-arrow-left.me-2
+          i.fa-solid.fa-house-user.me-2
           | Volver al Panel
         a.btn.btn-primary.shadow-sm(href="/secretaria/lista-espera/create")
           i.fa-solid.fa-user-plus.me-2
           | Nueva Solicitud
 
-    //- Tabla de Registros
+    //- --- TABLA DE REGISTROS ---
     .card.border-0.shadow-sm
       .card-body.p-0
         .table-responsive
           table.table.table-hover.align-middle.mb-0
             thead.bg-light
               tr.text-secondary.small.text-uppercase
-                th.ps-4.py-3 Paciente / Contacto Rápido
+                th.ps-4.py-3 Paciente / Contacto
                 th Profesional / Especialidad
-                th Fecha Registro
+                th.text-center Próxima Disponibilidad
                 th Prioridad
                 th.text-end.pe-4 Acciones
             tbody
               if espera && espera.length > 0
                 each item in espera
                   tr
-                    //- Columna Paciente con Mensajería Automatizada
+                    //- Columna Paciente
                     td.ps-4
                       .d-flex.flex-column
                         span.fw-bold.text-dark #{item.paciente_apellido}, #{item.paciente_nombre}
@@ -41,7 +355,6 @@ block contenido
                           span.badge.bg-light.text-dark.border.fw-normal DNI: #{item.paciente_dni}
                           
                           if item.paciente_telefono
-                            //- Botón de WhatsApp con limpieza de URL (Llamada a función JS)
                             button.btn.btn-xs.btn-outline-success.py-0.px-1(
                               type="button"
                               onclick=`enviarWS('${item.paciente_telefono}', '${item.paciente_nombre}', '${item.especialidad_nombre}', '${item.medico_apellido}')`
@@ -55,20 +368,37 @@ block contenido
 
                           if item.paciente_email
                             - const subEmail = encodeURIComponent(`Turno Disponible: ${item.especialidad_nombre}`)
-                            - const bodyEmail = encodeURIComponent(`Estimado/a ${item.paciente_nombre},\n\nLe informamos que contamos con una vacante para su solicitud de turno en ${item.especialidad_nombre}.\n\nPor favor, contáctenos para confirmar.\n\nSaludos.`)
-                            
-                            a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}?subject=${subEmail}&body=${bodyEmail}` data-bs-toggle="tooltip" title="Enviar correo formal")
+                            - const bodyEmail = encodeURIComponent(`Estimado/a ${item.paciente_nombre},\n\nLe informamos que contamos con una vacante para su solicitud de turno.\n\nSaludos.`)
+                            a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}?subject=${subEmail}&body=${bodyEmail}` data-bs-toggle="tooltip" title="Enviar correo")
                               i.fa-solid.fa-envelope
                     
+                    //- Columna Médico
                     td
                       .d-flex.flex-column
                         span.fw-bold Dra/er. #{item.medico_apellido}
                         span.badge.bg-info.text-dark.small(style="width: fit-content") #{item.especialidad_nombre}
                     
-                    td
-                      span.d-block.small #{new Date(item.fecha_registro).toLocaleDateString('es-AR')}
-                      span.text-muted.x-small(style="font-size: 0.75rem") Registró: #{item.usuario_registro}
-                    
+                    //- --- COLUMNA DE DISPONIBILIDAD (PROACTIVA) ---
+                    td.text-center
+                      if item.hueco_disponible
+                        .p-2.rounded.bg-success.bg-opacity-10.border.border-success.border-opacity-25
+                          span.text-success.fw-bold.small 
+                            i.fa-solid.fa-calendar-check.me-1
+                            | ¡Turno Libre!
+                          //- Formateo de fecha DD/MM/YYYY
+                          - const f = item.hueco_disponible.fecha.split('-')
+                          .small.text-dark.fw-bold #{f[2]}/#{f[1]}/#{f[0]}
+                          .small.text-muted #{item.hueco_disponible.hora} hs
+                          button.btn.btn-sm.btn-success.w-100.mt-1.py-0(
+                            style="font-size: 0.7rem"
+                            onclick=`confirmarAsignacionDirecta('${item.id}', '${item.paciente_nombre}', '${item.hueco_disponible.fecha}', '${item.hueco_disponible.hora}', '${item.id_medico}')`
+                          ) Asignar Ya
+                      else
+                        span.text-muted.small 
+                          i.fa-solid.fa-clock.me-1
+                          | Sin huecos próximos
+
+                    //- Columna Prioridad
                     td
                       if item.prioridad === 'Alta'
                         span.badge.rounded-pill.bg-danger.px-3 Alta
@@ -77,6 +407,7 @@ block contenido
                       else
                         span.badge.rounded-pill.bg-success.px-3 Baja
                     
+                    //- Acciones Finales
                     td.text-end.pe-4
                       .btn-group
                         if item.observaciones
@@ -91,31 +422,48 @@ block contenido
                   td.text-center.py-5(colspan="5")
                     .text-muted
                       i.fa-solid.fa-folder-open.fa-3x.mb-3
-                      p.mb-0 No hay solicitudes pendientes en la lista de espera.
+                      p.mb-0 No hay solicitudes pendientes en la lista.
 
+  //- --- SCRIPTS ---
   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
-    // Función para enviar WhatsApp ocultando el mensaje de la URL del navegador
+    // 1. WhatsApp
     function enviarWS(telefono, nombre, especialidad, medico) {
         const tel = telefono.replace(/[^0-9]/g, '');
-        const msg = `Hola ${nombre}, te contactamos del Consultorio. Tenemos un turno disponible para la especialidad de ${especialidad} con el/la Dr/a. ${medico}. ¿Te gustaría agendarlo?`;
-        
-        const url = `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`;
-        
-        // Abrimos en pestaña nueva sin dejar rastro en el historial de la página actual
-        window.open(url, '_blank', 'noopener,noreferrer');
+        const msg = `Hola ${nombre}, te contactamos del Consultorio. Tenemos un turno disponible para ${especialidad} con el/la Dr/a. ${medico}. ¿Te gustaría agendarlo?`;
+        window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+    // 2. Asignación Rápida
+    function confirmarAsignacionDirecta(esperaId, paciente, fecha, hora, medicoId) {
+      // Formatear fecha para el mensaje
+      const f = fecha.split('-');
+      const fechaLegible = `${f[2]}/${f[1]}/${f[0]}`;
+
+      Swal.fire({
+        title: '¿Confirmar turno?',
+        html: `Se agendará a <b>${paciente}</b><br>Día: <b>${fechaLegible}</b><br>Hora: <b>${hora} hs</b>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        confirmButtonText: 'Sí, agendar ahora',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = `/secretaria/lista-espera/asignar-turno?esperaId=${esperaId}&fecha=${fecha}&hora=${hora}&medicoId=${medicoId}`;
+        }
+      });
+    }
+
+    // 3. Borrado
     function confirmarBorrado(id, apellido) {
       Swal.fire({
-        title: '¿Remover paciente?',
-        text: `Se cancelará la solicitud de espera para el paciente ${apellido}.`,
+        title: '¿Remover de la lista?',
+        text: `Se cancelará la solicitud para el paciente ${apellido}.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Sí, quitar',
-        cancelButtonText: 'Mantener',
         reverseButtons: true
       }).then((result) => {
         if (result.isConfirmed) {
@@ -124,19 +472,16 @@ block contenido
       });
     }
 
+    // Tooltips
     document.addEventListener('DOMContentLoaded', function () {
       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-      tooltipTriggerList.map(function (el) {
-        return new bootstrap.Tooltip(el)
-      });
+      tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el) });
     });
 
+  //- --- ESTILOS ADICIONALES ---
   style.
-    .table th { border-top: none; }
-    .table tbody tr:last-child td { border-bottom: none; }
-    .badge { font-weight: 500; letter-spacing: 0.2px; }
-    .x-small { font-size: 0.7rem; }
-    .btn-xs { padding: 0.2rem 0.4rem; font-size: 0.75rem; transition: all 0.2s; border-radius: 4px; }
-    .btn-xs:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn-xs { padding: 0.1rem 0.3rem; font-size: 0.7rem; border-radius: 4px; }
     .fa-whatsapp { color: #25D366; }
     .btn-outline-success:hover .fa-whatsapp { color: white; }
+    .bg-success.bg-opacity-10 { background-color: rgba(25, 135, 84, 0.1) !important; }
+    .table-responsive { min-height: 400px; }

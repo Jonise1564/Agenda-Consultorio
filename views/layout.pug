@@ -335,7 +335,7 @@ html(lang="es")
 
       /* ---------- SIDEBAR ---------- */
       .sidebar {
-        width: 260px;
+        width: 200px;
         background-color: var(--sidebar-bg);
         backdrop-filter: blur(10px);
         padding: 30px 20px;
@@ -436,6 +436,7 @@ html(lang="es")
               li: a(href="/obrassociales" class=(page==='obras' ? 'active' : ''))
                 i.fa-solid.fa-hospital
                 span Obras Sociales
+            if usuario.id_rol === 2    
               li: a(href="/secretaria" class=(page==='secretaria' ? 'active' : ''))
                 i.fa-solid.fa-clipboard-user
                 span Secretaría

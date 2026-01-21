@@ -259,6 +259,43 @@ class Paciente {
         }
     }
 
+    // ======================================================
+    // ACTUALIZAR PERFIL DESDE EL PANEL DEL PACIENTE
+    // ======================================================
+    static async actualizarPerfil(datos) {
+        let conn;
+        try {
+            const { id_persona, nombre, apellido, email, nacimiento, id_paciente } = datos;
+            conn = await createConnection();
+            
+            // Iniciamos una transacción porque afectamos dos tablas: personas y usuarios
+            await conn.beginTransaction();
+
+            // 1. Actualizar datos en la tabla personas
+            await conn.query(`
+                UPDATE personas 
+                SET nombre = ?, apellido = ?, nacimiento = ?
+                WHERE id = ?
+            `, [nombre, apellido, nacimiento, id_persona]);
+
+            // 2. Actualizar el email en la tabla usuarios (relacionada con el paciente)
+            await conn.query(`
+                UPDATE usuarios 
+                SET email = ? 
+                WHERE id = (SELECT id_usuario FROM pacientes WHERE id = ?)
+            `, [email, id_paciente]);
+
+            await conn.commit();
+            return true;
+        } catch (error) {
+            if (conn) await conn.rollback();
+            console.error("Error en Paciente.actualizarPerfil:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
 
 
 }

@@ -1,3 +1,482 @@
+//- extends ../layout
+
+//- block contenido
+//-   //- --- ESTILOS PARA IMPRESIÓN Y UI ---
+//-   style.
+//-     @media print {
+//-       nav, footer, .navbar, .sidebar, .btn, .d-print-none, .alert, .card-body form {
+//-         display: none !important;
+//-       }
+//-       .container-fluid { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+//-       .card { border: none !important; box-shadow: none !important; }
+//-       .table-responsive { overflow: visible !important; }
+//-       table { width: 100% !important; border-collapse: collapse !important; }
+//-       th, td { border: 1px solid #dee2e6 !important; padding: 8px !important; font-size: 12px !important; }
+//-       th { background-color: #f8f9fa !important; color: black !important; }
+//-     }
+//-     /* Estilo para indicar que la foto es cliqueable */
+//-     #fotoDniPreview {
+//-       cursor: zoom-in;
+//-       transition: transform 0.2s;
+//-     }
+//-     #fotoDniPreview:hover {
+//-       transform: scale(1.02);
+//-     }
+
+//-   .container-fluid.py-4
+//-     //- --- CABECERA ---
+//-     .d-flex.justify-content-between.align-items-center.mb-4.d-print-none
+//-       div
+//-         h2.fw-bold.text-dark 
+//-           i.fa-solid.fa-list-check.me-2.text-info
+//-           | Gestión de Turnos
+//-         p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+//-       .d-flex.gap-2
+//-         button.btn.btn-dark.shadow-sm(onclick="window.print()")
+//-           i.fa-solid.fa-print.me-2
+//-           | Imprimir Listado
+//-         a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+
+//-     .d-none.d-print-block.text-center.mb-4
+//-       h2 Reporte de Turnos Médicos
+//-       p Fecha de reporte: #{new Date().toLocaleDateString('es-AR')}
+
+//-     //- --- SECCIÓN DE ALERTAS ---
+//-     #contenedorAlertas.d-print-none
+//-       if status === 'traslado_success'
+//-         .alert.alert-success.alert-dismissible.fade.show.shadow-sm(role="alert")
+//-           i.fa-solid.fa-circle-check.me-2
+//-           strong ¡Éxito! 
+//-           | El turno ha sido movido correctamente.
+//-           button.btn-close(type="button" data-bs-dismiss="alert")
+//-       if status === 'error_no_agenda'
+//-         .alert.alert-danger.alert-dismissible.fade.show.shadow-sm(role="alert")
+//-           i.fa-solid.fa-triangle-exclamation.me-2
+//-           strong Error de Agenda: 
+//-           | El médico no atiende en esa fecha.
+//-           button.btn-close(type="button" data-bs-dismiss="alert")
+
+//-     //- --- FILTROS ---
+//-     .card.border-0.shadow-sm.mb-4.d-print-none
+//-       .card-body.bg-light.rounded
+//-         form.row.g-3(method="GET" action="/secretaria/turnos")
+//-           .col-md-3
+//-             label.form-label.small.fw-bold Paciente / DNI
+//-             input.form-control(type="text" name="paciente" placeholder="Ej: Camargo..." value=filtros.paciente)
+//-           .col-md-3
+//-             label.form-label.small.fw-bold Profesional
+//-             input.form-control(type="text" name="profesional" placeholder="Ej: Benitez..." value=filtros.profesional)
+//-           .col-md-3
+//-             label.form-label.small.fw-bold Fecha
+//-             input.form-control(type="date" name="fecha" value=filtros.fecha)
+//-           .col-md-3.d-flex.align-items-end.gap-2
+//-             button.btn.btn-info.text-white.flex-fill(type="submit")
+//-               i.fa-solid.fa-magnifying-glass.me-1
+//-               | Filtrar
+//-             a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+//-               i.fa-solid.fa-eraser.me-1
+//-               | Limpiar
+
+//-     //- --- TABLA ---
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0
+//-           thead.text-white(style="background-color: #5bc0de;")
+//-             tr
+//-               th Turno para
+//-               th Médico
+//-               th Especialidad
+//-               th.text-center Fecha
+//-               th.text-center Hora
+//-               th.text-center Estado
+//-               th.d-print-none Acciones
+//-           tbody
+//-             if turnos && turnos.length > 0
+//-               each turno in turnos
+//-                 tr(class=turno.estado === 'Reservado' ? 'table-warning' : '')
+//-                   td
+//-                     .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+//-                     small.text-muted DNI: #{turno.paciente_dni}
+//-                   td #{turno.medico_apellido}, #{turno.medico_nombre}
+//-                   td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+//-                   td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+//-                   td.text-center: span.fw-bold #{turno.hora}
+//-                   td.text-center
+//-                     span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
+//-                   td.d-print-none
+//-                     .d-grid.gap-1
+//-                       button.btn.btn-sm.btn-primary(onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+//-                         i.fa-solid.fa-arrow-right-arrow-left.me-1
+//-                         | Trasladar
+//-                       button.btn.btn-sm.btn-outline-info(onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
+//-                         i.fa-solid.fa-eye.me-1
+//-                         | Detalles
+//-             else
+//-               tr: td.text-center.py-5(colspan="7") No se encontraron turnos.
+
+//-   //- --- MODAL TRASLADO ---
+//-   #modalTrasladoIndividual.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content.border-0.shadow-lg
+//-         .modal-header.bg-primary.text-white
+//-           h5.modal-title Trasladar Paciente
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           form(action="/secretaria/trasladar-turno" method="POST")
+//-             input#trasladoTurnoId(type="hidden" name="id_turno")
+//-             p.mb-3 Moviendo a: 
+//-               strong#nombrePacienteTraslado -
+//-             .mb-3
+//-               label.form-label Médico Destino
+//-               select.form-select(name="id_medico_destino" required)
+//-                 option(value="" disabled selected) Seleccione médico...
+//-                 if medicos
+//-                   each med in medicos
+//-                     - var valId = med.id_medico || med.id || med.id_profesional
+//-                     option(value=valId) #{med.apellido}, #{med.nombre}
+//-             .row
+//-               .col-6
+//-                 label.form-label Nueva Fecha
+//-                 input#trasladoFecha.form-control(type="date" name="nueva_fecha" required)
+//-               .col-6
+//-                 label.form-label Nueva Hora
+//-                 input.form-control(type="time" name="nueva_hora" required)
+//-             .mt-4.d-grid
+//-               button.btn.btn-primary(type="submit") Confirmar Traslado
+
+//-   //- --- MODAL DETALLES ---
+//-   #modalDetallesTurno.modal.fade(tabindex="-1")
+//-     .modal-dialog.modal-lg
+//-       .modal-content.border-0.shadow-lg
+//-         .modal-header.bg-info.text-white
+//-           h5.modal-title Detalles del Turno
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           .row
+//-             .col-md-6
+//-               h6.fw-bold.text-primary Datos Paciente
+//-               p.mb-1#det-paciente-nombre
+//-               p.mb-1#det-paciente-dni
+//-             .col-md-6
+//-               h6.fw-bold.text-primary Datos Turno
+//-               p.mb-1#det-medico
+//-               p.mb-1#det-fecha-hora
+//-           hr
+//-           .text-center
+//-             h6.fw-bold Foto DNI (Click para ampliar)
+//-             //- Enlace para abrir la foto en grande
+//-             a#linkFotoDni(target="_blank")
+//-               img#fotoDniPreview.img-fluid.rounded.shadow-sm(style="max-height: 350px; display:none;" title="Ver imagen completa")
+//-             #sinFotoDni.alert.alert-light.border No hay foto cargada.
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Cerrar
+
+//-   script.
+//-     function abrirModalTraslado(id, nombre) {
+//-       const modalElement = document.getElementById('modalTrasladoIndividual');
+//-       const modal = new bootstrap.Modal(modalElement);
+//-       document.getElementById('trasladoTurnoId').value = id;
+//-       document.getElementById('nombrePacienteTraslado').innerText = nombre;
+//-       const fechaFiltro = document.querySelector('input[name="fecha"]').value;
+//-       if(fechaFiltro) document.getElementById('trasladoFecha').value = fechaFiltro;
+//-       modal.show();
+//-     }
+
+//-     function verDetallesTurno(turno) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalDetallesTurno'));
+      
+//-       // Llenar información textual
+//-       document.getElementById('det-paciente-nombre').innerText = `Nombre: ${turno.paciente_apellido}, ${turno.paciente_nombre}`;
+//-       document.getElementById('det-paciente-dni').innerText = `DNI: ${turno.paciente_dni}`;
+//-       document.getElementById('det-medico').innerText = `Médico: ${turno.medico_apellido}`;
+//-       document.getElementById('det-fecha-hora').innerText = `Cita: ${new Date(turno.fecha).toLocaleDateString('es-AR')} - ${turno.hora}`;
+      
+//-       const img = document.getElementById('fotoDniPreview');
+//-       const link = document.getElementById('linkFotoDni');
+//-       const alertDiv = document.getElementById('sinFotoDni');
+      
+//-       if (turno.archivo_dni) {
+//-         // Limpiamos la ruta por si viene con barras invertidas del sistema de archivos
+//-         const nombreLimpio = turno.archivo_dni.split(/[\\\/]/).pop();
+//-         const rutaImagen = `/uploads/dnis/${nombreLimpio}`;
+        
+//-         img.src = rutaImagen;
+//-         link.href = rutaImagen; // El link apunta a la misma imagen
+        
+//-         img.style.display = 'inline-block';
+//-         alertDiv.style.display = 'none';
+//-       } else {
+//-         img.style.display = 'none';
+//-         link.href = "#";
+//-         alertDiv.style.display = 'block';
+//-       }
+//-       modal.show();
+//-     }
+
+//-     window.addEventListener('load', function() {
+//-       const params = new URLSearchParams(window.location.search);
+//-       const status = params.get('status');
+//-       if (status) {
+//-         const mensajes = {
+//-           'error_no_agenda': "❌ ERROR: El médico no tiene agenda disponible.",
+//-           'error_turno_ocupado': "⚠️ ¡HORARIO OCUPADO!",
+//-           'traslado_success': "✅ ÉXITO: El turno ha sido trasladado correctamente."
+//-         };
+//-         if (mensajes[status]) alert(mensajes[status]);
+//-         window.history.replaceState({}, document.title, window.location.pathname);
+//-       }
+//-     });
+
+//- extends ../layout
+
+//- block contenido
+//-   //- --- ESTILOS PARA IMPRESIÓN Y UI ---
+//-   style.
+//-     @media print {
+//-       nav, footer, .navbar, .sidebar, .btn, .d-print-none, .alert, .card-body form {
+//-         display: none !important;
+//-       }
+//-       .container-fluid { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+//-       .card { border: none !important; box-shadow: none !important; }
+//-       .table-responsive { overflow: visible !important; }
+//-       table { width: 100% !important; border-collapse: collapse !important; }
+//-       th, td { border: 1px solid #dee2e6 !important; padding: 8px !important; font-size: 12px !important; }
+//-       th { background-color: #f8f9fa !important; color: black !important; }
+//-     }
+//-     /* Estilo para indicar que la foto es cliqueable */
+//-     #fotoDniPreview {
+//-       cursor: zoom-in;
+//-       transition: transform 0.2s;
+//-     }
+//-     #fotoDniPreview:hover {
+//-       transform: scale(1.02);
+//-     }
+//-     /* Borde lateral para filas de médicos ausentes */
+//-     .fila-ausencia {
+//-       border-left: 5px solid #ffc107 !important;
+//-     }
+
+//-   .container-fluid.py-4
+//-     //- --- CABECERA ---
+//-     .d-flex.justify-content-between.align-items-center.mb-4.d-print-none
+//-       div
+//-         h2.fw-bold.text-dark 
+//-           i.fa-solid.fa-list-check.me-2.text-info
+//-           | Gestión de Turnos
+//-         p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+//-       .d-flex.gap-2
+//-         button.btn.btn-dark.shadow-sm(onclick="window.print()")
+//-           i.fa-solid.fa-print.me-2
+//-           | Imprimir Listado
+//-         a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+
+//-     .d-none.d-print-block.text-center.mb-4
+//-       h2 Reporte de Turnos Médicos
+//-       p Fecha de reporte: #{new Date().toLocaleDateString('es-AR')}
+
+//-     //- --- SECCIÓN DE ALERTAS ---
+//-     #contenedorAlertas.d-print-none
+//-       if status === 'traslado_success'
+//-         .alert.alert-success.alert-dismissible.fade.show.shadow-sm(role="alert")
+//-           i.fa-solid.fa-circle-check.me-2
+//-           strong ¡Éxito! 
+//-           | El turno ha sido movido correctamente.
+//-           button.btn-close(type="button" data-bs-dismiss="alert")
+//-       if status === 'error_no_agenda'
+//-         .alert.alert-danger.alert-dismissible.fade.show.shadow-sm(role="alert")
+//-           i.fa-solid.fa-triangle-exclamation.me-2
+//-           strong Error de Agenda: 
+//-           | El médico no atiende en esa fecha.
+//-           button.btn-close(type="button" data-bs-dismiss="alert")
+//-       if status === 'error_turno_ocupado'
+//-         .alert.alert-warning.alert-dismissible.fade.show.shadow-sm(role="alert")
+//-           i.fa-solid.fa-clock.me-2
+//-           strong Horario Ocupado: 
+//-           | El médico ya tiene un turno en ese horario.
+//-           button.btn-close(type="button" data-bs-dismiss="alert")
+
+//-     //- --- FILTROS ---
+//-     .card.border-0.shadow-sm.mb-4.d-print-none
+//-       .card-body.bg-light.rounded
+//-         form.row.g-3(method="GET" action="/secretaria/turnos")
+//-           .col-md-3
+//-             label.form-label.small.fw-bold Paciente / DNI
+//-             input.form-control(type="text" name="paciente" placeholder="Ej: Camargo..." value=filtros.paciente)
+//-           .col-md-3
+//-             label.form-label.small.fw-bold Profesional
+//-             input.form-control(type="text" name="profesional" placeholder="Ej: Benitez..." value=filtros.profesional)
+//-           .col-md-3
+//-             label.form-label.small.fw-bold Fecha
+//-             input.form-control(type="date" name="fecha" value=filtros.fecha)
+//-           .col-md-3.d-flex.align-items-end.gap-2
+//-             button.btn.btn-info.text-white.flex-fill(type="submit")
+//-               i.fa-solid.fa-magnifying-glass.me-1
+//-               | Filtrar
+//-             a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+//-               i.fa-solid.fa-eraser.me-1
+//-               | Limpiar
+
+//-     //- --- TABLA ---
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0
+//-           thead.text-white(style="background-color: #5bc0de;")
+//-             tr
+//-               th Turno para
+//-               th Médico
+//-               th Especialidad
+//-               th.text-center Fecha
+//-               th.text-center Hora
+//-               th.text-center Estado
+//-               th.d-print-none Acciones
+//-           tbody
+//-             if turnos && turnos.length > 0
+//-               each turno in turnos
+//-                 //- MODIFICACIÓN: Si el médico está ausente, agregamos clase 'table-warning' y 'fila-ausencia'
+//-                 tr(class=(turno.medicoAusente ? 'table-warning fila-ausencia' : (turno.estado === 'Reservado' ? 'table-warning' : '')))
+//-                   td
+//-                     .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+//-                     small.text-muted DNI: #{turno.paciente_dni}
+//-                   td 
+//-                     | #{turno.medico_apellido}, #{turno.medico_nombre}
+//-                     //- MODIFICACIÓN: Badge de Médico Ausente
+//-                     if turno.medicoAusente
+//-                       span.badge.bg-danger.ms-2(title=`Motivo: ${turno.motivoAusencia || 'No especificado'}`)
+//-                         i.fa-solid.fa-user-slash.me-1
+//-                         | AUSENTE
+//-                   td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+//-                   td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+//-                   td.text-center: span.fw-bold #{turno.hora}
+//-                   td.text-center
+//-                     span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
+//-                   td.d-print-none
+//-                     .d-grid.gap-1
+//-                       //- MODIFICACIÓN: Si el médico está ausente, el botón de trasladar resalta en amarillo/naranja
+//-                       button.btn.btn-sm(class=turno.medicoAusente ? 'btn-warning shadow-sm' : 'btn-primary' onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+//-                         i.fa-solid.fa-arrow-right-arrow-left.me-1
+//-                         | Trasladar
+//-                       button.btn.btn-sm.btn-outline-info(onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
+//-                         i.fa-solid.fa-eye.me-1
+//-                         | Detalles
+//-             else
+//-               tr: td.text-center.py-5(colspan="7") No se encontraron turnos.
+
+//-   //- --- MODAL TRASLADO ---
+//-   #modalTrasladoIndividual.modal.fade(tabindex="-1")
+//-     .modal-dialog
+//-       .modal-content.border-0.shadow-lg
+//-         .modal-header.bg-primary.text-white
+//-           h5.modal-title Trasladar Paciente
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           form(action="/secretaria/trasladar-turno" method="POST")
+//-             input#trasladoTurnoId(type="hidden" name="id_turno")
+//-             p.mb-3 Moviendo a: 
+//-               strong#nombrePacienteTraslado -
+//-             .mb-3
+//-               label.form-label Médico Destino
+//-               select.form-select(name="id_medico_destino" required)
+//-                 option(value="" disabled selected) Seleccione médico...
+//-                 if medicos
+//-                   each med in medicos
+//-                     - var valId = med.id_medico || med.id || med.id_profesional
+//-                     option(value=valId) #{med.apellido}, #{med.nombre}
+//-             .row
+//-               .col-6
+//-                 label.form-label Nueva Fecha
+//-                 input#trasladoFecha.form-control(type="date" name="nueva_fecha" required)
+//-               .col-6
+//-                 label.form-label Nueva Hora
+//-                 input.form-control(type="time" name="nueva_hora" required)
+//-             .mt-4.d-grid
+//-               button.btn.btn-primary(type="submit") Confirmar Traslado
+
+//-   //- --- MODAL DETALLES ---
+//-   #modalDetallesTurno.modal.fade(tabindex="-1")
+//-     .modal-dialog.modal-lg
+//-       .modal-content.border-0.shadow-lg
+//-         .modal-header.bg-info.text-white
+//-           h5.modal-title Detalles del Turno
+//-           button.btn-close.btn-close-white(data-bs-dismiss="modal")
+//-         .modal-body
+//-           .row
+//-             .col-md-6
+//-               h6.fw-bold.text-primary Datos Paciente
+//-               p.mb-1#det-paciente-nombre
+//-               p.mb-1#det-paciente-dni
+//-             .col-md-6
+//-               h6.fw-bold.text-primary Datos Turno
+//-               p.mb-1#det-medico
+//-               p.mb-1#det-fecha-hora
+//-           hr
+//-           .text-center
+//-             h6.fw-bold Foto DNI (Click para ampliar)
+//-             a#linkFotoDni(target="_blank")
+//-               img#fotoDniPreview.img-fluid.rounded.shadow-sm(style="max-height: 350px; display:none;" title="Ver imagen completa")
+//-             #sinFotoDni.alert.alert-light.border No hay foto cargada.
+//-         .modal-footer
+//-           button.btn.btn-secondary(data-bs-dismiss="modal") Cerrar
+
+//-   script.
+//-     function abrirModalTraslado(id, nombre) {
+//-       const modalElement = document.getElementById('modalTrasladoIndividual');
+//-       const modal = new bootstrap.Modal(modalElement);
+//-       document.getElementById('trasladoTurnoId').value = id;
+//-       document.getElementById('nombrePacienteTraslado').innerText = nombre;
+//-       const fechaFiltro = document.querySelector('input[name="fecha"]').value;
+//-       if(fechaFiltro) document.getElementById('trasladoFecha').value = fechaFiltro;
+//-       modal.show();
+//-     }
+
+//-     function verDetallesTurno(turno) {
+//-       const modal = new bootstrap.Modal(document.getElementById('modalDetallesTurno'));
+      
+//-       document.getElementById('det-paciente-nombre').innerText = `Nombre: ${turno.paciente_apellido}, ${turno.paciente_nombre}`;
+//-       document.getElementById('det-paciente-dni').innerText = `DNI: ${turno.paciente_dni}`;
+//-       document.getElementById('det-medico').innerText = `Médico: ${turno.medico_apellido}`;
+//-       document.getElementById('det-fecha-hora').innerText = `Cita: ${new Date(turno.fecha).toLocaleDateString('es-AR')} - ${turno.hora}`;
+      
+//-       const img = document.getElementById('fotoDniPreview');
+//-       const link = document.getElementById('linkFotoDni');
+//-       const alertDiv = document.getElementById('sinFotoDni');
+      
+//-       if (turno.archivo_dni) {
+//-         const nombreLimpio = turno.archivo_dni.split(/[\\\/]/).pop();
+//-         const rutaImagen = `/uploads/dnis/${nombreLimpio}`;
+//-         img.src = rutaImagen;
+//-         link.href = rutaImagen;
+//-         img.style.display = 'inline-block';
+//-         alertDiv.style.display = 'none';
+//-       } else {
+//-         img.style.display = 'none';
+//-         link.href = "#";
+//-         alertDiv.style.display = 'block';
+//-       }
+//-       modal.show();
+//-     }
+
+//-     window.addEventListener('load', function() {
+//-       const params = new URLSearchParams(window.location.search);
+//-       const status = params.get('status');
+//-       if (status) {
+//-         const mensajes = {
+//-           'error_no_agenda': "❌ ERROR: El médico no tiene agenda disponible.",
+//-           'error_turno_ocupado': "⚠️ ¡HORARIO OCUPADO!",
+//-           'traslado_success': "✅ ÉXITO: El turno ha sido trasladado correctamente."
+//-         };
+//-         if (mensajes[status]) {
+//-             // Reemplazamos el alert por algo menos intrusivo si ya tenemos la UI de alertas arriba
+//-             console.log(mensajes[status]);
+//-         }
+//-         window.history.replaceState({}, document.title, window.location.pathname);
+//-       }
+//-     });
+
+
 
 
 
@@ -7,7 +486,7 @@ block contenido
   //- --- ESTILOS PARA IMPRESIÓN Y UI ---
   style.
     @media print {
-      nav, footer, .navbar, .sidebar, .btn, .d-print-none, .alert, .card-body form {
+      nav, footer, .navbar, .sidebar, .btn, .d-print-none, .alert, .card-body form, .card-footer {
         display: none !important;
       }
       .container-fluid { width: 100% !important; padding: 0 !important; margin: 0 !important; }
@@ -17,13 +496,15 @@ block contenido
       th, td { border: 1px solid #dee2e6 !important; padding: 8px !important; font-size: 12px !important; }
       th { background-color: #f8f9fa !important; color: black !important; }
     }
-    /* Estilo para indicar que la foto es cliqueable */
     #fotoDniPreview {
       cursor: zoom-in;
       transition: transform 0.2s;
     }
     #fotoDniPreview:hover {
       transform: scale(1.02);
+    }
+    .fila-ausencia {
+      border-left: 5px solid #ffc107 !important;
     }
 
   .container-fluid.py-4
@@ -33,7 +514,7 @@ block contenido
         h2.fw-bold.text-dark 
           i.fa-solid.fa-list-check.me-2.text-info
           | Gestión de Turnos
-        p.text-muted.mb-0 Listado general de citas registradas en el sistema.
+        p.text-muted.mb-0 Listado general de citas (Página #{currentPage} de #{totalPages})
       .d-flex.gap-2
         button.btn.btn-dark.shadow-sm(onclick="window.print()")
           i.fa-solid.fa-print.me-2
@@ -51,14 +532,17 @@ block contenido
       if status === 'traslado_success'
         .alert.alert-success.alert-dismissible.fade.show.shadow-sm(role="alert")
           i.fa-solid.fa-circle-check.me-2
-          strong ¡Éxito! 
-          | El turno ha sido movido correctamente.
+          strong ¡Éxito! El turno ha sido movido correctamente.
           button.btn-close(type="button" data-bs-dismiss="alert")
       if status === 'error_no_agenda'
         .alert.alert-danger.alert-dismissible.fade.show.shadow-sm(role="alert")
           i.fa-solid.fa-triangle-exclamation.me-2
-          strong Error de Agenda: 
-          | El médico no atiende en esa fecha.
+          strong Error de Agenda: El médico no atiende en esa fecha.
+          button.btn-close(type="button" data-bs-dismiss="alert")
+      if status === 'error_turno_ocupado'
+        .alert.alert-warning.alert-dismissible.fade.show.shadow-sm(role="alert")
+          i.fa-solid.fa-clock.me-2
+          strong Horario Ocupado: El médico ya tiene un turno en ese horario.
           button.btn-close(type="button" data-bs-dismiss="alert")
 
     //- --- FILTROS ---
@@ -98,11 +582,16 @@ block contenido
           tbody
             if turnos && turnos.length > 0
               each turno in turnos
-                tr(class=turno.estado === 'Reservado' ? 'table-warning' : '')
+                tr(class=(turno.medicoAusente ? 'table-warning fila-ausencia' : (turno.estado === 'Reservado' ? 'table-warning' : '')))
                   td
                     .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
                     small.text-muted DNI: #{turno.paciente_dni}
-                  td #{turno.medico_apellido}, #{turno.medico_nombre}
+                  td 
+                    | #{turno.medico_apellido}, #{turno.medico_nombre}
+                    if turno.medicoAusente
+                      span.badge.bg-danger.ms-2(title=`Motivo: ${turno.motivoAusencia || 'No especificado'}`)
+                        i.fa-solid.fa-user-slash.me-1
+                        | AUSENTE
                   td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
                   td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
                   td.text-center: span.fw-bold #{turno.hora}
@@ -110,7 +599,7 @@ block contenido
                     span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : 'bg-secondary'))) #{turno.estado}
                   td.d-print-none
                     .d-grid.gap-1
-                      button.btn.btn-sm.btn-primary(onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+                      button.btn.btn-sm(class=turno.medicoAusente ? 'btn-warning shadow-sm' : 'btn-primary' onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
                         i.fa-solid.fa-arrow-right-arrow-left.me-1
                         | Trasladar
                       button.btn.btn-sm.btn-outline-info(onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
@@ -119,7 +608,42 @@ block contenido
             else
               tr: td.text-center.py-5(colspan="7") No se encontraron turnos.
 
-  //- --- MODAL TRASLADO ---
+      //- --- PAGINACIÓN ---
+      .card-footer.bg-white.d-print-none
+        if totalPages > 1
+          nav(aria-label="Paginación de turnos")
+            ul.pagination.justify-content-center.mb-0
+              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                a.page-link(href=`/secretaria/turnos?page=1&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
+                  i.fa-solid.fa-angles-left
+              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                a.page-link(href=`/secretaria/turnos?page=${currentPage - 1}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
+                  i.fa-solid.fa-angle-left
+
+              - var start = Math.max(1, currentPage - 2)
+              - var end = Math.min(totalPages, currentPage + 2)
+              
+              if start > 1
+                li.page-item.disabled: span.page-link ...
+
+              - for (var i = start; i <= end; i++)
+                li.page-item(class=(currentPage === i ? 'active' : ''))
+                  a.page-link(href=`/secretaria/turnos?page=${i}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)= i
+
+              if end < totalPages
+                li.page-item.disabled: span.page-link ...
+
+              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                a.page-link(href=`/secretaria/turnos?page=${currentPage + 1}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
+                  i.fa-solid.fa-angle-right
+              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                a.page-link(href=`/secretaria/turnos?page=${totalPages}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
+                  i.fa-solid.fa-angles-right
+        
+        .text-center.mt-2.small.text-muted
+          | Mostrando página #{currentPage} de #{totalPages} (Total: #{totalTurnos} turnos)
+
+  //- --- MODALES ---
   #modalTrasladoIndividual.modal.fade(tabindex="-1")
     .modal-dialog
       .modal-content.border-0.shadow-lg
@@ -137,7 +661,7 @@ block contenido
                 option(value="" disabled selected) Seleccione médico...
                 if medicos
                   each med in medicos
-                    - var valId = med.id_medico || med.id || med.id_profesional
+                    - var valId = med.id_medico || med.id
                     option(value=valId) #{med.apellido}, #{med.nombre}
             .row
               .col-6
@@ -149,7 +673,6 @@ block contenido
             .mt-4.d-grid
               button.btn.btn-primary(type="submit") Confirmar Traslado
 
-  //- --- MODAL DETALLES ---
   #modalDetallesTurno.modal.fade(tabindex="-1")
     .modal-dialog.modal-lg
       .modal-content.border-0.shadow-lg
@@ -169,7 +692,6 @@ block contenido
           hr
           .text-center
             h6.fw-bold Foto DNI (Click para ampliar)
-            //- Enlace para abrir la foto en grande
             a#linkFotoDni(target="_blank")
               img#fotoDniPreview.img-fluid.rounded.shadow-sm(style="max-height: 350px; display:none;" title="Ver imagen completa")
             #sinFotoDni.alert.alert-light.border No hay foto cargada.
@@ -189,8 +711,6 @@ block contenido
 
     function verDetallesTurno(turno) {
       const modal = new bootstrap.Modal(document.getElementById('modalDetallesTurno'));
-      
-      // Llenar información textual
       document.getElementById('det-paciente-nombre').innerText = `Nombre: ${turno.paciente_apellido}, ${turno.paciente_nombre}`;
       document.getElementById('det-paciente-dni').innerText = `DNI: ${turno.paciente_dni}`;
       document.getElementById('det-medico').innerText = `Médico: ${turno.medico_apellido}`;
@@ -201,13 +721,10 @@ block contenido
       const alertDiv = document.getElementById('sinFotoDni');
       
       if (turno.archivo_dni) {
-        // Limpiamos la ruta por si viene con barras invertidas del sistema de archivos
         const nombreLimpio = turno.archivo_dni.split(/[\\\/]/).pop();
         const rutaImagen = `/uploads/dnis/${nombreLimpio}`;
-        
         img.src = rutaImagen;
-        link.href = rutaImagen; // El link apunta a la misma imagen
-        
+        link.href = rutaImagen;
         img.style.display = 'inline-block';
         alertDiv.style.display = 'none';
       } else {
@@ -217,17 +734,3 @@ block contenido
       }
       modal.show();
     }
-
-    window.addEventListener('load', function() {
-      const params = new URLSearchParams(window.location.search);
-      const status = params.get('status');
-      if (status) {
-        const mensajes = {
-          'error_no_agenda': "❌ ERROR: El médico no tiene agenda disponible.",
-          'error_turno_ocupado': "⚠️ ¡HORARIO OCUPADO!",
-          'traslado_success': "✅ ÉXITO: El turno ha sido trasladado correctamente."
-        };
-        if (mensajes[status]) alert(mensajes[status]);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    });
