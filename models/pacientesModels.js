@@ -267,7 +267,7 @@ class Paciente {
         try {
             const { id_persona, nombre, apellido, email, nacimiento, id_paciente } = datos;
             conn = await createConnection();
-            
+
             // Iniciamos una transacción porque afectamos dos tablas: personas y usuarios
             await conn.beginTransaction();
 
@@ -293,6 +293,31 @@ class Paciente {
             throw error;
         } finally {
             if (conn) conn.end();
+        }
+    }
+
+
+    static async getById(id_paciente) {
+        let db;
+        try {
+
+            db = await createConnection();
+            const sql = `
+            SELECT 
+                p.nombre, 
+                p.apellido, 
+                u.email 
+            FROM pacientes pa
+            JOIN personas p ON pa.id_persona = p.id
+            JOIN usuarios u ON u.id_persona = p.id
+            WHERE pa.id = ?
+        `;
+
+            const [rows] = await db.query(sql, [id_paciente]);
+            return rows[0]; // Retorna { nombre, apellido, email }
+        } catch (error) {
+            console.error("Error en Paciente.getById:", error);
+            throw error;
         }
     }
 

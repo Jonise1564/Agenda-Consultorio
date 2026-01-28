@@ -1,42 +1,115 @@
+//- extends ../layout
+
+//- block contenido
+//-     style.
+//-         body {
+//-             background-color: #f0f8ff;
+//-         }
+//-         .center-text {
+//-         text-align: center;
+//-         font-weight: bold;
+//-         }       
+//-     //- Sección Principal
+//-     section.hero#inicio
+//-       .hero-content
+//-         //- h1.center-text Bienvenido a nuestro Consultorio Médico
+//-         //-p Atención integral de calidad para cuidar de tu salud y bienestar.
+//-         //- a(href="/agendas" class="btn btn-success") Reserva tu cita
+
+//-     //- //- Sección de Servicios
+//-     //- section#servicios.services
+//-     //-   h3 Nuestros Servicios
+//-     //-   .services-container
+//-     //-     .service-item
+//-     //-       h4 Consulta General
+//-     //-       p Atención personalizada para todas tus necesidades médicas.
+//-     //-     .service-item
+//-     //-       h4 Especialidades Médicas
+//-     //-       p Amplio equipo de especialistas en diversas áreas.
+//-     //-     .service-item
+//-     //-       h4 Laboratorio Clínico
+//-     //-       p Pruebas de laboratorio precisas y confiables.
+
+//-     //- Sección del Equipo Médico
+//-     //- section#equipo.team
+//-     //-   h3 Conoce a nuestro Equipo Médico
+//-     //-   .team-container
+//-     //-     .team-member
+//-     //-       h4 Dr. Juan Pérez
+//-     //-       p Especialista en Cardiología
+//-     //-     .team-member
+//-     //-       h4 Dra. Ana López
+//-     //-       p Especialista en Pediatría
+
+
+
 extends ../layout
 
 block contenido
     style.
-        body {
-            background-color: #f0f8ff;
+        body { background-color: #f0f8ff; }
+        .center-text { text-align: center; font-weight: bold; }
+        .config-btn-flotante {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .center-text {
-        text-align: center;
-        font-weight: bold;
-        }       
-    //- Sección Principal
+
+    //- Botón flotante para configurar (Solo visible si está logueado)
+    if usuario
+        button.btn.btn-primary.config-btn-flotante(type="button" data-bs-toggle="modal" data-bs-target="#modalPerfilRapido")
+            i.fa-solid.fa-user-gear.fa-xl
+
     section.hero#inicio
       .hero-content
-        h1.center-text Bienvenido a nuestro Consultorio Médico
-        //-p Atención integral de calidad para cuidar de tu salud y bienestar.
-        a(href="/agendas" class="btn btn-success") Reserva tu cita
+        h1.center-text Bienvenido al Sistema Médico
+        p.center-text Hola, #{usuario.nombre}. 
 
-    //- //- Sección de Servicios
-    //- section#servicios.services
-    //-   h3 Nuestros Servicios
-    //-   .services-container
-    //-     .service-item
-    //-       h4 Consulta General
-    //-       p Atención personalizada para todas tus necesidades médicas.
-    //-     .service-item
-    //-       h4 Especialidades Médicas
-    //-       p Amplio equipo de especialistas en diversas áreas.
-    //-     .service-item
-    //-       h4 Laboratorio Clínico
-    //-       p Pruebas de laboratorio precisas y confiables.
+    //- MODAL DE CONFIGURACIÓN RÁPIDA
+    if usuario
+      .modal.fade#modalPerfilRapido(tabindex="-1" aria-hidden="true")
+        .modal-dialog.modal-dialog-centered
+          .modal-content.border-0.shadow-lg.rounded-4
+            .modal-header.bg-dark.text-white.rounded-top-4
+              h5.modal-title 
+                i.fa-solid.fa-shield-halved.me-2
+                |Editar Perfil
+              button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal")
+            
+            form#formUpdatePerfilRapido(method="POST" action="/admin/actualizar-perfil")
+              .modal-body.p-4
+                .row.g-3
+                  .col-md-6
+                    label.form-label.small.fw-bold Nombre
+                    input.form-control(type="text" name="nombre" value=usuario.nombre required)
+                  .col-md-6
+                    label.form-label.small.fw-bold Apellido
+                    input.form-control(type="text" name="apellido" value=usuario.apellido required)
+                  .col-12
+                    label.form-label.small.fw-bold Email
+                    input.form-control(type="email" name="email" value=usuario.email required)
+                  
+                  hr.my-3
+                  .col-12
+                    label.form-label.small.fw-bold Nueva Contraseña
+                    input#newPassword.form-control(type="password" name="password" placeholder="Dejar vacío para no cambiar")
+                    small.text-muted Solo completa este campo si deseas cambiar tu clave actual.
 
-    //- Sección del Equipo Médico
-    //- section#equipo.team
-    //-   h3 Conoce a nuestro Equipo Médico
-    //-   .team-container
-    //-     .team-member
-    //-       h4 Dr. Juan Pérez
-    //-       p Especialista en Cardiología
-    //-     .team-member
-    //-       h4 Dra. Ana López
-    //-       p Especialista en Pediatría
+              .modal-footer.border-0
+                button.btn.btn-light(type="button" data-bs-dismiss="modal") Cancelar
+                button.btn.btn-primary.px-4(type="submit") Guardar Cambios
+
+    script.
+        // Si quieres que el modal se abra solo apenas carga la página si falta algo:
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('setup') === 'true') {
+                const myModal = new bootstrap.Modal(document.getElementById('modalPerfilRapido'));
+                myModal.show();
+            }
+        });

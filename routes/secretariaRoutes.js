@@ -138,7 +138,7 @@
 
     // module.exports = router;
 
-    const express = require('express');
+const express = require('express');
 const router = express.Router();
 const path = require('path');
 const multer = require('multer');
@@ -194,6 +194,9 @@ router.post('/ausencias/update/:id', (req, res, next) => SecretariaController.ac
 
 // 4. Eliminar / Habilitar agenda (Botón basura)
 router.post('/ausencias/eliminar/:id', (req, res, next) => SecretariaController.eliminarAusencia(req, res, next));
+
+//router.post('/actualizar-estado-turno', secretariaController.actualizarEstadoTurno);
+router.post('/actualizar-estado-turno', (req, res, next) => SecretariaController.actualizarEstadoTurno(req, res, next));
 
 
 module.exports = router;

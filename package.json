@@ -21,10 +21,12 @@
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.2",
     "fullcalendar": "^6.1.19",
+    "ics": "^3.8.1",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "mysql2": "^3.15.3",
+    "nodemailer": "^7.0.13",
     "nodemon": "^3.1.7",
     "pug": "^3.0.3",
     "zod": "^3.23.8"

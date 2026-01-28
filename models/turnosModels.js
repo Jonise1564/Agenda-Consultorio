@@ -98,37 +98,65 @@ class Turno {
     // ============================================
     // ACTUALIZAR / TRASLADAR TURNO INDIVIDUAL
     // ============================================    
+    // static async actualizar(id, datos) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         const { fecha, hora_inicio, id_agenda, estado, motivo } = datos;
+
+    //         // Usamos un UPDATE directo para asegurar que los valores nuevos entren
+    //         const sql = `
+    //             UPDATE turnos 
+    //             SET fecha = ?, 
+    //                 hora_inicio = ?, 
+    //                 id_agenda = ?, 
+    //                 estado = ?,
+    //                 motivo = ?
+    //             WHERE id = ?
+    //         `;
+
+    //         // Si hora_inicio viene como "10:00", MySQL lo acepta bien como TIME
+    //         const [result] = await conn.query(sql, [
+    //             fecha,
+    //             hora_inicio,
+    //             id_agenda,
+    //             estado || 'Reservado',
+    //             motivo || 'Traslado de turno',
+    //             id
+    //         ]);
+
+    //         console.log("Filas afectadas en DB:", result.affectedRows);
+    //         return result.affectedRows > 0;
+    //     } catch (error) {
+    //         console.error("Error real en DB al actualizar:", error);
+    //         throw error;
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
+    // ============================================
+    // ACTUALIZAR DINÁMICO (Estado, Traslado, Observaciones)
+    // ============================================    
     static async actualizar(id, datos) {
         let conn;
         try {
             conn = await createConnection();
-            const { fecha, hora_inicio, id_agenda, estado, motivo } = datos;
+            
+            // Filtramos solo las llaves que tienen valor para armar la query
+            const keys = Object.keys(datos).filter(key => datos[key] !== undefined);
+            const fields = keys.map(key => `${key} = ?`).join(', ');
+            const values = keys.map(key => datos[key]);
+            
+            if (fields.length === 0) return false; // Nada que actualizar
 
-            // Usamos un UPDATE directo para asegurar que los valores nuevos entren
-            const sql = `
-                UPDATE turnos 
-                SET fecha = ?, 
-                    hora_inicio = ?, 
-                    id_agenda = ?, 
-                    estado = ?,
-                    motivo = ?
-                WHERE id = ?
-            `;
+            values.push(id);
+            const sql = `UPDATE turnos SET ${fields} WHERE id = ?`;
 
-            // Si hora_inicio viene como "10:00", MySQL lo acepta bien como TIME
-            const [result] = await conn.query(sql, [
-                fecha,
-                hora_inicio,
-                id_agenda,
-                estado || 'Reservado',
-                motivo || 'Traslado de turno',
-                id
-            ]);
-
-            console.log("Filas afectadas en DB:", result.affectedRows);
+            const [result] = await conn.query(sql, values);
             return result.affectedRows > 0;
         } catch (error) {
-            console.error("Error real en DB al actualizar:", error);
+            console.error("Error en Turno.actualizar:", error);
             throw error;
         } finally {
             if (conn) conn.end();

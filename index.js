@@ -342,7 +342,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-// require('dotenv').config(); // Descomenta si usas .env
+require('dotenv').config(); 
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -384,8 +384,8 @@ const AgendasRouter = require('./routes/agendasRoutes');
 const TurnosRouter = require('./routes/turnosRoutes');
 const EspecialidadesRouter = require('./routes/especialidadesRoutes');
 const ObrasSocialesRouter = require('./routes/obrasSocialesRoutes'); 
-// NUEVA IMPORTACIÓN:
 const ListaEsperaRouter = require('./routes/listaEsperaRoutes'); 
+const AdminRouter = require('./routes/adminRoutes');
 
 // =====================
 // REGISTRO DE RUTAS
@@ -413,6 +413,7 @@ app.use('/obrassociales', ObrasSocialesRouter);
 
 // NUEVO MONTAJE: Conecta el prefijo con el router
 app.use('/secretaria/lista-espera', ListaEsperaRouter); 
+app.use('/admin', AdminRouter);
 
 // MANEJO DE ERRORES
 app.use((err, req, res, next) => {

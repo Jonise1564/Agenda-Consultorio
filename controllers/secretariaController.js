@@ -3,6 +3,7 @@ const Turno = require('../models/turnosModels');
 const Paciente = require('../models/pacientesModels');
 const Medico = require('../models/medicosModels');
 const Especialidad = require('../models/especialidadesModels');
+const EmailService = require('../services/emailService');
 
 class SecretariaController {
 
@@ -211,7 +212,7 @@ class SecretariaController {
         try {
             const { paciente, profesional, fecha, status } = req.query;
 
-            // 1. Lógica de Paginación (Similar a Médicos)
+            // 1. Lógica de Paginación 
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
@@ -228,7 +229,7 @@ class SecretariaController {
             const totalTurnos = await Turno.contarTurnos(filtros);
             const totalPages = Math.ceil(totalTurnos / limit);
 
-            // 3. Enriquecer con ausencias (Mantenemos tu lógica de validación)
+            // 3. Enriquecer con ausencias 
             const turnosConEstado = await Promise.all(turnos.map(async (t) => {
                 let medicoAusente = false;
                 let motivoAusencia = null;
@@ -285,26 +286,197 @@ class SecretariaController {
 
 
     //  Proceso de agendar (CON VALIDACIÓN DE FECHA)
+    // async agendar(req, res, next) {
+    //     try {
+    //         const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
+    //         const archivo_dni = req.file ? req.file.filename : null;
+
+    //         // Validación de campos obligatorios
+    //         if (!id_paciente || !fecha || !hora_inicio || !id_agenda) {
+    //             return res.status(400).send("Error: Faltan datos obligatorios.");
+    //         }
+
+    //         // --- VALIDACIÓN DE FECHA PASADA ---
+    //         const hoy = new Date();
+    //         hoy.setHours(0, 0, 0, 0); // Solo comparar por día
+    //         const fechaSeleccionada = new Date(fecha + 'T00:00:00'); // Evitar problemas de zona horaria
+
+    //         if (fechaSeleccionada < hoy) {
+    //             return res.status(400).send("No se pueden agendar turnos en fechas anteriores a hoy.");
+    //         }
+    //         // ----------------------------------
+
+    //         await Turno.agendarTurnoVirtual({
+    //             fecha,
+    //             hora_inicio,
+    //             id_agenda,
+    //             id_paciente,
+    //             motivo: motivo || 'Turno solicitado en secretaría',
+    //             archivo_dni
+    //         });
+
+    //         res.redirect('/secretaria?status=success');
+    //     } catch (error) { next(error); }
+    // }
+
+
+
+
+
+
+    // Proceso de agendar con Notificación Automática
+    // async agendar(req, res, next) {
+    //     try {
+    //         const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
+    //         const archivo_dni = req.file ? req.file.filename : null;
+
+    //         // 1. Validación de campos obligatorios
+    //         if (!id_paciente || !fecha || !hora_inicio || !id_agenda) {
+    //             return res.status(400).send("Error: Faltan datos obligatorios.");
+    //         }
+
+    //         // 2. Validación de fecha pasada
+    //         const hoy = new Date();
+    //         hoy.setHours(0, 0, 0, 0); 
+    //         const fechaSeleccionada = new Date(fecha + 'T00:00:00'); 
+
+    //         if (fechaSeleccionada < hoy) {
+    //             return res.status(400).send("No se pueden agendar turnos en fechas anteriores a hoy.");
+    //         }
+
+    //         // 3. Guardar el turno en la Base de Datos
+    //         await Turno.agendarTurnoVirtual({
+    //             fecha,
+    //             hora_inicio,
+    //             id_agenda,
+    //             id_paciente,
+    //             motivo: motivo || 'Turno solicitado en secretaría',
+    //             archivo_dni
+    //         });
+
+    //         // 4. NOTIFICACIÓN AUTOMÁTICA (En segundo plano)
+    //         // Usamos un bloque try/catch interno para que si falla el mail, no se caiga el sistema
+    //         try {
+    //             // Buscamos los datos del paciente para obtener su email
+    //             const datosPaciente = await Paciente.getById(id_paciente);
+                
+    //             if (datosPaciente && datosPaciente.email) {
+    //                 // Disparamos el servicio de email (no usamos await aquí si no queremos que la secretaria espere)
+    //                 EmailService.enviarConfirmacion(datosPaciente.email, {
+    //                     nombre: datosPaciente.nombre || 'Paciente',
+    //                     fecha: fecha,
+    //                     hora: hora_inicio,
+    //                     motivo: motivo || 'Consulta médica'
+    //                 }).then(() => {
+    //                     console.log(`✅ Mail enviado con éxito a: ${datosPaciente.email}`);
+    //                 }).catch(err => {
+    //                     console.error("❌ Error en el envío de Nodemailer:", err.message);
+    //                 });
+    //             } else {
+    //                 console.log("⚠️ No se envió correo: El paciente no tiene email registrado.");
+    //             }
+    //         } catch (errorPaciente) {
+    //             console.error("⚠️ Error al obtener datos del paciente para el mail:", errorPaciente.message);
+    //         }
+
+    //         // 5. Respuesta final a la secretaria
+    //         res.redirect('/secretaria?status=success');
+
+    //     } catch (error) { 
+    //         console.error("Error crítico en agendar:", error);
+    //         next(error); 
+    //     }
+    // }
+
+    // async agendar(req, res, next) {
+    //     try {
+    //         const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
+    //         const archivo_dni = req.file ? req.file.filename : null;
+
+    //         // 1. Validación de campos obligatorios
+    //         if (!id_paciente || !fecha || !hora_inicio || !id_agenda) {
+    //             return res.status(400).send("Error: Faltan datos obligatorios.");
+    //         }
+
+    //         // 2. Validación de fecha pasada
+    //         const hoy = new Date();
+    //         hoy.setHours(0, 0, 0, 0); 
+    //         const fechaSeleccionada = new Date(fecha + 'T00:00:00'); 
+
+    //         if (fechaSeleccionada < hoy) {
+    //             return res.status(400).send("No se pueden agendar turnos en fechas anteriores a hoy.");
+    //         }
+
+    //         // 3. Guardar el turno en la Base de Datos
+    //         await Turno.agendarTurnoVirtual({
+    //             fecha,
+    //             hora_inicio,
+    //             id_agenda,
+    //             id_paciente,
+    //             motivo: motivo || 'Turno solicitado en secretaría',
+    //             archivo_dni
+    //         });
+
+    //         // 4. NOTIFICACIÓN AUTOMÁTICA
+    //         try {
+    //             // Buscamos datos del paciente
+    //             const datosPaciente = await Paciente.getById(id_paciente);
+                
+    //             // BUSCAMOS DATOS DEL MÉDICO Y ESPECIALIDAD (Usando el id_agenda)
+    //             // Asumimos que Agenda tiene un método para traer nombres legibles
+    //             const detallesAgenda = await Agenda.getById(id_agenda); 
+
+    //             if (datosPaciente && datosPaciente.email) {
+    //                 EmailService.enviarConfirmacion(datosPaciente.email, {
+    //                     nombre: datosPaciente.nombre || 'Paciente',
+    //                     fecha: fecha,
+    //                     hora: hora_inicio,
+    //                     motivo: motivo || 'Consulta médica',
+    //                     medico: detallesAgenda ? `${detallesAgenda.medico_nombre} ${detallesAgenda.medico_apellido}` : 'A confirmar',
+    //                     especialidad: detallesAgenda ? detallesAgenda.especialidad_nombre : 'General'
+    //                 }).then(() => {
+    //                     console.log(`✅ Mail enviado con éxito a: ${datosPaciente.email}`);
+    //                 }).catch(err => {
+    //                     console.error("❌ Error en el envío de Nodemailer:", err.message);
+    //                 });
+    //             } else {
+    //                 console.log("⚠️ No se envió correo: El paciente no tiene email registrado.");
+    //             }
+    //         } catch (errorNotificacion) {
+    //             console.error("⚠️ Error al preparar datos de notificación:", errorNotificacion.message);
+    //         }
+
+    //         // 5. Respuesta final
+    //         res.redirect('/secretaria?status=success');
+
+    //     } catch (error) { 
+    //         console.error("Error crítico en agendar:", error);
+    //         next(error); 
+    //     }
+    // }
+
+
+
     async agendar(req, res, next) {
         try {
             const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
             const archivo_dni = req.file ? req.file.filename : null;
 
-            // Validación de campos obligatorios
+            // 1. Validación de campos obligatorios
             if (!id_paciente || !fecha || !hora_inicio || !id_agenda) {
                 return res.status(400).send("Error: Faltan datos obligatorios.");
             }
 
-            // --- VALIDACIÓN DE FECHA PASADA ---
+            // 2. Validación de fecha pasada
             const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0); // Solo comparar por día
-            const fechaSeleccionada = new Date(fecha + 'T00:00:00'); // Evitar problemas de zona horaria
+            hoy.setHours(0, 0, 0, 0); 
+            const fechaSeleccionada = new Date(fecha + 'T00:00:00'); 
 
             if (fechaSeleccionada < hoy) {
                 return res.status(400).send("No se pueden agendar turnos en fechas anteriores a hoy.");
             }
-            // ----------------------------------
 
+            // 3. Guardar el turno en la Base de Datos
             await Turno.agendarTurnoVirtual({
                 fecha,
                 hora_inicio,
@@ -314,8 +486,42 @@ class SecretariaController {
                 archivo_dni
             });
 
+            // 4. NOTIFICACIÓN AUTOMÁTICA
+            try {
+                // Obtenemos datos del paciente (Email, Nombre)
+                const datosPaciente = await Paciente.getById(id_paciente);
+                
+                // Obtenemos detalles de la agenda (Nombre médico, Especialidad) 
+                // usando el método getAgendaById que ya tienes en tu modelo
+                const detallesAgenda = await Agenda.getAgendaById(id_agenda);
+
+                if (datosPaciente && datosPaciente.email) {
+                    EmailService.enviarConfirmacion(datosPaciente.email, {
+                        nombre: datosPaciente.nombre,
+                        fecha: fecha,
+                        hora: hora_inicio,
+                        motivo: motivo || 'Consulta médica',
+                        medico: detallesAgenda ? `Dr/a. ${detallesAgenda.nombre_medico} ${detallesAgenda.apellido_medico}` : 'Médico a asignar',
+                        especialidad: detallesAgenda ? detallesAgenda.especialidad : 'General'
+                    }).then(() => {
+                        console.log(`✅ Mail enviado con éxito a: ${datosPaciente.email}`);
+                    }).catch(err => {
+                        console.error("❌ Error en el envío de Nodemailer:", err.message);
+                    });
+                } else {
+                    console.log("⚠️ No se envió correo: El paciente no tiene email registrado o no existe.");
+                }
+            } catch (errorNotificacion) {
+                console.error("⚠️ Error al preparar datos de notificación:", errorNotificacion.message);
+            }
+
+            // 5. Respuesta final
             res.redirect('/secretaria?status=success');
-        } catch (error) { next(error); }
+
+        } catch (error) { 
+            console.error("Error crítico en agendar:", error);
+            next(error); 
+        }
     }
 
     //  Buscadores (Autocomplete)
@@ -403,7 +609,7 @@ class SecretariaController {
             }
 
             // Llamada al modelo para actualizar
-            // Asegúrate de que Agenda.actualizarAusencia exista en tu modelo agendasModels.js
+
             await Agenda.actualizarAusencia(id, {
                 id_medico,
                 fecha_inicio,
@@ -441,7 +647,7 @@ class SecretariaController {
             const agendaDestino = agendas[0];
 
             // 2. VALIDACIÓN CLAVE: Verificar si el horario ya está ocupado en la agenda destino
-            // Usamos el método que ya tienes definido en tu modelo Turno
+
             const ocupados = await Turno.obtenerHorariosOcupados(agendaDestino.id, nueva_fecha);
 
             if (ocupados.includes(nueva_hora)) {
@@ -488,6 +694,32 @@ class SecretariaController {
             next(error);
         }
     }
+
+
+    // Actualizar Estado y Observaciones de un Turno
+    async actualizarEstadoTurno(req, res, next) {
+        try {
+            const { id_turno, estado, observaciones } = req.body;
+
+            if (!id_turno || !estado) {
+                return res.redirect('/secretaria/turnos?status=error');
+            }
+
+            // Llamada al modelo Turno para actualizar solo estos campos
+            // o usa el método actualizar existente si es genérico.
+            await Turno.actualizar(id_turno, {
+                estado: estado,
+                observaciones: observaciones || ''
+            });
+
+            res.redirect('/secretaria/turnos?status=edit_success');
+        } catch (error) {
+            console.error("Error en actualizarEstadoTurno:", error);
+            res.redirect('/secretaria/turnos?status=error');
+        }
+    }
+
+
 
 }
 

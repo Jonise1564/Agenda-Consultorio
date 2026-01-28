@@ -96,6 +96,8 @@ class EspecialidadesController {
         }
     };
 
+    
+
 }
 module.exports = new EspecialidadesController()
 
