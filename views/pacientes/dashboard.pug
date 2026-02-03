@@ -1,43 +1,43 @@
-extends ../layout
+//- extends ../layout
 
-block contenido
-  .container.mt-4
-    .row
-      .col-md-4
-        .card.shadow-sm.border-0.mb-4
-          .card-body.text-center
-            img.rounded-circle.mb-3(src="/images/user_icon_004.png" width="100")
-            h4.fw-bold= usuario.nombre + ' ' + usuario.apellido
-            p.text-muted Paciente
-            hr
-            .d-grid
-              a.btn.btn-primary(href="/mi-panel/nuevo-turno") 
-                i.bi.bi-plus-circle.me-2
-                | Solicitar Turno
+//- block contenido
+//-   .container.mt-4
+//-     .row
+//-       .col-md-4
+//-         .card.shadow-sm.border-0.mb-4
+//-           .card-body.text-center
+//-             img.rounded-circle.mb-3(src="/images/user_icon_004.png" width="100")
+//-             h4.fw-bold= usuario.nombre + ' ' + usuario.apellido
+//-             p.text-muted Paciente
+//-             hr
+//-             .d-grid
+//-               a.btn.btn-primary(href="/mi-panel/nuevo-turno") 
+//-                 i.bi.bi-plus-circle.me-2
+//-                 | Solicitar Turno
 
-      .col-md-8
-        .card.shadow-sm.border-0
-          .card-header.bg-white.py-3
-            h5.mb-0.fw-bold Mis Turnos Agendados
-          .card-body
-            if turnos && turnos.length > 0
-              .table-responsive
-                table.table.table-hover
-                  thead.table-light
-                    tr
-                      th Fecha
-                      th Especialidad
-                      th Médico
-                      th Estado
-                  tbody
-                    each turno in turnos
-                      tr
-                        td= turno.fecha_formateada
-                        td= turno.especialidad
-                        td= turno.medico_nombre
-                        td
-                          span.badge(class=turno.estado === 'pendiente' ? 'bg-warning' : 'bg-success')= turno.estado
-            else
-              .text-center.py-5
-                i.bi.bi-calendar-x.display-1.text-muted
-                p.mt-3 Todavía no tienes turnos programados.
+//-       .col-md-8
+//-         .card.shadow-sm.border-0
+//-           .card-header.bg-white.py-3
+//-             h5.mb-0.fw-bold Mis Turnos Agendados
+//-           .card-body
+//-             if turnos && turnos.length > 0
+//-               .table-responsive
+//-                 table.table.table-hover
+//-                   thead.table-light
+//-                     tr
+//-                       th Fecha
+//-                       th Especialidad
+//-                       th Médico
+//-                       th Estado
+//-                   tbody
+//-                     each turno in turnos
+//-                       tr
+//-                         td= turno.fecha_formateada
+//-                         td= turno.especialidad
+//-                         td= turno.medico_nombre
+//-                         td
+//-                           span.badge(class=turno.estado === 'pendiente' ? 'bg-warning' : 'bg-success')= turno.estado
+//-             else
+//-               .text-center.py-5
+//-                 i.bi.bi-calendar-x.display-1.text-muted
+//-                 p.mt-3 Todavía no tienes turnos programados.

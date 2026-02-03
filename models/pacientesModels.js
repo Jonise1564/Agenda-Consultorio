@@ -3,7 +3,7 @@ const createConnection = require('../config/configDb');
 class Paciente {
 
     // ======================================================
-    // BUSCADOR PARA AJAX (NECESARIO PARA RESERVA DE TURNOS)
+    // BUSCADOR (NECESARIO PARA RESERVA DE TURNOS)
     // ======================================================
     static async buscar(texto) {
         let conn;

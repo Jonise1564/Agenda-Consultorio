@@ -392,7 +392,7 @@ class Agenda {
         }
     }
 
-// =====================================================
+    // =====================================================
     // 13. LISTAR TODAS LAS AUSENCIAS (Para el Panel de Administración)
     // =====================================================
     static async listarAusencias() {

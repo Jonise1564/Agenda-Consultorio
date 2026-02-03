@@ -5,7 +5,6 @@ const { obtenerFechaFormateada } = require('../utils/dateFormatter');
 class PersonasController {
 
     //Mostrar todas las personas
-
     async get(req, res, next) {
         console.log('Controller: Get All personas');
         try {
@@ -139,6 +138,25 @@ class PersonasController {
             }
         } catch (error) {
             next(error);
+        }
+    }
+
+
+    
+    // VERIFICAR DNI
+    async verificarDni(req, res) {
+        try {
+            const { dni } = req.params;
+            if (!dni) return res.json({ existe: false });
+
+            // Buscamos en el modelo Persona (que ya tienes importado arriba)
+            const existePersona = await Persona.getByDni(dni);
+            
+            // Retorna un booleano para que el frontend decida qué mostrar
+            res.json({ existe: !!existePersona });
+        } catch (error) {
+            console.error("Error al verificar DNI en PersonasController:", error);
+            res.status(500).json({ error: "Error en el servidor de validación" });
         }
     }
 }

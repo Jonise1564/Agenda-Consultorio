@@ -25,39 +25,6 @@ function todayDateOnly() {
 class AgendasController {
 
     // LISTAR TODAS LAS AGENDAS
-    // async get(req, res, next) {
-    //     try {
-    //         const [agendas, especialidades, medicos] = await Promise.all([
-    //             Agenda.getAll(),
-    //             Especialidad.getAll(),
-    //             Medico.listar()
-    //         ]);
-
-    //         const agendasFormateadas = agendas.map(a => ({
-    //             ...a,
-    //             fecha_creacion: a.fecha_creacion ? obtenerFechaFormateada(parseDateOnly(a.fecha_creacion)) : null,
-    //             fecha_fin: a.fecha_fin ? obtenerFechaFormateada(parseDateOnly(a.fecha_fin)) : null,
-    //             hora_inicio: a.hora_inicio ? obtenerHoraFormateada(a.hora_inicio) : null,
-    //             hora_fin: a.hora_fin ? obtenerHoraFormateada(a.hora_fin) : null
-    //         }));
-
-    //         const { nombreStore, nombreUpdate, error: errorQuery } = req.query;
-    //         let mensaje = null;
-    //         if (nombreStore) mensaje = 'Agenda creada correctamente';
-    //         if (nombreUpdate) mensaje = 'Agenda actualizada correctamente';
-
-    //         res.render('agendas/inicio', {
-    //             agendas: agendasFormateadas,
-    //             especialidades,
-    //             medicos,
-    //             mensaje,
-    //             error: errorQuery === 'no_encontrada' ? 'La agenda solicitada no existe' : null
-    //         });
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
     async get(req, res, next) {
         try {
             // 1. Obtenemos los datos base
@@ -67,33 +34,15 @@ class AgendasController {
                 Medico.listar()
             ]);
 
-            // 2. Obtenemos las ausencias activas de hoy
-
-            // const ausenciasHoy = await Medico.obtenerAusenciasActivas(); 
-            // // Esto debería devolver un array de IDs de médicos ausentes: [5, 12, 24]
-
-            // const agendasFormateadas = agendas.map(a => {
-            //     // Verificamos si el id_medico de esta agenda está en la lista de ausentes
-            //     const estaAusente = ausenciasHoy.includes(a.id_medico);
-
-            //     return {
-            //         ...a,
-            //         ausente: estaAusente, // <--- ESTO ES LO QUE EL PUG NECESITA
-            //         fecha_creacion: a.fecha_creacion ? obtenerFechaFormateada(parseDateOnly(a.fecha_creacion)) : null,
-            //         fecha_fin: a.fecha_fin ? obtenerFechaFormateada(parseDateOnly(a.fecha_fin)) : null,
-            //         hora_inicio: a.hora_inicio ? obtenerHoraFormateada(a.hora_inicio) : null,
-            //         hora_fin: a.hora_fin ? obtenerHoraFormateada(a.hora_fin) : null
-            //     };
-            // });
+            // 2. Obtenemos las ausencias activas de hoy            
             const ausenciasHoy = await Medico.obtenerAusenciasActivas();
-
             const agendasFormateadas = agendas.map(a => {
                 // Usamos == por si acaso un ID viene como string desde la DB
                 const estaAusente = ausenciasHoy.some(idAusente => idAusente == a.id_medico);
 
                 return {
                     ...a,
-                    ausente: estaAusente, // Esto activa el naranja en tu PUG
+                    ausente: estaAusente, // Esto activa el naranja
                     fecha_creacion: a.fecha_creacion ? obtenerFechaFormateada(parseDateOnly(a.fecha_creacion)) : null,
                     fecha_fin: a.fecha_fin ? obtenerFechaFormateada(parseDateOnly(a.fecha_fin)) : null,
                     hora_inicio: a.hora_inicio ? obtenerHoraFormateada(a.hora_inicio) : null,

@@ -2,7 +2,7 @@
 // // const bcrypt = require("bcryptjs");
 
 // // class AuthController {
-    
+
 // //     static loginForm(req, res) {
 // //         res.render("auth/login");
 // //     }
@@ -98,7 +98,7 @@
 //     const { email, password } = req.body;
 //     try {
 //         const usuario = await Usuario.getByEmail(email);
-        
+
 //         if (!usuario) {
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
 //         }
@@ -139,7 +139,7 @@
 // // --- REGISTRO DE PACIENTE ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     try {
 //         // 1. Crear la Persona (Asumo que tu Persona.create devuelve el insertId)
 //         // Nota: Asegúrate que Persona.create maneje nombre, apellido, dni, nacimiento
@@ -180,7 +180,7 @@
 //     try {
 //         // Buscamos al usuario (asegúrate que el modelo traiga el nombre de la tabla personas)
 //         const usuario = await Usuario.getByEmail(email);
-        
+
 //         if (!usuario) {
 //             console.log("Usuario no encontrado:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -238,7 +238,7 @@
 // // --- REGISTRO DE PACIENTE ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     try {
 //         // 1. Crear la Persona
 //         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
@@ -280,7 +280,7 @@
 //     try {
 //         // Buscamos al usuario por email
 //         const usuario = await Usuario.getByEmail(email);
-        
+
 //         if (!usuario) {
 //             console.log("Usuario no encontrado:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -288,7 +288,7 @@
 
 //         // Validación de contraseña (Texto plano para desarrollo o Bcrypt para producción)
 //         const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
-        
+
 //         if (!esValida) {
 //             console.log("Contraseña incorrecta para:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -329,10 +329,10 @@
 //         };
 
 //         const destino = rutas[usuario.id_rol] || '/';
-        
+
 //         console.log(`Model Usuario: buscando por email: ${email}`);
 //         console.log(`Login exitoso: ${email}. Rol: ${usuario.id_rol}. Redirigiendo a ${destino}`);
-        
+
 //         res.redirect(destino);
 
 //     } catch (error) {
@@ -344,7 +344,7 @@
 // // --- REGISTRO DE PACIENTE ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     try {
 //         // 1. Crear la Persona
 //         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
@@ -389,14 +389,14 @@
 //     const { email, password } = req.body;
 //     try {
 //         const usuario = await Usuario.getByEmail(email);
-        
+
 //         if (!usuario) {
 //             console.log("Usuario no encontrado:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
 //         }
 
 //         const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
-        
+
 //         if (!esValida) {
 //             console.log("Contraseña incorrecta para:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -427,7 +427,7 @@
 //         // Esto evita el error 404 de '/paciente'
 //         // =====================================================
 //         const destino = '/';
-        
+
 //         console.log(`Login exitoso: ${email}. Rol: ${usuario.id_rol}. Redirigiendo a ${destino}`);
 //         res.redirect(destino);
 
@@ -440,7 +440,7 @@
 // // --- REGISTRO DE PACIENTE ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     try {
 //         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
 //         const id_persona = nuevaPersona.id || nuevaPersona.insertId;
@@ -482,7 +482,7 @@
 //     const { email, password } = req.body;
 //     try {
 //         const usuario = await Usuario.getByEmail(email);
-        
+
 //         if (!usuario) {
 //             console.log("Usuario no encontrado:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -490,7 +490,7 @@
 
 //         // Verificación de password (soporta texto plano para desarrollo o hash para producción)
 //         const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
-        
+
 //         if (!esValida) {
 //             console.log("Contraseña incorrecta para:", email);
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -528,7 +528,7 @@
 // // --- REGISTRO DE PACIENTE (CORREGIDO Y COMPLETO) ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     // Capturamos el nombre del archivo subido por Multer
 //     const archivo_dni = req.file ? req.file.filename : null;
 
@@ -540,7 +540,7 @@
 //             dni, 
 //             nacimiento 
 //         });
-        
+
 //         // Obtenemos el ID de la persona recién creada
 //         const id_persona = nuevaPersona.id || nuevaPersona.insertId;
 
@@ -599,13 +599,13 @@
 //     const { email, password } = req.body;
 //     try {
 //         const usuario = await Usuario.getByEmail(email);
-        
+
 //         if (!usuario) {
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
 //         }
 
 //         const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
-        
+
 //         if (!esValida) {
 //             return res.render('auth/login', { error: 'Credenciales inválidas' });
 //         }
@@ -639,7 +639,7 @@
 // // --- REGISTRO DE PACIENTE ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     try {
 //         // 1. CREAR PERSONA
 //         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
@@ -725,7 +725,7 @@
 // // --- REGISTRO CON AUTO-LOGIN Y NOTIFICACIÓN ---
 // exports.registroPaciente = async (req, res) => {
 //     const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-    
+
 //     try {
 //         // 1. Crear Persona
 //         const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
@@ -811,8 +811,6 @@ class AuthController {
                 return res.render('auth/login', { error: 'Credenciales inválidas' });
             }
 
-            // Soporta comparación simple (si no está hasheada aún) o bcrypt
-        // const esValida = (password === usuario.password) || await bcrypt.compare(password, usuario.password);
             const esValida = await bcrypt.compare(password, usuario.password);
             if (!esValida) {
                 return res.render('auth/login', { error: 'Credenciales inválidas' });
@@ -833,7 +831,7 @@ class AuthController {
      */
     registroPaciente = async (req, res) => {
         const { nombre, apellido, dni, nacimiento, email, password } = req.body;
-        
+
         try {
             // 1. Crear registro en la tabla Persona
             const nuevaPersona = await Persona.create({ nombre, apellido, dni, nacimiento });
@@ -861,11 +859,11 @@ class AuthController {
             });
 
             // 5. Auto-login: Generar token con la info del nuevo usuario
-            const token = this.#generarToken({ 
-                id: id_usuario, 
-                id_rol: 4, 
-                id_persona, 
-                nombre 
+            const token = this.#generarToken({
+                id: id_usuario,
+                id_rol: 4,
+                id_persona,
+                nombre
             });
             this.#establecerCookie(res, token);
 
@@ -873,8 +871,8 @@ class AuthController {
 
         } catch (error) {
             console.error("Error en registro:", error);
-            return res.render('auth/login', { 
-                error: 'Error al registrarse. El DNI o Email ya están en uso.' 
+            return res.render('auth/login', {
+                error: 'Error al registrarse. El DNI o Email ya están en uso.'
             });
         }
     }
@@ -891,11 +889,11 @@ class AuthController {
 
     #generarToken(usuario) {
         return jwt.sign(
-            { 
-                id: usuario.id, 
-                id_rol: usuario.id_rol, 
-                id_persona: usuario.id_persona, 
-                nombre: usuario.nombre || 'Usuario' 
+            {
+                id: usuario.id,
+                id_rol: usuario.id_rol,
+                id_persona: usuario.id_persona,
+                nombre: usuario.nombre || 'Usuario'
             },
             JWT_SECRET,
             { expiresIn: '1d' }
@@ -903,15 +901,15 @@ class AuthController {
     }
 
     #establecerCookie(res, token) {
-        res.cookie('token_acceso', token, { 
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
+        res.cookie('token_acceso', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000 // 24 horas
         });
     }
 }
 
-// Exportamos una instancia única (Singleton)
+
 module.exports = new AuthController();
 

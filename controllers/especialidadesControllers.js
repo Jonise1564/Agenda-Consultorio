@@ -7,9 +7,7 @@ class EspecialidadesController {
 
             const successMessage = req.query.success;
             res.render('especialidades/index', { especialidades, successMessage });
-            //res.render('especialidades/index', { especialidades });
-
-            //res.status(200).json(especialidades);
+          
         } catch (error) {
             console.error('Error fetching especialidades:', error);
             res.status(500).json({ message: 'Error al traer especialidades' });

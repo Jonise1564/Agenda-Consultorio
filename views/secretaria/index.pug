@@ -1,869 +1,9 @@
-
-//- extends ../layout
-
-//- block contenido
-//-   .container-fluid.py-4
-//-     //- ===============================
-//-     //- TÍTULO DE PANEL
-//-     //- ===============================
-//-     .d-flex.justify-content-between.align-items-center.mb-4
-//-       div
-//-         h2.m-0.fw-bold.text-dark
-//-           i.fa-solid.fa-hospital-user.me-2.text-primary
-//-           | Panel de Secretaría
-//-         p.text-muted.small.mb-0 Gestión operativa de turnos y agendas
-
-//-     //- ===============================
-//-     //- ACCESOS RÁPIDOS
-//-     //- ===============================
-//-     .row.g-3.mb-5
-//-       .col-md
-//-         .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-           .card-body
-//-             .icon-circle.bg-primary.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-days.fs-4
-//-             h6.fw-bold Agendas
-//-             a.btn.btn-primary.btn-sm.w-100.rounded-pill(href="/agendas") Ver
-      
-//-       .col-md
-//-         .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-           .card-body
-//-             .icon-circle.bg-success.text-white.mb-3.mx-auto: i.fa-solid.fa-rectangle-list.fs-4
-//-             h6.fw-bold Turnos
-//-             a.btn.btn-success.btn-sm.w-100.rounded-pill(href="/secretaria/turnos") Ver
-      
-//-       .col-md
-//-         .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-           .card-body
-//-             .icon-circle.bg-info.text-white.mb-3.mx-auto: i.fa-solid.fa-address-book.fs-4
-//-             h6.fw-bold Pacientes
-//-             a.btn.btn-outline-info.btn-sm.w-100.rounded-pill(href="/pacientes") Ver
-      
-//-       .col-md
-//-         .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-           .card-body
-//-             .icon-circle.bg-secondary.text-white.mb-3.mx-auto: i.fa-solid.fa-user-slash.fs-4
-//-             h6.fw-bold Ausencias
-//-             .d-flex.gap-2
-//-             //-  button.btn.btn-secondary.btn-sm.flex-fill.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalAusencia") Registrar
-//-             a.btn.btn-outline-secondary.btn-sm.rounded-pill(href="/secretaria/ausencias" title="Ver Listado de Ausencias") Gestionar
-//-                 i.fa-solid.fa-list-ul
-
-//-       .col-md
-//-         .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-           .card-body
-//-             .icon-circle.bg-warning.text-dark.mb-3.mx-auto: i.fa-solid.fa-hourglass-half.fs-4
-//-             h6.fw-bold Lista Espera
-//-             .d-flex.gap-2
-//-               a.btn.btn-warning.btn-sm.flex-fill.fw-bold.rounded-pill(href="/secretaria/lista-espera") Gestionar
-//-               //- a.btn.btn-outline-dark.btn-sm.rounded-circle(href="/secretaria/lista-espera/create") +
-
-//-       .col-md
-//-         .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-           .card-body
-//-             .icon-circle.bg-danger.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-minus.fs-4
-//-             h6.fw-bold Traslados
-//-             button.btn.btn-danger.btn-sm.w-100.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalTransferencia") Mover
-
-//-     hr.my-5.opacity-25
-
-//-     //- ===============================
-//-     //- SECCIÓN DE RESERVA
-//-     //- ===============================
-//-     .row.justify-content-center.mb-5
-//-       .col-lg-11
-//-         .row.g-4
-//-           .col-md-6
-//-             .d-flex.align-items-center.mb-3
-//-               .bg-primary.rounded-circle.p-2.me-2(style="width:35px; height:35px; display:flex; align-items:center; justify-content:center")
-//-                 i.fa-solid.fa-pen-to-square.text-white.small
-//-               h4.fw-bold.m-0 Datos del Turno
-            
-//-             .card-custom.p-4.shadow-sm.bg-white.border-top.border-primary.border-4
-//-               form#formReserva(method="POST" action="/secretaria/agendar" enctype="multipart/form-data")
-//-                 input#agendaIdHidden(type="hidden" name="id_agenda")
-//-                 input#turnoIdHidden(type="hidden" name="id_turno")
-                
-//-                 .mb-3.position-relative
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Profesional
-//-                   .input-group
-//-                     span.input-group-text.bg-light: i.fa-solid.fa-user-doctor.text-primary
-//-                     input#buscarMedico.form-control.bg-light(type="text" placeholder="Buscar médico..." autocomplete="off")
-//-                   #sugerenciasMedico.list-group.position-absolute.w-100.shadow-lg.z-3
-//-                   input#medicoId(type="hidden" name="id_medico")
-                  
-//-                 .mb-3
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Especialidad
-//-                   select#especialidadSelect.form-select.bg-light(name="id_especialidad" required disabled)
-//-                     option(value="" selected disabled) Primero busca un médico
-
-//-                 .mb-3.position-relative
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Paciente
-//-                   .input-group
-//-                     span.input-group-text.bg-light: i.fa-solid.fa-hospital-user.text-primary
-//-                     input#buscarPaciente.form-control.bg-light(type="text" placeholder="DNI o Nombre..." autocomplete="off" required)
-//-                   #sugerenciasPaciente.list-group.position-absolute.w-100.shadow-lg.z-3
-//-                   input#pacienteId(type="hidden" name="id_paciente")
-
-//-                 .row
-//-                   .col-6.mb-3
-//-                     label.form-label.small.fw-bold.text-uppercase.text-muted Fecha
-//-                     input#fecha.form-control.bg-light(type="date" name="fecha" required)
-//-                   .col-6.mb-3
-//-                     label.form-label.small.fw-bold.text-uppercase.text-muted Horario
-//-                     input#horaSeleccionadaInput.form-control.bg-white.border-primary.fw-bold(type="text" name="hora_inicio" placeholder="--:--" readonly required)
-
-//-                 .mb-3
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Foto del Documento
-//-                   .input-group
-//-                     span.input-group-text.bg-light: i.fa-solid.fa-camera.text-primary
-//-                     input#fotoDocumento.form-control.bg-light(type="file" name="archivo_dni" accept="image/*")
-                  
-//-                   #previewContainer.mt-2.d-none
-//-                     .position-relative.d-inline-block
-//-                       img#imgPreview.img-thumbnail(style="max-height: 150px;")
-//-                       button#removePreview.btn.btn-sm.btn-danger.position-absolute.top-0.end-0(type="button") 
-//-                         i.fa-solid.fa-xmark
-
-//-                 .mb-3
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Motivo / Notas
-//-                   textarea.form-control.bg-light(name="motivo" rows="2" style="resize: none;")
-
-//-                 button#btnGuardar.btn.btn-primary.w-100.py-3.fw-bold.text-uppercase.shadow(type="submit" disabled)
-//-                   i.fa-solid.fa-calendar-check.me-2
-//-                   | Confirmar Turno Médico
-
-//-           .col-md-6
-//-             .d-flex.align-items-center.mb-3
-//-               .bg-info.rounded-circle.p-2.me-2(style="width:35px; height:35px; display:flex; align-items:center; justify-content:center")
-//-                 i.fa-solid.fa-clock.text-white.small
-//-               h4.fw-bold.m-0 Disponibilidad
-            
-//-             #contenedorDisponibilidad.card.border-0.shadow-sm.h-100.rounded-4(style="min-height: 400px; background: #f8f9fa; border: 2px dashed #dee2e6 !important;")
-//-               .card-body.d-flex.flex-column.justify-content-center
-//-                 #instruccionInicial.text-center.text-muted
-//-                   i.fa-solid.fa-calendar-day.fs-1.mb-3.opacity-25
-//-                   p.px-4 Selecciona un profesional y la fecha para desplegar los horarios.
-                
-//-                 #loader.text-center.d-none
-//-                   .spinner-border.text-primary(role="status")
-//-                   p.mt-2.fw-bold Consultando agenda...
-
-//-                 #slotsContainer.d-flex.flex-wrap.gap-2.justify-content-center
-
-//-                 #mensajeVacio.text-center.mt-5.d-none
-//-                   i.fa-solid.fa-calendar-xmark.text-danger.fs-1.mb-3.d-block
-//-                   p.mb-3 No hay horarios disponibles para esta selección.
-//-                   a#btnIrAListaEspera.btn.btn-warning.fw-bold.rounded-pill(href="#")
-//-                     i.fa-solid.fa-user-clock.me-2
-//-                     | Anotar en Lista de Espera
-
-//-     //- ===============================
-//-     //- MODALES (AUSENCIA Y TRANSFERENCIA)
-//-     //- ===============================
-//-     #modalAusencia.modal.fade(tabindex="-1")
-//-       .modal-dialog.modal-dialog-centered
-//-         .modal-content.border-0.shadow-lg
-//-           .modal-header.bg-secondary.text-white.py-3
-//-             h5.modal-title.fw-bold
-//-               i.fa-solid.fa-user-slash.me-2
-//-               | Registrar Ausencia de Profesional
-//-             button.btn-close.btn-close-white(data-bs-dismiss="modal")
-//-           form(action="/secretaria/ausencias/registrar" method="POST")
-//-             .modal-body.p-4
-//-               .mb-3
-//-                 label.form-label.small.fw-bold Profesional
-//-                 select.form-select(name="id_medico" required)
-//-                   option(value="" disabled selected) Seleccionar médico...
-//-                   if medicos
-//-                     each med in medicos
-//-                       option(value=med.id) #{med.apellido}, #{med.nombre}
-//-               .row
-//-                 .col-6.mb-3
-//-                   label.form-label.small.fw-bold Desde
-//-                   input.form-control(type="date" name="fecha_inicio" required)
-//-                 .col-6.mb-3
-//-                   label.form-label.small.fw-bold Hasta
-//-                   input.form-control(type="date" name="fecha_fin" required)
-//-               .mb-3
-//-                 label.form-label.small.fw-bold Motivo de la Ausencia
-//-                 select.form-select(name="tipo" required)
-//-                   option(value="Licencia") Licencia Médica
-//-                   option(value="Congreso") Congreso / Capacitación
-//-                   option(value="Vacaciones") Vacaciones
-//-                   option(value="Particular") Asuntos Particulares
-//-             .modal-footer.bg-light
-//-               button.btn.btn-light.rounded-pill(type="button" data-bs-dismiss="modal") Cancelar
-//-               button.btn.btn-secondary.px-4.rounded-pill(type="submit") Bloquear Agenda
-
-//-     #modalTransferencia.modal.fade(tabindex="-1")
-//-       .modal-dialog.modal-dialog-centered
-//-         .modal-content.border-0.shadow-lg
-//-           .modal-header.bg-danger.text-white.py-3
-//-             h5.modal-title.fw-bold
-//-               i.fa-solid.fa-calendar-minus.me-2
-//-               | Traslado Masivo de Agenda
-//-             button.btn-close.btn-close-white(data-bs-dismiss="modal")
-//-           form(action="/secretaria/transferir-agenda" method="POST")
-//-             .modal-body.p-4
-//-               .alert.alert-danger.small.d-flex.align-items-center
-//-                 i.fa-solid.fa-circle-exclamation.fs-4.me-3
-//-                 span Esta acción moverá todos los turnos del médico origen al destino.
-              
-//-               .mb-3
-//-                 label.form-label.small.fw-bold Médico Origen
-//-                 select.form-select.form-select-lg(name="id_medico_origen" required)
-//-                   option(value="" disabled selected) Seleccionar...
-//-                   if medicos
-//-                     each med in medicos
-//-                       option(value=med.id) #{med.apellido}, #{med.nombre}
-//-               .mb-3
-//-                 label.form-label.small.fw-bold Médico Destino
-//-                 select.form-select.form-select-lg(name="id_medico_destino" required)
-//-                   option(value="" disabled selected) Seleccionar...
-//-                   if medicos
-//-                     each med in medicos
-//-                       option(value=med.id) #{med.apellido}, #{med.nombre}
-//-               .row
-//-                 .col-6
-//-                   label.form-label.small.fw-bold Fecha
-//-                   input.form-control(type="date" name="fecha" required)
-//-                 .col-6
-//-                   label.form-label.small.fw-bold Especialidad
-//-                   select.form-select(name="id_especialidad" required)
-//-                     if especialidades
-//-                       each esp in especialidades
-//-                         option(value=esp.id) #{esp.nombre}
-//-             .modal-footer.bg-light
-//-               button.btn.btn-secondary.rounded-pill(type="button" data-bs-dismiss="modal") Cancelar
-//-               button.btn.btn-danger.px-4.rounded-pill(type="submit") Ejecutar Traslado
-
-//-   style.
-//-     .card-custom { border-radius: 15px; border: none; }
-//-     .icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-//-     .list-group.position-absolute { max-height: 200px; overflow-y: auto; z-index: 1100; }
-//-     .slot-hora {
-//-       width: 90px; border: 2px solid #dee2e6; border-radius: 10px; padding: 12px 5px;
-//-       text-align: center; cursor: pointer; background: white; font-weight: bold; transition: 0.3s;
-//-     }
-//-     .slot-hora:hover:not(.ocupado):not(.disabled) { border-color: #0d6efd; background: #f0f7ff; transform: scale(1.05); }
-//-     .slot-hora.selected { background: #0d6efd !important; color: white !important; border-color: #0d6efd; box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4); }
-//-     .slot-hora.ocupado, .slot-hora.disabled { cursor: not-allowed; opacity: 0.4; background: #e9ecef; }
-//-     .x-small { font-size: 0.7rem; }
-
-//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
-//-   script.
-//-     document.addEventListener('DOMContentLoaded', () => {
-//-       //- Lógica de redirecciones y mensajes
-//-       const urlParams = new URLSearchParams(window.location.search);
-//-       const status = urlParams.get('status');
-
-//-       if (status === 'ausencia_success') {
-//-         Swal.fire({ title: 'Ausencia Registrada', text: 'La agenda del médico ha sido bloqueada.', icon: 'success' });
-//-         window.history.replaceState({}, document.title, "/secretaria");
-//-       }
-
-//-       if (status === 'success') {
-//-         Swal.fire({ title: '¡Turno Registrado!', text: 'El turno se ha procesado correctamente.', icon: 'success' });
-//-         window.history.replaceState({}, document.title, "/secretaria");
-//-       }
-
-//-       //- Lógica de formulario y buscador (se mantiene igual que antes)
-//-       const formReserva = document.getElementById('formReserva');
-//-       const especialidadSelect = document.getElementById('especialidadSelect');
-//-       const fechaInput = document.getElementById('fecha');
-//-       const horaInput = document.getElementById('horaSeleccionadaInput');
-//-       const btnGuardar = document.getElementById('btnGuardar');
-//-       const slotsContainer = document.getElementById('slotsContainer');
-//-       const mensajeVacio = document.getElementById('mensajeVacio');
-//-       const btnIrAListaEspera = document.getElementById('btnIrAListaEspera');
-      
-//-       const inputFoto = document.getElementById('fotoDocumento');
-//-       const previewContainer = document.getElementById('previewContainer');
-//-       const imgPreview = document.getElementById('imgPreview');
-//-       const removePreview = document.getElementById('removePreview');
-
-//-       if(inputFoto) {
-//-         inputFoto.addEventListener('change', function() {
-//-           const file = this.files[0];
-//-           if (file) {
-//-             const reader = new FileReader();
-//-             reader.onload = function(e) {
-//-               imgPreview.src = e.target.result;
-//-               previewContainer.classList.remove('d-none');
-//-             }
-//-             reader.readAsDataURL(file);
-//-           }
-//-         });
-//-       }
-
-//-       if(removePreview) {
-//-         removePreview.addEventListener('click', () => {
-//-           inputFoto.value = "";
-//-           previewContainer.classList.add('d-none');
-//-           imgPreview.src = "";
-//-         });
-//-       }
-
-//-       const setupAutocomplete = (inputId, suggestionsId, hiddenId, urlPath, onSelect = null) => {
-//-         const input = document.getElementById(inputId);
-//-         const suggestions = document.getElementById(suggestionsId);
-//-         const hidden = document.getElementById(hiddenId);
-//-         if (!input) return;
-//-         let timeout;
-
-//-         input.addEventListener('input', () => {
-//-           clearTimeout(timeout);
-//-           const query = input.value.trim();
-//-           if (query.length < 2) { suggestions.innerHTML = ''; return; }
-          
-//-           timeout = setTimeout(async () => {
-//-             try {
-//-               const res = await fetch(`${urlPath}?q=${encodeURIComponent(query)}`);
-//-               const data = await res.json();
-//-               const dataFiltrada = data.filter(item => item.estado !== 0 && item.estado !== "0");
-
-//-               suggestions.innerHTML = dataFiltrada.map(item => `
-//-                 <button type="button" class="list-group-item list-group-item-action py-2" 
-//-                   data-id="${item.id_paciente || item.id_medico || item.id}" 
-//-                   data-name="${item.nombre} ${item.apellido}">
-//-                   ${item.nombre} ${item.apellido} ${item.dni ? `<small class="text-muted">(${item.dni})</small>` : ''}
-//-                 </button>`).join('');
-
-//-               suggestions.querySelectorAll('button').forEach(btn => {
-//-                 btn.onclick = () => {
-//-                   input.value = btn.dataset.name;
-//-                   hidden.value = btn.dataset.id;
-//-                   suggestions.innerHTML = '';
-//-                   if (onSelect) onSelect(btn.dataset.id);
-//-                   buscarDisponibilidad();
-//-                 };
-//-               });
-//-             } catch (err) { console.error("Error Autocomplete:", err); }
-//-           }, 300);
-//-         });
-//-       };
-
-//-       setupAutocomplete('buscarMedico', 'sugerenciasMedico', 'medicoId', '/medicos/buscar', async (id) => {
-//-         especialidadSelect.disabled = false;
-//-         const res = await fetch(`/medicos/${id}/especialidades`);
-//-         const especialidades = await res.json();
-//-         especialidadSelect.innerHTML = '<option value="" selected disabled>Selecciona especialidad</option>' + 
-//-           especialidades.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-//-       });
-
-//-       setupAutocomplete('buscarPaciente', 'sugerenciasPaciente', 'pacienteId', '/pacientes/buscar');
-
-//-       async function buscarDisponibilidad() {
-//-         const id_medico = document.getElementById('medicoId').value;
-//-         const id_especialidad = especialidadSelect.value;
-//-         const fecha = fechaInput.value;
-//-         const id_paciente = document.getElementById('pacienteId').value;
-
-//-         if (!id_medico || !id_especialidad || !fecha) return;
-
-//-         slotsContainer.innerHTML = '';
-//-         document.getElementById('loader').classList.remove('d-none');
-//-         mensajeVacio.classList.add('d-none');
-//-         document.getElementById('instruccionInicial').classList.add('d-none');
-//-         btnGuardar.disabled = true;
-//-         horaInput.value = '';
-
-//-         try {
-//-           const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fecha}`);
-//-           const html = await res.text();
-//-           document.getElementById('loader').classList.add('d-none');
-
-//-           if (html.trim() !== '' && html.includes('slot-hora')) {
-//-             slotsContainer.innerHTML = html;
-//-             document.querySelectorAll('.slot-hora').forEach(slot => {
-//-               slot.addEventListener('click', function() {
-//-                 if (this.classList.contains('ocupado') || this.classList.contains('disabled')) return;
-//-                 document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
-//-                 this.classList.add('selected');
-//-                 horaInput.value = this.dataset.hora || this.innerText.trim();
-//-                 document.getElementById('agendaIdHidden').value = this.dataset.agenda || ''; 
-//-                 document.getElementById('turnoIdHidden').value = this.dataset.id || '';
-//-                 btnGuardar.disabled = false;
-//-               });
-//-             });
-//-           } else {
-//-             slotsContainer.innerHTML = html;
-//-             if (!html.includes('fa-user-slash') && !html.includes('fa-umbrella-beach')) {
-//-                   mensajeVacio.classList.remove('d-none');
-//-             }
-//-             const params = new URLSearchParams({ id_medico, id_especialidad, id_paciente: id_paciente || '' });
-//-             btnIrAListaEspera.href = `/secretaria/lista-espera/create?${params.toString()}`;
-//-           }
-//-         } catch (err) {
-//-           console.error("Error:", err);
-//-           document.getElementById('loader').classList.add('d-none');
-//-         }
-//-       }
-
-//-       especialidadSelect.addEventListener('change', buscarDisponibilidad);
-//-       fechaInput.addEventListener('change', buscarDisponibilidad);
-//-     });
-
-
-
-//- extends ../layout
-
-//- block contenido
-//-   .container-fluid.py-4
-//-     //- ===============================
-//-     //- TÍTULO DE PANEL
-//-     //- ===============================
-//-     .d-flex.justify-content-between.align-items-center.mb-4
-//-       div
-//-         h2.m-0.fw-bold.text-dark
-//-           i.fa-solid.fa-hospital-user.me-2.text-primary
-//-           | Panel de Secretaría
-//-         p.text-muted.small.mb-0 Gestión operativa de turnos y agendas
-
-//-     //- ===============================
-//-     //- ACCESOS RÁPIDOS
-//-     //- ===============================
-//-     //- .row.g-3.mb-5
-//-     //-   .col-md
-//-     //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-     //-       .card-body
-//-     //-         .icon-circle.bg-primary.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-days.fs-4
-//-     //-         h6.fw-bold Agendas
-//-     //-         a.btn.btn-primary.btn-sm.w-100.rounded-pill(href="/agendas") Ver
-      
-//-     //-   .col-md
-//-     //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-     //-       .card-body
-//-     //-         .icon-circle.bg-success.text-white.mb-3.mx-auto: i.fa-solid.fa-rectangle-list.fs-4
-//-     //-         h6.fw-bold Turnos
-//-     //-         a.btn.btn-success.btn-sm.w-100.rounded-pill(href="/secretaria/turnos") Ver
-      
-//-     //-   .col-md
-//-     //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-     //-       .card-body
-//-     //-         .icon-circle.bg-info.text-white.mb-3.mx-auto: i.fa-solid.fa-address-book.fs-4
-//-     //-         h6.fw-bold Pacientes
-//-     //-         a.btn.btn-outline-info.btn-sm.w-100.rounded-pill(href="/pacientes") Ver
-      
-//-     //-   .col-md
-//-     //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-     //-       .card-body
-//-     //-         .icon-circle.bg-secondary.text-white.mb-3.mx-auto: i.fa-solid.fa-user-slash.fs-4
-//-     //-         h6.fw-bold Ausencias
-//-     //-         .d-flex.gap-2
-//-     //-           a.btn.btn-outline-secondary.btn-sm.rounded-pill(href="/secretaria/ausencias" title="Ver Listado de Ausencias") Gestionar
-//-     //-             i.fa-solid.fa-list-ul
-
-//-     //-   .col-md
-//-     //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-     //-       .card-body
-//-     //-         .icon-circle.bg-warning.text-dark.mb-3.mx-auto: i.fa-solid.fa-hourglass-half.fs-4
-//-     //-         h6.fw-bold Lista Espera
-//-     //-         .d-flex.gap-2
-//-     //-           a.btn.btn-warning.btn-sm.flex-fill.fw-bold.rounded-pill(href="/secretaria/lista-espera") Gestionar
-
-//-     //-   .col-md
-//-     //-     .card-custom.text-center.h-100.shadow-sm.bg-white.p-3.border-0
-//-     //-       .card-body
-//-     //-         .icon-circle.bg-danger.text-white.mb-3.mx-auto: i.fa-solid.fa-calendar-minus.fs-4
-//-     //-         h6.fw-bold Traslados
-//-     //-         button.btn.btn-danger.btn-sm.w-100.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalTransferencia") Mover
-
-//-     //- hr.my-5.opacity-25
-//-     .row.g-3.mb-5
-//-       //- Agendas
-//-       .col-md
-//-         .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
-//-           .card-body.d-flex.flex-column
-//-             .icon-circle.bg-primary.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
-//-               i.fa-solid.fa-calendar-days.fs-4
-//-             h6.fw-bold.mb-3 Agendas
-//-             .mt-auto
-//-               a.btn.btn-primary.btn-sm.w-100.rounded-pill(href="/agendas") Ver
-
-//-       //- Turnos
-//-       .col-md
-//-         .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
-//-           .card-body.d-flex.flex-column
-//-             .icon-circle.bg-success.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
-//-               i.fa-solid.fa-rectangle-list.fs-4
-//-             h6.fw-bold.mb-3 Turnos
-//-             .mt-auto
-//-               a.btn.btn-success.btn-sm.w-100.rounded-pill(href="/secretaria/turnos") Ver
-
-//-       //- Pacientes
-//-       .col-md
-//-         .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
-//-           .card-body.d-flex.flex-column
-//-             .icon-circle.bg-info.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
-//-               i.fa-solid.fa-address-book.fs-4
-//-             h6.fw-bold.mb-3 Pacientes
-//-             .mt-auto
-//-               a.btn.btn-outline-info.btn-sm.w-100.rounded-pill(href="/pacientes") Ver
-
-//-       //- Ausencias (CORREGIDO)
-//-       .col-md
-//-         .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
-//-           .card-body.d-flex.flex-column
-//-             .icon-circle.bg-secondary.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
-//-               i.fa-solid.fa-user-slash.fs-4
-//-             h6.fw-bold.mb-3 Ausencias
-//-             .mt-auto
-//-               a.btn.btn-outline-secondary.btn-sm.w-100.rounded-pill(href="/secretaria/ausencias") 
-//-                 i.fa-solid.fa-list-ul.me-2
-//-                 | Gestionar
-
-//-       //- Lista Espera
-//-       .col-md
-//-         .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
-//-           .card-body.d-flex.flex-column
-//-             .icon-circle.bg-warning.text-dark.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
-//-               i.fa-solid.fa-hourglass-half.fs-4
-//-             h6.fw-bold.mb-3 Lista Espera
-//-             .mt-auto
-//-               a.btn.btn-warning.btn-sm.w-100.fw-bold.rounded-pill(href="/secretaria/lista-espera") Gestionar
-
-//-       //- Traslados
-//-       //- .col-md
-//-       //-   .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
-//-       //-     .card-body.d-flex.flex-column
-//-       //-       .icon-circle.bg-danger.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(style="width: 50px; height: 50px; border-radius: 50%;")
-//-       //-         i.fa-solid.fa-calendar-minus.fs-4
-//-       //-       h6.fw-bold.mb-3 Traslados
-//-       //-       .mt-auto
-//-       //-         button.btn.btn-danger.btn-sm.w-100.rounded-pill(type="button" data-bs-toggle="modal" data-bs-target="#modalTransferencia") Mover
-
-//-     hr.my-5.opacity-25
-
-//-     //- ===============================
-//-     //- SECCIÓN DE RESERVA
-//-     //- ===============================
-//-     .row.justify-content-center.mb-5
-//-       .col-lg-11
-//-         .row.g-4
-//-           .col-md-6
-//-             .d-flex.align-items-center.mb-3
-//-               .bg-primary.rounded-circle.p-2.me-2(style="width:35px; height:35px; display:flex; align-items:center; justify-content:center")
-//-                 i.fa-solid.fa-pen-to-square.text-white.small
-//-               h4.fw-bold.m-0 Datos del Turno
-            
-//-             .card-custom.p-4.shadow-sm.bg-white.border-top.border-primary.border-4
-//-               form#formReserva(method="POST" action="/secretaria/agendar" enctype="multipart/form-data")
-//-                 input#agendaIdHidden(type="hidden" name="id_agenda")
-//-                 input#turnoIdHidden(type="hidden" name="id_turno")
-                
-//-                 .mb-3.position-relative
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Profesional
-//-                   .input-group
-//-                     span.input-group-text.bg-light: i.fa-solid.fa-user-doctor.text-primary
-//-                     input#buscarMedico.form-control.bg-light(type="text" placeholder="Buscar médico..." autocomplete="off")
-//-                   #sugerenciasMedico.list-group.position-absolute.w-100.shadow-lg.z-3
-//-                   input#medicoId(type="hidden" name="id_medico")
-                  
-//-                 .mb-3
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Especialidad
-//-                   select#especialidadSelect.form-select.bg-light(name="id_especialidad" required disabled)
-//-                     option(value="" selected disabled) Primero busca un médico
-
-//-                 .mb-3.position-relative
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Paciente
-//-                   .input-group
-//-                     span.input-group-text.bg-light: i.fa-solid.fa-hospital-user.text-primary
-//-                     input#buscarPaciente.form-control.bg-light(type="text" placeholder="DNI o Nombre..." autocomplete="off" required)
-//-                   #sugerenciasPaciente.list-group.position-absolute.w-100.shadow-lg.z-3
-//-                   input#pacienteId(type="hidden" name="id_paciente")
-
-//-                 .row
-//-                   .col-6.mb-3
-//-                     label.form-label.small.fw-bold.text-uppercase.text-muted Fecha
-//-                     input#fecha.form-control.bg-light(type="date" name="fecha" required)
-//-                   .col-6.mb-3
-//-                     label.form-label.small.fw-bold.text-uppercase.text-muted Horario
-//-                     input#horaSeleccionadaInput.form-control.bg-white.border-primary.fw-bold(type="text" name="hora_inicio" placeholder="--:--" readonly required)
-
-//-                 .mb-3
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Foto del Documento
-//-                   .input-group
-//-                     span.input-group-text.bg-light: i.fa-solid.fa-camera.text-primary
-//-                     input#fotoDocumento.form-control.bg-light(type="file" name="archivo_dni" accept="image/*")
-                  
-//-                   #previewContainer.mt-2.d-none
-//-                     .position-relative.d-inline-block
-//-                       img#imgPreview.img-thumbnail(style="max-height: 150px;")
-//-                       button#removePreview.btn.btn-sm.btn-danger.position-absolute.top-0.end-0(type="button") 
-//-                         i.fa-solid.fa-xmark
-
-//-                 .mb-3
-//-                   label.form-label.small.fw-bold.text-uppercase.text-muted Motivo / Notas
-//-                   textarea.form-control.bg-light(name="motivo" rows="2" style="resize: none;")
-
-//-                 button#btnGuardar.btn.btn-primary.w-100.py-3.fw-bold.text-uppercase.shadow(type="submit" disabled)
-//-                   i.fa-solid.fa-calendar-check.me-2
-//-                   | Confirmar Turno Médico
-
-//-           .col-md-6
-//-             .d-flex.align-items-center.mb-3
-//-               .bg-info.rounded-circle.p-2.me-2(style="width:35px; height:35px; display:flex; align-items:center; justify-content:center")
-//-                 i.fa-solid.fa-clock.text-white.small
-//-               h4.fw-bold.m-0 Disponibilidad
-            
-//-             #contenedorDisponibilidad.card.border-0.shadow-sm.h-100.rounded-4(style="min-height: 400px; background: #f8f9fa; border: 2px dashed #dee2e6 !important;")
-//-               .card-body.d-flex.flex-column.justify-content-center
-//-                 #instruccionInicial.text-center.text-muted
-//-                   i.fa-solid.fa-calendar-day.fs-1.mb-3.opacity-25
-//-                   p.px-4 Selecciona un profesional y la fecha para desplegar los horarios.
-                
-//-                 #loader.text-center.d-none
-//-                   .spinner-border.text-primary(role="status")
-//-                   p.mt-2.fw-bold Consultando agenda...
-
-//-                 #slotsContainer.d-flex.flex-wrap.gap-2.justify-content-center
-
-//-                 #mensajeVacio.text-center.mt-5.d-none
-//-                   i.fa-solid.fa-calendar-xmark.text-danger.fs-1.mb-3.d-block
-//-                   p.mb-3 No hay horarios disponibles para esta selección.
-//-                   a#btnIrAListaEspera.btn.btn-warning.fw-bold.rounded-pill(href="#")
-//-                     i.fa-solid.fa-user-clock.me-2
-//-                     | Anotar en Lista de Espera
-
-//-     //- ===============================
-//-     //- MODALES
-//-     //- ===============================
-//-     #modalTransferencia.modal.fade(tabindex="-1")
-//-       .modal-dialog.modal-dialog-centered
-//-         .modal-content.border-0.shadow-lg
-//-           .modal-header.bg-danger.text-white.py-3
-//-             h5.modal-title.fw-bold
-//-               i.fa-solid.fa-calendar-minus.me-2
-//-               | Traslado Masivo de Agenda
-//-             button.btn-close.btn-close-white(data-bs-dismiss="modal")
-//-           form(action="/secretaria/transferir-agenda" method="POST")
-//-             .modal-body.p-4
-//-               .alert.alert-danger.small.d-flex.align-items-center
-//-                 i.fa-solid.fa-circle-exclamation.fs-4.me-3
-//-                 span Esta acción moverá todos los turnos del médico origen al destino.
-              
-//-               .mb-3
-//-                 label.form-label.small.fw-bold Médico Origen
-//-                 select.form-select.form-select-lg(name="id_medico_origen" required)
-//-                   option(value="" disabled selected) Seleccionar...
-//-                   if medicos
-//-                     each med in medicos
-//-                       option(value=med.id) #{med.apellido}, #{med.nombre}
-//-               .mb-3
-//-                 label.form-label.small.fw-bold Médico Destino
-//-                 select.form-select.form-select-lg(name="id_medico_destino" required)
-//-                   option(value="" disabled selected) Seleccionar...
-//-                   if medicos
-//-                     each med in medicos
-//-                       option(value=med.id) #{med.apellido}, #{med.nombre}
-//-               .row
-//-                 .col-6
-//-                   label.form-label.small.fw-bold Fecha
-//-                   input.form-control(type="date" name="fecha" required)
-//-                 .col-6
-//-                   label.form-label.small.fw-bold Especialidad
-//-                   select.form-select(name="id_especialidad" required)
-//-                     if especialidades
-//-                       each esp in especialidades
-//-                         option(value=esp.id) #{esp.nombre}
-//-             .modal-footer.bg-light
-//-               button.btn.btn-secondary.rounded-pill(type="button" data-bs-dismiss="modal") Cancelar
-//-               button.btn.btn-danger.px-4.rounded-pill(type="submit") Ejecutar Traslado
-
-//-   style.
-//-     .card-custom { border-radius: 15px; border: none; }
-//-     .icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-//-     .list-group.position-absolute { max-height: 200px; overflow-y: auto; z-index: 1100; }
-//-     .slot-hora {
-//-       width: 90px; border: 2px solid #dee2e6; border-radius: 10px; padding: 12px 5px;
-//-       text-align: center; cursor: pointer; background: white; font-weight: bold; transition: 0.3s;
-//-     }
-//-     .slot-hora:hover:not(.ocupado):not(.disabled) { border-color: #0d6efd; background: #f0f7ff; transform: scale(1.05); }
-//-     .slot-hora.selected { background: #0d6efd !important; color: white !important; border-color: #0d6efd; box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4); }
-//-     .slot-hora.ocupado, .slot-hora.disabled { cursor: not-allowed; opacity: 0.4; background: #e9ecef; }
-//-     .x-small { font-size: 0.7rem; }
-
-//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
-//-   script.
-//-     document.addEventListener('DOMContentLoaded', () => {
-//-       //- Bloqueo de fechas anteriores
-//-       const fechaInput = document.getElementById('fecha');
-//-       const hoy = new Date().toISOString().split('T')[0];
-//-       fechaInput.setAttribute('min', hoy);
-
-//-       const urlParams = new URLSearchParams(window.location.search);
-//-       const status = urlParams.get('status');
-
-//-       if (status === 'success') {
-//-         Swal.fire({ title: '¡Turno Registrado!', text: 'El turno se ha procesado correctamente.', icon: 'success' });
-//-         window.history.replaceState({}, document.title, "/secretaria");
-//-       }
-
-//-       const especialidadSelect = document.getElementById('especialidadSelect');
-//-       const horaInput = document.getElementById('horaSeleccionadaInput');
-//-       const btnGuardar = document.getElementById('btnGuardar');
-//-       const slotsContainer = document.getElementById('slotsContainer');
-//-       const mensajeVacio = document.getElementById('mensajeVacio');
-//-       const btnIrAListaEspera = document.getElementById('btnIrAListaEspera');
-      
-//-       const inputFoto = document.getElementById('fotoDocumento');
-//-       const previewContainer = document.getElementById('previewContainer');
-//-       const imgPreview = document.getElementById('imgPreview');
-//-       const removePreview = document.getElementById('removePreview');
-
-//-       if(inputFoto) {
-//-         inputFoto.addEventListener('change', function() {
-//-           const file = this.files[0];
-//-           if (file) {
-//-             const reader = new FileReader();
-//-             reader.onload = function(e) {
-//-               imgPreview.src = e.target.result;
-//-               previewContainer.classList.remove('d-none');
-//-             }
-//-             reader.readAsDataURL(file);
-//-           }
-//-         });
-//-       }
-
-//-       if(removePreview) {
-//-         removePreview.addEventListener('click', () => {
-//-           inputFoto.value = "";
-//-           previewContainer.classList.add('d-none');
-//-           imgPreview.src = "";
-//-         });
-//-       }
-
-//-       const setupAutocomplete = (inputId, suggestionsId, hiddenId, urlPath, onSelect = null) => {
-//-         const input = document.getElementById(inputId);
-//-         const suggestions = document.getElementById(suggestionsId);
-//-         const hidden = document.getElementById(hiddenId);
-//-         if (!input) return;
-//-         let timeout;
-
-//-         input.addEventListener('input', () => {
-//-           clearTimeout(timeout);
-//-           const query = input.value.trim();
-//-           if (query.length < 2) { suggestions.innerHTML = ''; return; }
-          
-//-           timeout = setTimeout(async () => {
-//-             try {
-//-               const res = await fetch(`${urlPath}?q=${encodeURIComponent(query)}`);
-//-               const data = await res.json();
-//-               const dataFiltrada = data.filter(item => item.estado !== 0 && item.estado !== "0");
-
-//-               suggestions.innerHTML = dataFiltrada.map(item => `
-//-                 <button type="button" class="list-group-item list-group-item-action py-2" 
-//-                   data-id="${item.id_paciente || item.id_medico || item.id}" 
-//-                   data-name="${item.nombre} ${item.apellido}">
-//-                   ${item.nombre} ${item.apellido} ${item.dni ? `<small class="text-muted">(${item.dni})</small>` : ''}
-//-                 </button>`).join('');
-
-//-               suggestions.querySelectorAll('button').forEach(btn => {
-//-                 btn.onclick = () => {
-//-                   input.value = btn.dataset.name;
-//-                   hidden.value = btn.dataset.id;
-//-                   suggestions.innerHTML = '';
-//-                   if (onSelect) onSelect(btn.dataset.id);
-//-                   buscarDisponibilidad();
-//-                 };
-//-               });
-//-             } catch (err) { console.error("Error Autocomplete:", err); }
-//-           }, 300);
-//-         });
-//-       };
-
-//-       setupAutocomplete('buscarMedico', 'sugerenciasMedico', 'medicoId', '/medicos/buscar', async (id) => {
-//-         especialidadSelect.disabled = false;
-//-         const res = await fetch(`/medicos/${id}/especialidades`);
-//-         const especialidades = await res.json();
-//-         especialidadSelect.innerHTML = '<option value="" selected disabled>Selecciona especialidad</option>' + 
-//-           especialidades.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-//-       });
-
-//-       setupAutocomplete('buscarPaciente', 'sugerenciasPaciente', 'pacienteId', '/pacientes/buscar');
-
-      
-//-     async function buscarDisponibilidad() {
-//-       const id_medico = document.getElementById('medicoId').value;
-//-       const id_especialidad = especialidadSelect.value;
-//-       const fecha = fechaInput.value;
-//-       const id_paciente = document.getElementById('pacienteId').value;
-
-//-       if (!id_medico || !id_especialidad || !fecha) return;
-
-//-       // Limpieza inicial
-//-       slotsContainer.innerHTML = '';
-//-       document.getElementById('loader').classList.remove('d-none');
-//-       mensajeVacio.classList.add('d-none');
-//-       document.getElementById('instruccionInicial').classList.add('d-none');
-//-       btnGuardar.disabled = true;
-//-       horaInput.value = '';
-
-//-       try {
-//-         const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fecha}`);
-//-         const data = await res.json(); // Leemos el JSON del controlador
-//-         document.getElementById('loader').classList.add('d-none');
-
-//-         // 1. Manejo de Éxito (Hay horarios)
-//-         if (data.status === 'success' && data.horarios) {
-//-           slotsContainer.innerHTML = data.horarios.map(h => `
-//-             <div class="slot-hora ${h.ocupado ? 'ocupado' : ''}" 
-//-                 data-hora="${h.hora}" 
-//-                 data-agenda="${h.id_agenda}">
-//-               ${h.hora}
-//-               ${h.ocupado ? '<div class="x-small">Ocupado</div>' : ''}
-//-             </div>
-//-           `).join('');
-
-//-           // Agregar eventos de clic a los nuevos slots
-//-           document.querySelectorAll('.slot-hora').forEach(slot => {
-//-             slot.addEventListener('click', function() {
-//-               if (this.classList.contains('ocupado')) return;
-              
-//-               document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
-//-               this.classList.add('selected');
-              
-//-               horaInput.value = this.dataset.hora;
-//-               document.getElementById('agendaIdHidden').value = this.dataset.agenda;
-//-               btnGuardar.disabled = false;
-//-             });
-//-           });
-
-//-         // 2. Manejo de Ausencias o Feriados
-//-         } else if (data.status === 'ausencia' || data.status === 'feriado') {
-//-           slotsContainer.innerHTML = `
-//-             <div class="alert alert-warning w-100 text-center">
-//-               <i class="fa-solid fa-circle-exclamation fs-3 d-block mb-2"></i>
-//-               <strong>${data.status === 'feriado' ? 'Feriado' : 'Profesional Ausente'}</strong><br>
-//-               ${data.motivo || data.descripcion || ''}
-//-             </div>`;
-
-//-         // 3. Sin Agenda o Error
-//-         } else {
-//-           mensajeVacio.classList.remove('d-none');
-//-           const params = new URLSearchParams({ id_medico, id_especialidad, id_paciente: id_paciente || '' });
-//-           btnIrAListaEspera.href = `/secretaria/lista-espera/create?${params.toString()}`;
-//-         }
-
-//-       } catch (err) {
-//-         console.error("Error:", err);
-//-         document.getElementById('loader').classList.add('d-none');
-//-         Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
-//-       }
-//-     }
-//-       especialidadSelect.addEventListener('change', buscarDisponibilidad);
-//-       fechaInput.addEventListener('change', buscarDisponibilidad);
-//-     });
-
-
-
-
-
-
 extends ../layout
 
 block contenido
+  //- Librerías necesarias para el formulario avanzado
+  link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+
   .container-fluid.py-4
     //- ===============================
     //- TÍTULO DE PANEL
@@ -975,6 +115,13 @@ block contenido
                     input#horaSeleccionadaInput.form-control.bg-white.border-primary.fw-bold(type="text" name="hora_inicio" placeholder="--:--" readonly required)
 
                 .mb-3
+                  .form-check.form-switch.p-3.border.rounded-3.bg-light#containerCheckSobreturno
+                    input#esSobreturno.form-check-input.ms-0.me-2(type="checkbox" name="es_sobreturno" value="1")
+                    label.form-check-label.fw-bold.text-muted(for="esSobreturno" id="labelSobreturno") 
+                      i.fa-solid.fa-circle-plus.me-1
+                      | ¿Es un Sobreturno?
+
+                .mb-3
                   label.form-label.small.fw-bold.text-uppercase.text-muted Foto del Documento
                   .input-group
                     span.input-group-text.bg-light: i.fa-solid.fa-camera.text-primary
@@ -1001,136 +148,203 @@ block contenido
               h4.fw-bold.m-0 Disponibilidad
             
             #contenedorDisponibilidad.card.border-0.shadow-sm.h-100.rounded-4(style="min-height: 400px; background: #f8f9fa; border: 2px dashed #dee2e6 !important;")
-              .card-body.d-flex.flex-column.justify-content-center
-                #instruccionInicial.text-center.text-muted
+              .card-body.d-flex.flex-column.justify-content-start.p-4
+                #instruccionInicial.text-center.text-muted.mt-5
                   i.fa-solid.fa-calendar-day.fs-1.mb-3.opacity-25
                   p.px-4 Selecciona un profesional y la fecha para desplegar los horarios.
                 
-                #loader.text-center.d-none
+                #loader.text-center.d-none.mt-5
                   .spinner-border.text-primary(role="status")
                   p.mt-2.fw-bold Consultando agenda...
+
+                .d-flex.justify-content-between.mb-3.small.fw-bold.text-uppercase.text-muted#legendContainer.d-none
+                  span.text-primary ● Libre
+                  span.text-danger ● Ocupado (Sobreturno)
 
                 #slotsContainer.d-flex.flex-wrap.gap-2.justify-content-center
 
                 #mensajeVacio.text-center.mt-5.d-none
                   i.fa-solid.fa-calendar-xmark.text-danger.fs-1.mb-3.d-block
                   p.mb-3 No hay horarios disponibles para esta selección.
-                  a#btnIrAListaEspera.btn.btn-warning.fw-bold.rounded-pill(href="#")
+                  button#btnAbrirListaEspera.btn.btn-warning.fw-bold.rounded-pill(type="button" onclick="prepararListaEspera()")
                     i.fa-solid.fa-user-clock.me-2
                     | Anotar en Lista de Espera
 
-    //- ===============================
-    //- MODALES
-    //- ===============================
-    #modalTransferencia.modal.fade(tabindex="-1")
-      .modal-dialog.modal-dialog-centered
-        .modal-content.border-0.shadow-lg
-          .modal-header.bg-danger.text-white.py-3
-            h5.modal-title.fw-bold
-              i.fa-solid.fa-calendar-minus.me-2
-              | Traslado Masivo de Agenda
-            button.btn-close.btn-close-white(data-bs-dismiss="modal")
-          form(action="/secretaria/transferir-agenda" method="POST")
-            .modal-body.p-4
-              .alert.alert-danger.small.d-flex.align-items-center
-                i.fa-solid.fa-circle-exclamation.fs-4.me-3
-                span Esta acción moverá todos los turnos del médico origen al destino.
-              
-              .mb-3
-                label.form-label.small.fw-bold Médico Origen
-                select.form-select.form-select-lg(name="id_medico_origen" required)
-                  option(value="" disabled selected) Seleccionar...
-                  if medicos
-                    each med in medicos
-                      option(value=med.id) #{med.apellido}, #{med.nombre}
-              .mb-3
-                label.form-label.small.fw-bold Médico Destino
-                select.form-select.form-select-lg(name="id_medico_destino" required)
-                  option(value="" disabled selected) Seleccionar...
-                  if medicos
-                    each med in medicos
-                      option(value=med.id) #{med.apellido}, #{med.nombre}
-              .row
-                .col-6
-                  label.form-label.small.fw-bold Fecha
-                  input.form-control(type="date" name="fecha" required)
-                .col-6
-                  label.form-label.small.fw-bold Especialidad
-                  select.form-select(name="id_especialidad" required)
-                    if especialidades
-                      each esp in especialidades
-                        option(value=esp.id) #{esp.nombre}
-            .modal-footer.bg-light
-              button.btn.btn-secondary.rounded-pill(type="button" data-bs-dismiss="modal") Cancelar
-              button.btn.btn-danger.px-4.rounded-pill(type="submit") Ejecutar Traslado
+  //- ===============================
+  //- MODAL LISTA DE ESPERA
+  //- ===============================
+  #modalListaEspera.modal.fade(tabindex="-1" aria-hidden="true")
+    .modal-dialog.modal-lg.modal-dialog-centered
+      .modal-content.border-0.shadow-lg(style="border-radius: 15px;")
+        .modal-header.bg-white.py-3.border-bottom
+          h4.modal-title.mb-0.fw-bold.text-primary
+            i.fa-solid.fa-clock-rotate-left.me-2.text-warning
+            | Nueva Entrada en Lista de Espera
+          button.btn-close(type="button" data-bs-dismiss="modal")
+        
+        .modal-body.p-4
+          #alertaDuplicado.alert.alert-danger.d-none.mb-4
+            i.fa-solid.fa-circle-exclamation.me-2
+            b El paciente ya se encuentra en la lista de espera para este médico.
+
+          form#formListaEsperaModal(action="/secretaria/lista-espera/store" method="POST" autocomplete="off")
+            input#le_id_paciente(type="hidden" name="id_paciente")
+            input#le_id_medico(type="hidden" name="id_medico")
+            input#le_id_especialidad(type="hidden" name="id_especialidad")
+
+            .mb-4
+              label.form-label.small.fw-bold Paciente
+              .p-3.border.rounded.bg-light.d-flex.align-items-center
+                .bg-primary.text-white.rounded-circle.me-3.d-flex.align-items-center.justify-content-center(style="width:45px; height:45px;")
+                  i.fa-solid.fa-user
+                div
+                  h6#le_nombre_paciente.mb-0.fw-bold -
+                  small#le_dni_paciente.text-muted DNI: -
+
+            .row.g-3.mb-4
+              .col-md-6
+                label.form-label.small.fw-bold Profesional
+                input#le_nombre_medico.form-control.bg-light(type="text" readonly)
+              .col-md-6
+                label.form-label.small.fw-bold Especialidad
+                input#le_nombre_especialidad.form-control.bg-light(type="text" readonly)
+
+            .row.g-3.mb-4
+              .col-md-6
+                label.form-label.small.fw-bold Nivel de Prioridad
+                select.form-select(name="prioridad" required)
+                  option(value="Baja") Baja
+                  option(value="Media" selected) Media
+                  option(value="Alta") Alta
+              .col-md-6
+                label.form-label.small.fw-bold Motivo de la Prioridad
+                input.form-control(type="text" name="motivo_prioridad" placeholder="Ej: Urgencia...")
+
+            .mb-4
+              label.form-label.small.fw-bold Observaciones
+              textarea.form-control(name="observaciones" rows="3")
+
+            .d-flex.justify-content-end.gap-2.pt-3
+              button.btn.btn-outline-secondary.px-4(type="button" data-bs-dismiss="modal") Cancelar
+              button#btnConfirmarLE.btn.btn-primary.px-4.fw-bold(type="submit")
+                i.fa-solid.fa-floppy-disk.me-2
+                | Confirmar Registro
 
   style.
     .card-custom { border-radius: 15px; border: none; }
     .icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     .list-group.position-absolute { max-height: 200px; overflow-y: auto; z-index: 1100; }
-    .slot-hora {
-      width: 90px; border: 2px solid #dee2e6; border-radius: 10px; padding: 12px 5px;
-      text-align: center; cursor: pointer; background: white; font-weight: bold; transition: 0.3s;
-    }
-    .slot-hora:hover:not(.ocupado):not(.disabled) { border-color: #0d6efd; background: #f0f7ff; transform: scale(1.05); }
+    .slot-hora { width: 95px; border: 2px solid #dee2e6; border-radius: 12px; padding: 10px 5px; text-align: center; cursor: pointer; background: white; font-weight: bold; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .slot-hora:hover:not(.disabled) { border-color: #0d6efd; background: #f0f7ff; transform: translateY(-2px); }
     .slot-hora.selected { background: #0d6efd !important; color: white !important; border-color: #0d6efd; box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4); }
-    .slot-hora.ocupado, .slot-hora.disabled { cursor: not-allowed; opacity: 0.4; background: #e9ecef; }
-    .x-small { font-size: 0.7rem; }
+    .slot-hora.ocupado { background: #fff5f5; border-color: #ffc1c1; color: #dc3545; }
+    .slot-hora.ocupado.selected { background: #dc3545 !important; border-color: #a71d2a !important; color: white !important; }
+    .slot-hora.disabled { cursor: not-allowed; opacity: 0.4; background: #e9ecef; }
+    .badge-ocupado { font-size: 0.6rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
 
   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
+    // 1. DETECTAR STATUS EN URL (Feedback post-recarga)
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('status') === 'success') {
+            Swal.fire({
+                title: '¡Agendado!',
+                text: 'El turno se procesó correctamente y se envió la notificación.',
+                icon: 'success',
+                timer: 3000,
+                confirmButtonColor: '#0d6efd'
+            });
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+
+    // 2. INTERCEPTAR FORMULARIO PRINCIPAL
+    document.getElementById('formReserva').onsubmit = function(e) {
+        e.preventDefault();
+        const esSobre = document.getElementById('esSobreturno').checked;
+        
+        Swal.fire({
+            title: esSobre ? '¿Confirmar Sobreturno?' : '¿Confirmar Turno?',
+            text: "Se registrará la cita para el paciente seleccionado.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: esSobre ? '#dc3545' : '#0d6efd',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Procesando...',
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                this.submit();
+            }
+        });
+    };
+
+    // --- FUNCIONES DE LISTA DE ESPERA ---
+    async function prepararListaEspera() {
+        const idMed = document.getElementById('medicoId').value;
+        const idPac = document.getElementById('pacienteId').value;
+        const idEsp = document.getElementById('especialidadSelect').value;
+
+        if (!idMed || !idPac || !idEsp) {
+            Swal.fire('Atención', 'Selecciona Médico, Especialidad y Paciente primero.', 'info');
+            return;
+        }
+
+        document.getElementById('le_id_medico').value = idMed;
+        document.getElementById('le_id_paciente').value = idPac;
+        document.getElementById('le_id_especialidad').value = idEsp;
+        document.getElementById('le_nombre_medico').value = document.getElementById('buscarMedico').value;
+        document.getElementById('le_nombre_especialidad').value = document.getElementById('especialidadSelect').options[document.getElementById('especialidadSelect').selectedIndex].text;
+        document.getElementById('le_nombre_paciente').innerText = document.getElementById('buscarPaciente').value;
+
+        verificarDuplicadoLE(idPac, idMed, idEsp);
+        new bootstrap.Modal(document.getElementById('modalListaEspera')).show();
+    }
+
+    async function verificarDuplicadoLE(idPac, idMed, idEsp) {
+        const alerta = document.getElementById('alertaDuplicado');
+        const btn = document.getElementById('btnConfirmarLE');
+        try {
+            const res = await fetch(`/secretaria/lista-espera/verificar?id_paciente=${idPac}&id_medico=${idMed}&id_especialidad=${idEsp}`);
+            const data = await res.json();
+            if (data.existe) { alerta.classList.remove('d-none'); btn.disabled = true; } 
+            else { alerta.classList.add('d-none'); btn.disabled = false; }
+        } catch (e) { console.error(e); }
+    }
+
+    document.getElementById('formListaEsperaModal').onsubmit = function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Registrando...',
+            icon: 'success',
+            timer: 1000,
+            showConfirmButton: false,
+            willClose: () => { this.submit(); }
+        });
+    };
+
+    // --- LÓGICA DE AUTOCOMPLETADO Y DISPONIBILIDAD ---
     document.addEventListener('DOMContentLoaded', () => {
       const fechaInput = document.getElementById('fecha');
-      const hoy = new Date().toISOString().split('T')[0];
-      fechaInput.setAttribute('min', hoy);
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const status = urlParams.get('status');
-
-      if (status === 'success') {
-        Swal.fire({ title: '¡Turno Registrado!', text: 'El turno se ha procesado correctamente.', icon: 'success' });
-        window.history.replaceState({}, document.title, "/secretaria");
-      }
+      fechaInput.setAttribute('min', new Date().toISOString().split('T')[0]);
 
       const especialidadSelect = document.getElementById('especialidadSelect');
       const horaInput = document.getElementById('horaSeleccionadaInput');
       const btnGuardar = document.getElementById('btnGuardar');
       const slotsContainer = document.getElementById('slotsContainer');
+      const legendContainer = document.getElementById('legendContainer');
       const mensajeVacio = document.getElementById('mensajeVacio');
-      const btnIrAListaEspera = document.getElementById('btnIrAListaEspera');
-      
-      const inputFoto = document.getElementById('fotoDocumento');
-      const previewContainer = document.getElementById('previewContainer');
-      const imgPreview = document.getElementById('imgPreview');
-      const removePreview = document.getElementById('removePreview');
-
-      if(inputFoto) {
-        inputFoto.addEventListener('change', function() {
-          const file = this.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              imgPreview.src = e.target.result;
-              previewContainer.classList.remove('d-none');
-            }
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-
-      if(removePreview) {
-        removePreview.addEventListener('click', () => {
-          inputFoto.value = "";
-          previewContainer.classList.add('d-none');
-          imgPreview.src = "";
-        });
-      }
+      const checkSobreturno = document.getElementById('esSobreturno');
 
       const setupAutocomplete = (inputId, suggestionsId, hiddenId, urlPath, onSelect = null) => {
         const input = document.getElementById(inputId);
         const suggestions = document.getElementById(suggestionsId);
         const hidden = document.getElementById(hiddenId);
-        if (!input) return;
         let timeout;
 
         input.addEventListener('input', () => {
@@ -1142,12 +356,11 @@ block contenido
             try {
               const res = await fetch(`${urlPath}?q=${encodeURIComponent(query)}`);
               const data = await res.json();
-              const dataFiltrada = data.filter(item => item.estado !== 0 && item.estado !== "0");
-
-              suggestions.innerHTML = dataFiltrada.map(item => `
+              suggestions.innerHTML = data.filter(i => i.estado != 0).map(item => `
                 <button type="button" class="list-group-item list-group-item-action py-2" 
                   data-id="${item.id_paciente || item.id_medico || item.id}" 
-                  data-name="${item.nombre} ${item.apellido}">
+                  data-name="${item.nombre} ${item.apellido}"
+                  data-dni="${item.dni || ''}">
                   ${item.nombre} ${item.apellido} ${item.dni ? `<small class="text-muted">(${item.dni})</small>` : ''}
                 </button>`).join('');
 
@@ -1155,12 +368,13 @@ block contenido
                 btn.onclick = () => {
                   input.value = btn.dataset.name;
                   hidden.value = btn.dataset.id;
+                  if(hiddenId === 'pacienteId') document.getElementById('le_dni_paciente').innerText = 'DNI: ' + btn.dataset.dni;
                   suggestions.innerHTML = '';
                   if (onSelect) onSelect(btn.dataset.id);
                   buscarDisponibilidad();
                 };
               });
-            } catch (err) { console.error("Error Autocomplete:", err); }
+            } catch (err) { console.error(err); }
           }, 300);
         });
       };
@@ -1178,83 +392,89 @@ block contenido
       async function buscarDisponibilidad() {
         const id_medico = document.getElementById('medicoId').value;
         const id_especialidad = especialidadSelect.value;
-        const fechaSeleccionada = fechaInput.value;
-        const id_paciente = document.getElementById('pacienteId').value;
-
-        if (!id_medico || !id_especialidad || !fechaSeleccionada) return;
+        const fecha = fechaInput.value;
+        if (!id_medico || !id_especialidad || !fecha) return;
 
         slotsContainer.innerHTML = '';
+        legendContainer.classList.add('d-none');
         document.getElementById('loader').classList.remove('d-none');
-        mensajeVacio.classList.add('d-none');
         document.getElementById('instruccionInicial').classList.add('d-none');
-        btnGuardar.disabled = true;
-        horaInput.value = '';
+        mensajeVacio.classList.add('d-none');
 
         try {
-          const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fechaSeleccionada}`);
+          const res = await fetch(`/secretaria/disponibilidad?id_medico=${id_medico}&id_especialidad=${id_especialidad}&fecha=${fecha}`);
           const data = await res.json();
           document.getElementById('loader').classList.add('d-none');
 
-          if (data.status === 'success' && data.horarios) {
-            
-            // --- LÓGICA DE FILTRADO DE HORAS PASADAS ---
-            const ahora = new Date();
-            const hoyStr = ahora.toISOString().split('T')[0];
-            
-            const horariosFiltrados = data.horarios.filter(h => {
-              if (fechaSeleccionada > hoyStr) return true;
-              const [hTurno, mTurno] = h.hora.split(':');
-              const horaTurnoDate = new Date();
-              horaTurnoDate.setHours(parseInt(hTurno), parseInt(mTurno), 0, 0);
-              return horaTurnoDate > ahora;
-            });
-
-            if (horariosFiltrados.length === 0) {
-              mensajeVacio.classList.remove('d-none');
-              const params = new URLSearchParams({ id_medico, id_especialidad, id_paciente: id_paciente || '' });
-              btnIrAListaEspera.href = `/secretaria/lista-espera/create?${params.toString()}`;
-              return;
-            }
-
-            slotsContainer.innerHTML = horariosFiltrados.map(h => `
+          if (data.status === 'success' && data.horarios.length > 0) {
+            legendContainer.classList.remove('d-none');
+            slotsContainer.innerHTML = data.horarios.map(h => `
               <div class="slot-hora ${h.ocupado ? 'ocupado' : ''}" 
-                  data-hora="${h.hora}" 
-                  data-agenda="${h.id_agenda}">
-                ${h.hora}
-                ${h.ocupado ? '<div class="x-small">Ocupado</div>' : ''}
+                   data-hora="${h.hora}" 
+                   data-agenda="${h.id_agenda}"
+                   data-ocupado="${h.ocupado}">
+                <span>${h.hora}</span>
+                ${h.ocupado ? '<span class="badge-ocupado">OCUPADO</span>' : ''}
               </div>
             `).join('');
 
             document.querySelectorAll('.slot-hora').forEach(slot => {
               slot.addEventListener('click', function() {
-                if (this.classList.contains('ocupado')) return;
-                document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
-                this.classList.add('selected');
-                horaInput.value = this.dataset.hora;
-                document.getElementById('agendaIdHidden').value = this.dataset.agenda;
-                btnGuardar.disabled = false;
+                const esOcupado = this.dataset.ocupado === 'true';
+                if (esOcupado) {
+                  Swal.fire({
+                    title: 'Horario Ocupado',
+                    text: "¿Desea agendar un SOBRETURNO?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, Sobreturno',
+                    confirmButtonColor: '#dc3545'
+                  }).then((result) => { if (result.isConfirmed) seleccionarSlot(this, true); });
+                } else { seleccionarSlot(this, false); }
               });
             });
+          } else { mensajeVacio.classList.remove('d-none'); }
+        } catch (err) { console.error(err); }
+      }
 
-          } else if (data.status === 'ausencia' || data.status === 'feriado') {
-            slotsContainer.innerHTML = `
-              <div class="alert alert-warning w-100 text-center">
-                <i class="fa-solid fa-circle-exclamation fs-3 d-block mb-2"></i>
-                <strong>${data.status === 'feriado' ? 'Feriado' : 'Profesional Ausente'}</strong><br>
-                ${data.motivo || data.descripcion || ''}
-              </div>`;
-          } else {
-            mensajeVacio.classList.remove('d-none');
-            const params = new URLSearchParams({ id_medico, id_especialidad, id_paciente: id_paciente || '' });
-            btnIrAListaEspera.href = `/secretaria/lista-espera/create?${params.toString()}`;
-          }
-        } catch (err) {
-          console.error("Error:", err);
-          document.getElementById('loader').classList.add('d-none');
-          Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
-        }
+      function seleccionarSlot(elemento, esSobre) {
+        document.querySelectorAll('.slot-hora').forEach(s => s.classList.remove('selected'));
+        elemento.classList.add('selected');
+        horaInput.value = elemento.dataset.hora;
+        document.getElementById('agendaIdHidden').value = elemento.dataset.agenda;
+        checkSobreturno.checked = esSobre;
+        btnGuardar.disabled = false;
       }
 
       especialidadSelect.addEventListener('change', buscarDisponibilidad);
       fechaInput.addEventListener('change', buscarDisponibilidad);
+    });
+    // --- LÓGICA DE PREVIEW DE FOTO ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const fotoInput = document.getElementById('fotoDocumento');
+      const previewContainer = document.getElementById('previewContainer');
+      const imgPreview = document.getElementById('imgPreview');
+      const removeBtn = document.getElementById('removePreview');
+
+      fotoInput.addEventListener('change', function() {
+          const file = this.files[0];
+
+          if (file) {
+              const reader = new FileReader();
+
+              reader.onload = function(e) {
+                  imgPreview.src = e.target.result;
+                  previewContainer.classList.remove('d-none'); // Muestra el contenedor
+              }
+
+              reader.readAsDataURL(file);
+          }
+      });
+
+      // Botón para quitar la foto
+      removeBtn.addEventListener('click', () => {
+          fotoInput.value = ''; // Limpia el input
+          imgPreview.src = ''; // Limpia la imagen
+          previewContainer.classList.add('d-none'); // Oculta el contenedor
+      });
     });

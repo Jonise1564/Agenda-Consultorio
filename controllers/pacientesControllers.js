@@ -159,63 +159,35 @@ class PacientesController {
     // ===========================================
     // FORM EDITAR PACIENTE
     // ===========================================
-    // async edit(req, res, next) {
-    //     try {
-    //         const { id } = req.params;
-    //         const paciente = await Paciente.getPacienteById(id);
-    //         if (!paciente) return res.status(404).send('Paciente no encontrado');
-
-    //         if (paciente.nacimiento) {
-    //             paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
-    //         }
-
-    //         const usuario = await Usuario.getById(paciente.id_usuario);
-    //         const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
-    //         const telefonos = telefonosDB.map(t => t.numero);
-    //         const obra_social = await Paciente.getOSByPaciente(id);
-    //         const obrasSociales = await Paciente.getAllOS();
-
-    //         res.render('pacientes/editar', {
-    //             paciente,
-    //             usuario,
-    //             telefonos,
-    //             obra_social,
-    //             obrasSociales
-    //         });
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
     async edit(req, res, next) {
-    try {
-        const { id } = req.params;
-        const paciente = await Paciente.getPacienteById(id);
-        if (!paciente) return res.status(404).send('Paciente no encontrado');
+        try {
+            const { id } = req.params;
+            const paciente = await Paciente.getPacienteById(id);
+            if (!paciente) return res.status(404).send('Paciente no encontrado');
 
-        if (paciente.nacimiento) {
-            paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
+            if (paciente.nacimiento) {
+                paciente.nacimiento = new Date(paciente.nacimiento).toISOString().split('T')[0];
+            }
+
+            // Renombramos la variable aquí para evitar conflictos con res.locals.usuario
+            const usuarioPaciente = await Usuario.getById(paciente.id_usuario);
+
+            const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
+            const telefonos = telefonosDB.map(t => t.numero);
+            const obra_social = await Paciente.getOSByPaciente(id);
+            const obrasSociales = await Paciente.getAllOS();
+
+            res.render('pacientes/editar', {
+                paciente,
+                usuarioPaciente, // <--- CAMBIADO
+                telefonos,
+                obra_social,
+                obrasSociales
+            });
+        } catch (error) {
+            next(error);
         }
-
-        // Renombramos la variable aquí para evitar conflictos con res.locals.usuario
-        const usuarioPaciente = await Usuario.getById(paciente.id_usuario); 
-        
-        const telefonosDB = await Persona.getTelefonos(paciente.id_persona);
-        const telefonos = telefonosDB.map(t => t.numero);
-        const obra_social = await Paciente.getOSByPaciente(id);
-        const obrasSociales = await Paciente.getAllOS();
-
-        res.render('pacientes/editar', {
-            paciente,
-            usuarioPaciente, // <--- CAMBIADO
-            telefonos,
-            obra_social,
-            obrasSociales
-        });
-    } catch (error) {
-        next(error);
     }
-}
 
     // ===========================================
     // ACTUALIZAR PACIENTE (UPDATE)
@@ -278,6 +250,28 @@ class PacientesController {
             next(error);
         }
     }
+    // ===========================================
+    // VERIFICAR DNI EXISTENTE (AJAX)
+    // ===========================================
+    async verificarDni(req, res) {
+        try {
+            const { dni } = req.params;
+            if (!dni) return res.json({ existe: false });
+
+            // Usamos el modelo Persona para buscar por DNI
+            const existePersona = await Persona.getByDni(dni);
+
+            // Si existePersona no es null/undefined, significa que el DNI ya está registrado
+            res.json({ existe: !!existePersona });
+        } catch (error) {
+            console.error("Error al verificar DNI:", error);
+            res.status(500).json({ error: "Error en el servidor" });
+        }
+    }
+
+
+
+
 }
 
 module.exports = new PacientesController();

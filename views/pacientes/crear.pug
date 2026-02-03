@@ -2,94 +2,967 @@
 
 //- block contenido
 //-   .container.mt-4.mb-5
-//-     .row.justify-content-center
-//-       .col-lg-10
-//-         h2.text-center.mb-4.fw-bold Crear Nuevo Paciente
-        
-//-         //- El formulario ahora es estándar (sin el script de fetch complejo)
-//-         form#formPaciente(action="/pacientes" method="POST")
-          
-//-           .card.shadow-sm.mb-4
-//-             .card-header.bg-primary.text-white: strong Datos Personales
-//-             .card-body
-//-               .row.g-3
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold DNI
-//-                   input.form-control(type="number" name="dni" required)
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Nombre
-//-                   input.form-control(type="text" name="nombre" required)
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Apellido
-//-                   input.form-control(type="text" name="apellido" required)
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Fecha de Nacimiento
-//-                   input.form-control(type="date" name="nacimiento" required)
+//-     //- Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-plus-fill.me-2
+//-             | Registrar Nuevo Paciente
+//-           p.text-muted Complete los datos para dar de alta al paciente en el sistema.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
 
-//-           .card.shadow-sm.mb-4
-//-             .card-header.bg-dark.text-white: strong Cuenta de Usuario
+//-     //- Formulario Principal
+//-     form.needs-validation(
+//-       action="/pacientes" 
+//-       method="POST" 
+//-       id="formPaciente" 
+//-       novalidate
+//-     )
+//-       .row
+//-         //- Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           //- SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
 //-             .card-body
 //-               .row.g-3
 //-                 .col-md-4
-//-                   label.form-label.small.fw-bold Email
-//-                   input.form-control(type="email" name="email" required)
+//-                   label.form-label.fw-bold DNI
+//-                   input.form-control(type="number" name="dni" placeholder="Sin puntos" required)
+//-                   .invalid-feedback Ingrese el número de DNI.
+                
 //-                 .col-md-4
-//-                   label.form-label.small.fw-bold Contraseña
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" required)
+//-                   .invalid-feedback Requerido.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" required)
+//-                   .invalid-feedback Requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(type="date" name="nacimiento" required)
+//-                   .invalid-feedback Seleccione una fecha.
+
+//-           //- SECCIÓN 2: CUENTA DE USUARIO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-12
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control(type="email" name="email" placeholder="ejemplo@correo.com" required)
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Contraseña
 //-                   input#password.form-control(type="password" name="password" required)
-//-                 .col-md-4
-//-                   label.form-label.small.fw-bold Confirmar Contraseña
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Confirmar Contraseña
 //-                   input#repeatPassword.form-control(type="password" name="repeatPassword" required)
 
-//-           .card.shadow-sm.mb-4
-//-             .card-header.bg-info.text-white: strong Configuración y Contacto
+//-         //- Columna Derecha: Configuración y Teléfonos
+//-         .col-lg-4
+//-           //- SECCIÓN 3: COBERTURA Y ESTADO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-hospital.me-2
+//-                 | Cobertura y Configuración
+//-             .card-body.g-3
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Obra Social
+//-                 select.form-select.form-select-sm(name="obra_sociales" required)
+//-                   option(value="" disabled selected) Seleccione...
+//-                   if obrasSociales
+//-                     each os in obrasSociales
+//-                       option(value=os.id)= os.nombre
+              
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Estado Inicial
+//-                 select.form-select.form-select-sm(name="estado" required)
+//-                   option(value="1" selected) Activo
+//-                   option(value="0") Inactivo
+              
+//-               .mb-0
+//-                 label.form-label.small.fw-bold Rol asignado
+//-                 select.form-select.form-select-sm(name="id_rol" required readonly)
+//-                   option(value="3" selected) Paciente (Predeterminado)
+
+//-           //- SECCIÓN 4: TELÉFONOS (DINÁMICOS)
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
 //-             .card-body
-//-               .row.g-3
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Obra Social
-//-                   select.form-select(name="obra_sociales" required)
-//-                     option(value="" disabled selected) Seleccione...
-//-                     if obrasSociales
-//-                       each os in obrasSociales
-//-                         option(value=os.id)= os.nombre
-                
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Estado
-//-                   select.form-select(name="estado" required)
-//-                     option(value="1" selected) Activo
-//-                     option(value="0") Inactivo
-                
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Rol
-//-                   select.form-select(name="id_rol" required)
-//-                     option(value="3" selected) Paciente
+//-               #telefonosContainer
+//-                 .input-group.mb-2.telefono-row
+//-                   input.form-control.form-control-sm.telefono-input(
+//-                     type="text" 
+//-                     name="telefonos" 
+//-                     placeholder="Ej: 2944123456" 
+//-                     maxlength="15" 
+//-                     required
+//-                   )
+//-                   button.btn.btn-outline-danger.btn-sm(type="button" onclick="eliminarTelefono(this)")
+//-                     i.bi.bi-trash
 
-//-                 .col-md-3
-//-                   label.form-label.small.fw-bold Teléfonos
-//-                   #telefonos-container
-//-                     input.form-control(type="text" name="telefonos" placeholder="Ej: 2944123456" required)
-
-//-           .d-flex.justify-content-between
-//-             a.btn.btn-outline-secondary.px-4(href="/pacientes") Cancelar
-//-             button.btn.btn-success.px-5.fw-bold(type="submit") Guardar Paciente
+//-       //- Botones de Acción Final
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/pacientes") Cancelar
+//-           button.btn.btn-primary.px-5.shadow.fw-bold(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Paciente
 
 //-   script.
-//-     // Validación simple antes de enviar para evitar el error 400
+//-     // Función para agregar teléfonos con animación
+//-     function agregarTelefono() {
+//-       const container = document.getElementById('telefonosContainer');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 telefono-row animate__animated animate__fadeIn';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15" required>
+//-         <button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarTelefono(this)">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       // Solo números
+//-       div.querySelector('input').oninput = (e) => {
+//-         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+//-       };
+//-       container.appendChild(div);
+//-     }
+
+//-     function eliminarTelefono(btn) {
+//-       const rows = document.querySelectorAll('.telefono-row');
+//-       if (rows.length === 1) {
+//-         alert('Debe ingresar al menos un teléfono de contacto.');
+//-         return;
+//-       }
+//-       btn.closest('.telefono-row').remove();
+//-     }
+
+//-     // Validación de Bootstrap y Password
+//-     (function () {
+//-       'use strict'
+//-       var forms = document.querySelectorAll('.needs-validation')
+//-       Array.prototype.slice.call(forms).forEach(function (form) {
+//-         form.addEventListener('submit', function (event) {
+//-           const pass = document.getElementById('password').value;
+//-           const repeat = document.getElementById('repeatPassword').value;
+
+//-           // Validar contraseñas
+//-           if (pass !== repeat) {
+//-             event.preventDefault();
+//-             event.stopPropagation();
+//-             alert("Las contraseñas no coinciden.");
+//-             return;
+//-           }
+
+//-           // Validar duplicados de teléfonos
+//-           const valores = [...document.querySelectorAll('.telefono-input')]
+//-             .map(i => i.value.trim())
+//-             .filter(Boolean);
+//-           if (new Set(valores).size !== valores.length) {
+//-             event.preventDefault();
+//-             alert('No se permiten teléfonos duplicados.');
+//-             return;
+//-           }
+
+//-           if (!form.checkValidity()) {
+//-             event.preventDefault();
+//-             event.stopPropagation();
+//-           }
+//-           form.classList.add('was-validated')
+//-         }, false)
+//-       })
+//-     })()
+
+
+
+
+
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   //- Librerías necesarias (FontAwesome para iconos y SweetAlert)
+//-   link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+  
+//-   .container.mt-4.mb-5
+//-     //- Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-plus-fill.me-2
+//-             | Registrar Nuevo Paciente
+//-           p.text-muted Complete los datos para dar de alta al paciente en el sistema.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     //- Formulario Principal
+//-     form.needs-validation(
+//-       action="/pacientes" 
+//-       method="POST" 
+//-       id="formPaciente" 
+//-       novalidate
+//-     )
+//-       .row
+//-         //- Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           //- SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-4
+//-                   label.form-label.fw-bold DNI
+//-                   input.form-control(type="number" name="dni" id="dni" placeholder="Sin puntos" required)
+//-                   .invalid-feedback Ingrese el número de DNI.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" id="nombre" required)
+//-                   .invalid-feedback Requerido.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" id="apellido" required)
+//-                   .invalid-feedback Requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(type="date" name="nacimiento" id="nacimiento" required)
+//-                   .invalid-feedback Seleccione una fecha.
+
+//-           //- SECCIÓN 2: CUENTA DE USUARIO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-12
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control(type="email" name="email" id="email" placeholder="ejemplo@correo.com" required)
+//-                     .invalid-feedback Ingrese un email válido.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Contraseña
+//-                   input#password.form-control(type="password" name="password" required)
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Confirmar Contraseña
+//-                   input#repeatPassword.form-control(type="password" name="repeatPassword" required)
+
+//-         //- Columna Derecha: Configuración y Teléfonos
+//-         .col-lg-4
+//-           //- SECCIÓN 3: COBERTURA Y ESTADO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-hospital.me-2
+//-                 | Cobertura y Configuración
+//-             .card-body.g-3
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Obra Social
+//-                 select.form-select.form-select-sm(name="obra_sociales" id="obra_sociales" required)
+//-                   option(value="" disabled selected) Seleccione...
+//-                   if obrasSociales
+//-                     each os in obrasSociales
+//-                       option(value=os.id)= os.nombre
+              
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Estado Inicial
+//-                 select.form-select.form-select-sm(name="estado" required)
+//-                   option(value="1" selected) Activo
+//-                   option(value="0") Inactivo
+              
+//-               .mb-0
+//-                 label.form-label.small.fw-bold Rol asignado
+//-                 select.form-select.form-select-sm(name="id_rol" required readonly)
+//-                   option(value="3" selected) Paciente (Predeterminado)
+
+//-           //- SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonosContainer
+//-                 .input-group.mb-2.telefono-row
+//-                   input.form-control.form-control-sm.telefono-input(
+//-                     type="text" 
+//-                     name="telefonos" 
+//-                     placeholder="Ej: 2944123456" 
+//-                     maxlength="15" 
+//-                     required
+//-                   )
+//-                   button.btn.btn-outline-danger.btn-sm(type="button" onclick="eliminarTelefono(this)")
+//-                     i.bi.bi-trash
+
+//-       //- Botones de Acción Final
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/pacientes") Cancelar
+//-           button.btn.btn-primary.px-5.shadow.fw-bold(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Paciente
+
+//-   style.
+//-     .is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important; }
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     function agregarTelefono() {
+//-       const container = document.getElementById('telefonosContainer');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 telefono-row';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15" required>
+//-         <button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarTelefono(this)">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('input').oninput = (e) => {
+//-         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+//-       };
+//-       container.appendChild(div);
+//-     }
+
+//-     function eliminarTelefono(btn) {
+//-       const rows = document.querySelectorAll('.telefono-row');
+//-       if (rows.length === 1) {
+//-         Swal.fire('Atención', 'Debe ingresar al menos un teléfono de contacto.', 'warning');
+//-         return;
+//-       }
+//-       btn.closest('.telefono-row').remove();
+//-     }
+
+//-     // Validación Principal
 //-     document.getElementById('formPaciente').onsubmit = function(e) {
+//-       e.preventDefault();
+      
+//-       const form = this;
 //-       const pass = document.getElementById('password').value;
 //-       const repeat = document.getElementById('repeatPassword').value;
-      
-//-       if (pass !== repeat) {
-//-         e.preventDefault(); // Detiene el envío
-//-         alert("¡Error! Las contraseñas no coinciden. Por favor, verifica.");
-//-         return false;
+
+//-       // 1. Limpiar estados previos
+//-       form.classList.remove('was-validated');
+//-       document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+//-       // 2. Validar campos vacíos básicos de Bootstrap
+//-       if (!form.checkValidity()) {
+//-         e.stopPropagation();
+//-         form.classList.add('was-validated');
+        
+//-         Swal.fire({
+//-           title: 'Campos incompletos',
+//-           text: 'Por favor, revise los campos marcados en rojo.',
+//-           icon: 'error',
+//-           confirmButtonColor: '#0d6efd'
+//-         });
+//-         return;
 //-       }
+
+//-       // 3. Validar contraseñas
+//-       if (pass !== repeat) {
+//-         document.getElementById('repeatPassword').classList.add('is-invalid');
+//-         Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+//-         return;
+//-       }
+
+//-       // 4. Validar teléfonos duplicados
+//-       const valores = [...document.querySelectorAll('.telefono-input')]
+//-         .map(i => i.value.trim())
+//-         .filter(Boolean);
+      
+//-       if (new Set(valores).size !== valores.length) {
+//-         Swal.fire('Error', 'No se permiten números de teléfono duplicados.', 'error');
+//-         return;
+//-       }
+
+//-       // 5. Todo OK - Confirmar envío
+//-       Swal.fire({
+//-         title: '¿Registrar paciente?',
+//-         text: "Verifique que los datos sean correctos.",
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#0d6efd',
+//-         confirmButtonText: 'Sí, guardar',
+//-         cancelButtonText: 'Revisar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+//-           form.submit();
+//-         }
+//-       });
 //-     };
+
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   //- Librerías necesarias (FontAwesome para iconos y SweetAlert)
+//-   link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+  
+//-   .container.mt-4.mb-5
+//-     //- Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-plus-fill.me-2
+//-             | Registrar Nuevo Paciente
+//-           p.text-muted Complete los datos para dar de alta al paciente en el sistema.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     //- Formulario Principal
+//-     form.needs-validation(
+//-       action="/pacientes" 
+//-       method="POST" 
+//-       id="formPaciente" 
+//-       novalidate
+//-     )
+//-       .row
+//-         //- Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           //- SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-4
+//-                   label.form-label.fw-bold DNI
+//-                   input.form-control(type="number" name="dni" id="dni" placeholder="Sin puntos" required)
+//-                   .invalid-feedback#dni-feedback Ingrese el número de DNI.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" id="nombre" required)
+//-                   .invalid-feedback Requerido.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" id="apellido" required)
+//-                   .invalid-feedback Requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(type="date" name="nacimiento" id="nacimiento" required)
+//-                   .invalid-feedback Seleccione una fecha.
+
+//-           //- SECCIÓN 2: CUENTA DE USUARIO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-12
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control(type="email" name="email" id="email" placeholder="ejemplo@correo.com" required)
+//-                     .invalid-feedback Ingrese un email válido.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Contraseña
+//-                   input#password.form-control(type="password" name="password" required)
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Confirmar Contraseña
+//-                   input#repeatPassword.form-control(type="password" name="repeatPassword" required)
+
+//-         //- Columna Derecha: Configuración y Teléfonos
+//-         .col-lg-4
+//-           //- SECCIÓN 3: COBERTURA Y ESTADO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-hospital.me-2
+//-                 | Cobertura y Configuración
+//-             .card-body.g-3
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Obra Social
+//-                 select.form-select.form-select-sm(name="obra_sociales" id="obra_sociales" required)
+//-                   option(value="" disabled selected) Seleccione...
+//-                   if obrasSociales
+//-                     each os in obrasSociales
+//-                       option(value=os.id)= os.nombre
+              
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Estado Inicial
+//-                 select.form-select.form-select-sm(name="estado" required)
+//-                   option(value="1" selected) Activo
+//-                   option(value="0") Inactivo
+              
+//-               .mb-0
+//-                 label.form-label.small.fw-bold Rol asignado
+//-                 select.form-select.form-select-sm(name="id_rol" required readonly)
+//-                   option(value="3" selected) Paciente (Predeterminado)
+
+//-           //- SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonosContainer
+//-                 .input-group.mb-2.telefono-row
+//-                   input.form-control.form-control-sm.telefono-input(
+//-                     type="text" 
+//-                     name="telefonos" 
+//-                     placeholder="Ej: 2944123456" 
+//-                     maxlength="15" 
+//-                     required
+//-                   )
+//-                   button.btn.btn-outline-danger.btn-sm(type="button" onclick="eliminarTelefono(this)")
+//-                     i.bi.bi-trash
+
+//-       //- Botones de Acción Final
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/pacientes") Cancelar
+//-           button.btn.btn-primary.px-5.shadow.fw-bold(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Paciente
+
+//-   style.
+//-     .is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important; }
+//-     .is-valid { border-color: #198754 !important; }
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     // Variable global para controlar estado del DNI
+//-     let dniDuplicado = false;
+
+//-     function agregarTelefono() {
+//-       const container = document.getElementById('telefonosContainer');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 telefono-row';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15" required>
+//-         <button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarTelefono(this)">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('input').oninput = (e) => {
+//-         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+//-       };
+//-       container.appendChild(div);
+//-     }
+
+//-     function eliminarTelefono(btn) {
+//-       const rows = document.querySelectorAll('.telefono-row');
+//-       if (rows.length === 1) {
+//-         Swal.fire('Atención', 'Debe ingresar al menos un teléfono de contacto.', 'warning');
+//-         return;
+//-       }
+//-       btn.closest('.telefono-row').remove();
+//-     }
+
+//-     // --- VALIDACIÓN DE DNI EN TIEMPO REAL ---
+//-     document.getElementById('dni').addEventListener('blur', async function() {
+//-         const dni = this.value.trim();
+//-         const feedback = document.getElementById('dni-feedback');
+//-         if (dni.length < 7) return;
+
+//-         try {
+//-             const res = await fetch(`/pacientes/verificar-dni/${dni}`);
+//-             const data = await res.json();
+
+//-             if (data.existe) {
+//-                 dniDuplicado = true;
+//-                 this.classList.add('is-invalid');
+//-                 this.classList.remove('is-valid');
+//-                 feedback.textContent = "Este DNI ya está registrado.";
+//-                 Swal.fire({
+//-                     title: 'DNI Duplicado',
+//-                     text: `El documento ${dni} ya existe en el sistema.`,
+//-                     icon: 'warning',
+//-                     confirmButtonColor: '#0d6efd'
+//-                 });
+//-             } else {
+//-                 dniDuplicado = false;
+//-                 this.classList.remove('is-invalid');
+//-                 this.classList.add('is-valid');
+//-                 feedback.textContent = "Ingrese el número de DNI.";
+//-             }
+//-         } catch (e) {
+//-             console.error("Error validando DNI", e);
+//-         }
+//-     });
+
+//-     // --- VALIDACIÓN PRINCIPAL AL ENVIAR ---
+//-     document.getElementById('formPaciente').onsubmit = function(e) {
+//-       e.preventDefault();
+//-       const form = this;
+//-       const pass = document.getElementById('password').value;
+//-       const repeat = document.getElementById('repeatPassword').value;
+
+//-       // 1. Limpiar estados previos
+//-       form.classList.remove('was-validated');
+//-       document.querySelectorAll('.is-invalid').forEach(el => {
+//-           if(el.id !== 'dni' || !dniDuplicado) el.classList.remove('is-invalid');
+//-       });
+
+//-       // 2. Validar DNI Bloqueado
+//-       if (dniDuplicado) {
+//-           Swal.fire('Error', 'No puede registrar un DNI que ya existe.', 'error');
+//-           document.getElementById('dni').focus();
+//-           return;
+//-       }
+
+//-       // 3. Validar campos vacíos básicos
+//-       if (!form.checkValidity()) {
+//-         form.classList.add('was-validated');
+//-         Swal.fire({
+//-           title: 'Campos incompletos',
+//-           text: 'Por favor, complete todos los campos obligatorios.',
+//-           icon: 'error',
+//-           confirmButtonColor: '#0d6efd'
+//-         });
+//-         return;
+//-       }
+
+//-       // 4. Validar contraseñas
+//-       if (pass !== repeat) {
+//-         document.getElementById('repeatPassword').classList.add('is-invalid');
+//-         Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+//-         return;
+//-       }
+
+//-       // 5. Validar teléfonos duplicados
+//-       const valores = [...document.querySelectorAll('.telefono-input')]
+//-         .map(i => i.value.trim())
+//-         .filter(Boolean);
+      
+//-       if (new Set(valores).size !== valores.length) {
+//-         Swal.fire('Error', 'No se permiten números de teléfono duplicados.', 'error');
+//-         return;
+//-       }
+
+//-       // 6. Confirmar envío
+//-       Swal.fire({
+//-         title: '¿Registrar paciente?',
+//-         text: "Verifique que los datos sean correctos antes de continuar.",
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#0d6efd',
+//-         confirmButtonText: 'Sí, guardar',
+//-         cancelButtonText: 'Revisar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+//-           form.submit();
+//-         }
+//-       });
+//-     };
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   //- Librerías necesarias (FontAwesome para iconos y SweetAlert)
+//-   link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+  
+//-   .container.mt-4.mb-5
+//-     //- Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-plus-fill.me-2
+//-             | Registrar Nuevo Paciente
+//-           p.text-muted Complete los datos para dar de alta al paciente en el sistema.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     //- Formulario Principal
+//-     form.needs-validation(
+//-       action="/pacientes" 
+//-       method="POST" 
+//-       id="formPaciente" 
+//-       novalidate
+//-     )
+//-       .row
+//-         //- Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           //- SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-4
+//-                   label.form-label.fw-bold DNI
+//-                   input.form-control(type="number" name="dni" id="dni" placeholder="Sin puntos" required)
+//-                   .invalid-feedback#dni-feedback Ingrese el número de DNI.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" id="nombre" required)
+//-                   .invalid-feedback Requerido.
+                
+//-                 .col-md-4
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" id="apellido" required)
+//-                   .invalid-feedback Requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(type="date" name="nacimiento" id="nacimiento" required)
+//-                   .invalid-feedback Seleccione una fecha.
+
+//-           //- SECCIÓN 2: CUENTA DE USUARIO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-12
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control(type="email" name="email" id="email" placeholder="ejemplo@correo.com" required)
+//-                     .invalid-feedback Ingrese un email válido.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Contraseña
+//-                   input#password.form-control(type="password" name="password" required)
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Confirmar Contraseña
+//-                   input#repeatPassword.form-control(type="password" name="repeatPassword" required)
+
+//-         //- Columna Derecha: Configuración y Teléfonos
+//-         .col-lg-4
+//-           //- SECCIÓN 3: COBERTURA Y ESTADO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-hospital.me-2
+//-                 | Cobertura y Configuración
+//-             .card-body.g-3
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Obra Social
+//-                 select.form-select.form-select-sm(name="obra_sociales" id="obra_sociales" required)
+//-                   option(value="" disabled selected) Seleccione...
+//-                   if obrasSociales
+//-                     each os in obrasSociales
+//-                       option(value=os.id)= os.nombre
+              
+//-               .mb-3
+//-                 label.form-label.small.fw-bold Estado Inicial
+//-                 select.form-select.form-select-sm(name="estado" required)
+//-                   option(value="1" selected) Activo
+//-                   option(value="0") Inactivo
+              
+//-               .mb-0
+//-                 label.form-label.small.fw-bold Rol asignado
+//-                 select.form-select.form-select-sm(name="id_rol" required readonly)
+//-                   option(value="3" selected) Paciente (Predeterminado)
+
+//-           //- SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonosContainer
+//-                 .input-group.mb-2.telefono-row
+//-                   input.form-control.form-control-sm.telefono-input(
+//-                     type="text" 
+//-                     name="telefonos" 
+//-                     placeholder="Ej: 2944123456" 
+//-                     maxlength="15" 
+//-                     required
+//-                   )
+//-                   button.btn.btn-outline-danger.btn-sm(type="button" onclick="eliminarTelefono(this)")
+//-                     i.bi.bi-trash
+
+//-       //- Botones de Acción Final
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/pacientes") Cancelar
+//-           button.btn.btn-primary.px-5.shadow.fw-bold(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Paciente
+
+//-   style.
+//-     .is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important; }
+//-     .is-valid { border-color: #198754 !important; }
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     let dniDuplicado = false;
+
+//-     function agregarTelefono() {
+//-       const container = document.getElementById('telefonosContainer');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 telefono-row';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15" required>
+//-         <button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarTelefono(this)">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('input').oninput = (e) => {
+//-         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+//-       };
+//-       container.appendChild(div);
+//-     }
+
+//-     function eliminarTelefono(btn) {
+//-       const rows = document.querySelectorAll('.telefono-row');
+//-       if (rows.length === 1) {
+//-         Swal.fire('Atención', 'Debe ingresar al menos un teléfono de contacto.', 'warning');
+//-         return;
+//-       }
+//-       btn.closest('.telefono-row').remove();
+//-     }
+
+//-     // --- VALIDACIÓN DE DNI (RUTA UNIVERSAL PERSONA) ---
+//-     document.getElementById('dni').addEventListener('blur', async function() {
+//-         const dni = this.value.trim();
+//-         const feedback = document.getElementById('dni-feedback');
+//-         if (dni.length < 7) return;
+
+//-         try {
+//-             // Ajustado a la nueva ruta universal definida en el router de pacientes
+//-             const res = await fetch(`/pacientes/verificar-persona/${dni}`);
+//-             const data = await res.json();
+
+//-             if (data.existe) {
+//-                 dniDuplicado = true;
+//-                 this.classList.add('is-invalid');
+//-                 this.classList.remove('is-valid');
+//-                 feedback.textContent = "Este DNI ya pertenece a una persona registrada.";
+//-                 Swal.fire({
+//-                     title: 'DNI Duplicado',
+//-                     text: `El documento ${dni} ya existe en la base de datos de personas.`,
+//-                     icon: 'warning',
+//-                     confirmButtonColor: '#0d6efd'
+//-                 });
+//-             } else {
+//-                 dniDuplicado = false;
+//-                 this.classList.remove('is-invalid');
+//-                 this.classList.add('is-valid');
+//-                 feedback.textContent = "Ingrese el número de DNI.";
+//-             }
+//-         } catch (e) {
+//-             console.error("Error validando DNI:", e);
+//-         }
+//-     });
+
+//-     // --- VALIDACIÓN PRINCIPAL AL ENVIAR ---
+//-     document.getElementById('formPaciente').onsubmit = function(e) {
+//-       e.preventDefault();
+//-       const form = this;
+//-       const pass = document.getElementById('password').value;
+//-       const repeat = document.getElementById('repeatPassword').value;
+
+//-       if (dniDuplicado) {
+//-         Swal.fire('Atención', 'El DNI ya existe. No se puede duplicar una persona.', 'error');
+//-         document.getElementById('dni').focus();
+//-         return;
+//-       }
+
+//-       if (!form.checkValidity()) {
+//-         form.classList.add('was-validated');
+//-         Swal.fire('Campos incompletos', 'Revise los campos obligatorios.', 'error');
+//-         return;
+//-       }
+
+//-       if (pass !== repeat) {
+//-         document.getElementById('repeatPassword').classList.add('is-invalid');
+//-         Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+//-         return;
+//-       }
+
+//-       Swal.fire({
+//-         title: '¿Registrar paciente?',
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#0d6efd',
+//-         confirmButtonText: 'Sí, guardar',
+//-         cancelButtonText: 'Cancelar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+//-           form.submit();
+//-         }
+//-       });
+//-     };
+
+
+
+
+
+
 
 
 
 extends ../layout
 
 block contenido
+  //- Librerías necesarias (FontAwesome para iconos y SweetAlert)
+  link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+  
   .container.mt-4.mb-5
     //- Encabezado
     .row.mb-4
@@ -123,22 +996,22 @@ block contenido
               .row.g-3
                 .col-md-4
                   label.form-label.fw-bold DNI
-                  input.form-control(type="number" name="dni" placeholder="Sin puntos" required)
-                  .invalid-feedback Ingrese el número de DNI.
+                  input.form-control(type="number" name="dni" id="dni" placeholder="Sin puntos" required)
+                  .invalid-feedback#dni-feedback Ingrese el número de DNI.
                 
                 .col-md-4
                   label.form-label.fw-bold Nombre
-                  input.form-control(type="text" name="nombre" required)
+                  input.form-control(type="text" name="nombre" id="nombre" required)
                   .invalid-feedback Requerido.
                 
                 .col-md-4
                   label.form-label.fw-bold Apellido
-                  input.form-control(type="text" name="apellido" required)
+                  input.form-control(type="text" name="apellido" id="apellido" required)
                   .invalid-feedback Requerido.
 
                 .col-md-6
                   label.form-label.fw-bold Fecha de Nacimiento
-                  input.form-control(type="date" name="nacimiento" required)
+                  input.form-control(type="date" name="nacimiento" id="nacimiento" required)
                   .invalid-feedback Seleccione una fecha.
 
           //- SECCIÓN 2: CUENTA DE USUARIO
@@ -153,7 +1026,8 @@ block contenido
                   label.form-label.fw-bold Correo Electrónico
                   .input-group
                     span.input-group-text @
-                    input.form-control(type="email" name="email" placeholder="ejemplo@correo.com" required)
+                    input.form-control(type="email" name="email" id="email" placeholder="ejemplo@correo.com" required)
+                    .invalid-feedback Ingrese un email válido.
                 
                 .col-md-6
                   label.form-label.fw-bold Contraseña
@@ -174,7 +1048,7 @@ block contenido
             .card-body.g-3
               .mb-3
                 label.form-label.small.fw-bold Obra Social
-                select.form-select.form-select-sm(name="obra_sociales" required)
+                select.form-select.form-select-sm(name="obra_sociales" id="obra_sociales" required)
                   option(value="" disabled selected) Seleccione...
                   if obrasSociales
                     each os in obrasSociales
@@ -189,9 +1063,9 @@ block contenido
               .mb-0
                 label.form-label.small.fw-bold Rol asignado
                 select.form-select.form-select-sm(name="id_rol" required readonly)
-                  option(value="3" selected) Paciente (Predeterminado)
+                  option(value="4" selected) Paciente (Predeterminado)
 
-          //- SECCIÓN 4: TELÉFONOS (DINÁMICOS)
+          //- SECCIÓN 4: TELÉFONOS
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
               h5.card-title.mb-0.text-primary
@@ -220,19 +1094,24 @@ block contenido
             i.bi.bi-check-lg.me-1
             | Guardar Paciente
 
+  style.
+    .is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important; }
+    .is-valid { border-color: #198754 !important; }
+
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
-    // Función para agregar teléfonos con animación
+    let dniDuplicado = false;
+
     function agregarTelefono() {
       const container = document.getElementById('telefonosContainer');
       const div = document.createElement('div');
-      div.className = 'input-group mb-2 telefono-row animate__animated animate__fadeIn';
+      div.className = 'input-group mb-2 telefono-row';
       div.innerHTML = `
         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15" required>
         <button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarTelefono(this)">
           <i class="bi bi-trash"></i>
         </button>
       `;
-      // Solo números
       div.querySelector('input').oninput = (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
       };
@@ -242,44 +1121,78 @@ block contenido
     function eliminarTelefono(btn) {
       const rows = document.querySelectorAll('.telefono-row');
       if (rows.length === 1) {
-        alert('Debe ingresar al menos un teléfono de contacto.');
+        Swal.fire('Atención', 'Debe ingresar al menos un teléfono de contacto.', 'warning');
         return;
       }
       btn.closest('.telefono-row').remove();
     }
 
-    // Validación de Bootstrap y Password
-    (function () {
-      'use strict'
-      var forms = document.querySelectorAll('.needs-validation')
-      Array.prototype.slice.call(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-          const pass = document.getElementById('password').value;
-          const repeat = document.getElementById('repeatPassword').value;
+    document.getElementById('dni').addEventListener('blur', async function() {
+        const dni = this.value.trim();
+        const feedback = document.getElementById('dni-feedback');
+        if (dni.length < 7) return;
 
-          // Validar contraseñas
-          if (pass !== repeat) {
-            event.preventDefault();
-            event.stopPropagation();
-            alert("Las contraseñas no coinciden.");
-            return;
-          }
+        try {
+            const res = await fetch(`/pacientes/verificar-persona/${dni}`);
+            const data = await res.json();
 
-          // Validar duplicados de teléfonos
-          const valores = [...document.querySelectorAll('.telefono-input')]
-            .map(i => i.value.trim())
-            .filter(Boolean);
-          if (new Set(valores).size !== valores.length) {
-            event.preventDefault();
-            alert('No se permiten teléfonos duplicados.');
-            return;
-          }
+            if (data.existe) {
+                dniDuplicado = true;
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                feedback.textContent = "Este DNI ya pertenece a una persona registrada.";
+                Swal.fire({
+                    title: 'DNI Duplicado',
+                    text: `El documento ${dni} ya existe en la base de datos.`,
+                    icon: 'warning',
+                    confirmButtonColor: '#0d6efd'
+                });
+            } else {
+                dniDuplicado = false;
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                feedback.textContent = "Ingrese el número de DNI.";
+            }
+        } catch (e) {
+            console.error("Error validando DNI:", e);
+        }
+    });
 
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add('was-validated')
-        }, false)
-      })
-    })()
+    document.getElementById('formPaciente').onsubmit = function(e) {
+      e.preventDefault();
+      const form = this;
+      const pass = document.getElementById('password').value;
+      const repeat = document.getElementById('repeatPassword').value;
+
+      if (dniDuplicado) {
+        Swal.fire('Atención', 'El DNI ya existe. No se puede duplicar una persona.', 'error');
+        document.getElementById('dni').focus();
+        return;
+      }
+
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        Swal.fire('Campos incompletos', 'Revise los campos obligatorios.', 'error');
+        return;
+      }
+
+      if (pass !== repeat) {
+        document.getElementById('repeatPassword').classList.add('is-invalid');
+        Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+        return;
+      }
+
+      Swal.fire({
+        title: '¿Registrar paciente?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0d6efd',
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+          form.submit();
+        }
+      });
+    };

@@ -21,7 +21,7 @@ class MedicosController {
 
             const medicos = await Medico.listarPaginado(limit, offset, search);
             const totalMedicos = await Medico.contarTodos(search);
-            const especialidades = await Especialidad.getAll(); // Para modales de creación/edición en el index
+            const especialidades = await Especialidad.getAll(); 
 
             const totalPages = Math.ceil(totalMedicos / limit);
 
@@ -41,7 +41,7 @@ class MedicosController {
 
             res.render('medicos/index', {
                 medicos: medicosConFecha,
-                especialidades, // <--- Enviado para evitar el error 'length' en el each
+                especialidades, 
                 mensaje,
                 currentPage: page,
                 totalPages: totalPages,

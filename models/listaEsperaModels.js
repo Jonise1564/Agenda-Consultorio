@@ -1,9 +1,7 @@
-
-
 const createConnection = require('../config/configDb');
 
 class ListaEspera {
-    
+
     /**
      Verifica si ya existe el paciente para ese médico y especialidad con estado Pendiente
      */
@@ -64,51 +62,11 @@ class ListaEspera {
     /**
      * Obtiene los pacientes pendientes con datos de contacto y profesional asignado
      */
-    // static async getPendientes() {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         const sql = `
-    //             SELECT 
-    //                 le.*, 
-    //                 u.email AS usuario_registro, 
-    //                 p_pac.nombre AS paciente_nombre, 
-    //                 p_pac.apellido AS paciente_apellido,
-    //                 p_pac.dni AS paciente_dni,
-    //                 t.numero AS paciente_telefono,
-    //                 p_pac.email AS paciente_email,
-    //                 p_med.apellido AS medico_apellido,
-    //                 e.nombre AS especialidad_nombre
-    //             FROM lista_espera le
-    //             INNER JOIN usuarios u ON le.id_usuario_creador = u.id 
-    //             INNER JOIN pacientes pac ON le.id_paciente = pac.id
-    //             INNER JOIN personas p_pac ON pac.id_persona = p_pac.id
-    //             LEFT JOIN telefonos t ON p_pac.id = t.id_persona 
-    //             INNER JOIN medicos m ON le.id_medico = m.id_medico
-    //             INNER JOIN personas p_med ON m.id_persona = p_med.id
-    //             INNER JOIN especialidades e ON le.id_especialidad = e.id
-    //             WHERE le.estado = 'Pendiente'
-    //             ORDER BY 
-    //                 CASE le.prioridad 
-    //                     WHEN 'Alta' THEN 1 
-    //                     WHEN 'Media' THEN 2 
-    //                     WHEN 'Baja' THEN 3 
-    //                 END, le.fecha_registro ASC
-    //         `;
-    //         const [rows] = await conn.query(sql);
-    //         return rows;
-    //     } catch (error) {
-    //         console.error("Error en getPendientes:", error);
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
     static async getPendientes() {
-    let conn;
-    try {
-        conn = await createConnection();
-        const sql = `
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
             SELECT 
                 le.*, 
                 u.email AS usuario_registro, 
@@ -138,15 +96,15 @@ class ListaEspera {
                     WHEN 'Baja' THEN 3 
                 END, le.fecha_registro ASC
         `;
-        const [rows] = await conn.query(sql);
-        return rows;
-    } catch (error) {
-        console.error("Error en getPendientes:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+            const [rows] = await conn.query(sql);
+            return rows;
+        } catch (error) {
+            console.error("Error en getPendientes:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
     /**
      * Actualiza el estado de un registro (Ej: a 'Atendido')
