@@ -142,67 +142,134 @@ class TurnosController {
     //     }
     // }
 
-async reservar(req, res) {
-        let conn;
-        try {
-            const { id } = req.params;
-            const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
 
-            // 1. VALIDACIÓN CRÍTICA: ¿Es un día no laborable/feriado?
-            conn = await createConnection();
-            const [feriado] = await conn.query(
-                'SELECT descripcion FROM FERIADOS WHERE fecha = ?', 
-                [fecha]
-            );
 
-            if (feriado.length > 0) {
-                // Si es feriado, bloqueamos la reserva
-                console.warn(`🛑 Intento de reserva en día no laborable: ${fecha} (${feriado[0].descripcion})`);
-                
-                // Si es una petición AJAX podrías devolver JSON, 
-                // pero como parece ser un form tradicional, redirigimos con error.
-                return res.status(400).render('principal/error', {
-                    error: `El día ${formatearFecha(fecha)} es feriado (${feriado[0].descripcion}) y no se permiten reservas.`,
-                    page: 'error'
-                });
-            }
+    
+    // async reservar(req, res) {
+    //     let conn;
+    //     try {
+    //         const { id } = req.params;
+    //         const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
 
-            // 2. Lógica normal de búsqueda de agenda
-            let agendaIdDestino = id_agenda;
-            if (!agendaIdDestino && id !== 'undefined') {
-                const tActual = await Turno.getById(id);
-                agendaIdDestino = tActual ? tActual.id_agenda : null;
-            }
+    //         // 1. VALIDACIÓN CRÍTICA: ¿Es un día no laborable/feriado?
+    //         conn = await createConnection();
+    //         const [feriado] = await conn.query(
+    //             'SELECT descripcion FROM FERIADOS WHERE fecha = ?',
+    //             [fecha]
+    //         );
 
-            const archivo_dni = req.file ? req.file.filename : null;
+    //         if (feriado.length > 0) {
+    //             // Si es feriado, bloqueamos la reserva
+    //             console.warn(`🛑 Intento de reserva en día no laborable: ${fecha} (${feriado[0].descripcion})`);
 
-            const datosTurno = {
-                fecha,
-                hora_inicio,
-                motivo,
-                estado: estado || 'pendiente',
-                id_paciente: id_paciente || null,
-                id_agenda: agendaIdDestino,
-                ...(archivo_dni && { archivo_dni })
-            };
+    //             // Si es una petición AJAX podrías devolver JSON, 
+    //             // pero como parece ser un form tradicional, redirigimos con error.
+    //             return res.status(400).render('principal/error', {
+    //                 error: `El día ${formatearFecha(fecha)} es feriado (${feriado[0].descripcion}) y no se permiten reservas.`,
+    //                 page: 'error'
+    //             });
+    //         }
 
-            // 3. Guardado en BD
-            if (id && id !== 'undefined') {
-                await Turno.actualizar(id, datosTurno);
-            } else {
-                await Turno.create(datosTurno);
-            }
+    //         // 2. Lógica normal de búsqueda de agenda
+    //         let agendaIdDestino = id_agenda;
+    //         if (!agendaIdDestino && id !== 'undefined') {
+    //             const tActual = await Turno.getById(id);
+    //             agendaIdDestino = tActual ? tActual.id_agenda : null;
+    //         }
 
-            res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+    //         const archivo_dni = req.file ? req.file.filename : null;
 
-        } catch (error) {
-            console.error("Error al guardar reserva:", error);
-            res.status(500).send("Error al procesar la reserva");
-        } finally {
-            if (conn) conn.end(); // Cerramos la conexión manual de la validación
+    //         const datosTurno = {
+    //             fecha,
+    //             hora_inicio,
+    //             motivo,
+    //             estado: estado || 'pendiente',
+    //             id_paciente: id_paciente || null,
+    //             id_agenda: agendaIdDestino,
+    //             ...(archivo_dni && { archivo_dni })
+    //         };
+
+    //         // 3. Guardado en BD
+    //         if (id && id !== 'undefined') {
+    //             await Turno.actualizar(id, datosTurno);
+    //         } else {
+    //             await Turno.create(datosTurno);
+    //         }
+
+    //         res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+
+    //     } catch (error) {
+    //         console.error("Error al guardar reserva:", error);
+    //         res.status(500).send("Error al procesar la reserva");
+    //     } finally {
+    //         if (conn) conn.end(); // Cerramos la conexión manual de la validación
+    //     }
+    // }
+
+
+
+    async reservar(req, res) {
+    try {
+        const { id } = req.params;
+        const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
+
+        // ========================================================
+        // 1. VALIDACIÓN DE BACKEND: FECHA PASADA
+        // ========================================================
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // Solo nos importa la fecha, no la hora actual
+
+        // Convertimos la fecha recibida (YYYY-MM-DD) a objeto Date
+        // Importante: Usamos split para evitar problemas de zona horaria que restan un día
+        const [year, month, day] = fecha.split('-').map(Number);
+        const fechaTurno = new Date(year, month - 1, day);
+
+        if (fechaTurno < hoy) {
+            console.error(`⚠️ Intento de hackeo o error: Fecha pasada recibida (${fecha})`);
+            // Opción A: Mandar a una página de error
+            return res.status(400).send("No se pueden agendar turnos en fechas que ya pasaron.");
+            // Opción B: Redirigir con un mensaje de error (si usas connect-flash)
+            // return res.redirect('back'); 
         }
-    }
 
+        // ========================================================
+        // 2. PROCESAMIENTO DE DATOS
+        // ========================================================
+        let agendaIdDestino = id_agenda;
+        if (!agendaIdDestino && id !== 'undefined') {
+            const tActual = await Turno.getById(id);
+            agendaIdDestino = tActual ? tActual.id_agenda : null;
+        }
+
+        const archivo_dni = req.file ? req.file.filename : null;
+
+        const datosTurno = {
+            fecha,
+            hora_inicio,
+            motivo,
+            estado: estado || 'pendiente',
+            id_paciente: id_paciente || null,
+            id_agenda: agendaIdDestino,
+            ...(archivo_dni && { archivo_dni })
+        };
+
+        // ========================================================
+        // 3. PERSISTENCIA (GUARDADO EN BD)
+        // ========================================================
+        if (id && id !== 'undefined') {
+            await Turno.actualizar(id, datosTurno);
+        } else {
+            await Turno.create(datosTurno);
+        }
+
+        // Redirección con éxito
+        res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+
+    } catch (error) {
+        console.error("Error al guardar reserva:", error);
+        res.status(500).send("Error al procesar la reserva");
+    }
+}
     // ELIMINAR
     async delete(req, res) {
         try {
