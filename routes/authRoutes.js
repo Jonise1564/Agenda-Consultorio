@@ -10,7 +10,7 @@ const upload = multer({ dest: 'public/uploads/dnis/' });
 router.get('/login', (req, res) => res.render('auth/login'));
 router.post('/login', authController.login);
 
-// AQUÍ EL CAMBIO: Agregamos upload.single('archivo_dni')
+
 // Esto procesa el formulario y "llena" el req.body con el nombre, apellido, etc.
 router.post('/registro-paciente', upload.single('archivo_dni'), authController.registroPaciente);
 

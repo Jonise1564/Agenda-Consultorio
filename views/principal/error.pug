@@ -1,0 +1,16 @@
+extends ../layout
+
+block contenido
+  .container.py-5
+    .card.border-danger.shadow-sm
+      .card-header.bg-danger.text-white
+        h5.mb-0 
+          i.fa-solid.fa-triangle-exclamation.me-2
+          | Error en el Servidor
+      .card-body
+        h4 Ha ocurrido un problema inesperado
+        p.text-muted Detalles técnicos:
+        pre.bg-light.p-3.border.rounded #{error}
+        a.btn.btn-secondary(href="javascript:history.back()") 
+          i.fa-solid.fa-arrow-left.me-2
+          | Volver atrás

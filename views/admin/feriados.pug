@@ -1,0 +1,91 @@
+extends ../layout
+
+block contenido
+  .container.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h3.text-primary 
+        i.fa-solid.fa-calendar-day.me-2
+        | Gestión de Feriados
+      button.btn.btn-primary(onclick="abrirModalFeriado()")
+        i.fa-solid.fa-plus.me-2
+        | Nuevo Feriado
+
+    .card.border-0.shadow-sm
+      .card-body.p-0
+        .table-responsive
+          table.table.table-hover.align-middle.mb-0
+            thead.bg-light
+              tr
+                th.ps-4 Fecha
+                th Descripción
+                th Tipo
+                th.text-end.pe-4 Acciones
+            tbody
+              if feriados && feriados.length > 0
+                each f in feriados
+                  tr
+                    td.ps-4.fw-bold #{f.fecha_formateada}
+                    td #{f.descripcion}
+                    td 
+                      span.badge(class=f.tipo === 'Feriado' ? 'bg-danger' : 'bg-warning text-dark') #{f.tipo}
+                    td.text-end.pe-4
+                      button.btn.btn-outline-danger.btn-sm(onclick=`eliminarFeriado(${f.id})`)
+                        i.fa-solid.fa-trash
+              else
+                tr
+                  td.text-center.py-4(colspan="4") No hay feriados registrados.
+
+  //- MODAL PARA NUEVO FERIADO
+  #modalFeriado.modal.fade(tabindex="-1" aria-hidden="true")
+    .modal-dialog
+      .modal-content.border-0.shadow
+        .modal-header.bg-primary.text-white
+          h5.modal-title Cargar Día No Laboral
+          button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal")
+        .modal-body.p-4
+          form#formFeriado
+            .mb-3
+              label.form-label Fecha
+              input#fecha.form-control(type="date" name="fecha" required)
+            .mb-3
+              label.form-label Descripción
+              input#descripcion.form-control(type="text" name="descripcion" placeholder="Ej: Año Nuevo" required)
+            .mb-3
+              label.form-label Tipo
+              select#tipo.form-select(name="tipo")
+                option(value="Feriado") Feriado Nacional
+                option(value="No Laborable") Día No Laborable
+        .modal-footer.bg-light
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+          button.btn.btn-primary(type="button" onclick="guardarFeriado()") Guardar
+
+  script.
+    const myModal = new bootstrap.Modal(document.getElementById('modalFeriado'));
+
+    function abrirModalFeriado() {
+      document.getElementById('formFeriado').reset();
+      myModal.show();
+    }
+
+    async function guardarFeriado() {
+      const form = document.getElementById('formFeriado');
+      if (!form.checkValidity()) return form.reportValidity();
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const response = await fetch('/admin/feriados/nuevo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) location.reload();
+        else Swal.fire('Error', 'No se pudo guardar', 'error');
+      } catch (e) { console.error(e); }
+    }
+
+    async function eliminarFeriado(id) {
+      if (!(await Swal.fire({ title: '¿Eliminar feriado?', showCancelButton: true }).then(r => r.isConfirmed))) return;
+      await fetch(`/admin/feriados/eliminar/${id}`, { method: 'DELETE' });
+      location.reload();
+    }

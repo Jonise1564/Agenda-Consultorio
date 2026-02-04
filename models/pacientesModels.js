@@ -201,6 +201,31 @@ class Paciente {
 
 
     //obtener datos completos del paciente para mostrar en el crear lista de espera
+    // static async getDatosCompletos(id_paciente) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         const [rows] = await conn.query(`
+    //         SELECT 
+    //             p.nombre, 
+    //             p.apellido, 
+    //             p.dni 
+    //         FROM pacientes pac
+    //         INNER JOIN personas p ON pac.id_persona = p.id
+    //         WHERE pac.id = ?`, [id_paciente]);
+
+    //         return rows[0] || null;
+    //     } catch (error) {
+    //         console.error("Error al obtener datos del paciente:", error);
+    //         throw error;
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
+
+    
+    // Obtener datos completos del paciente incluyendo EMAIL para notificaciones
     static async getDatosCompletos(id_paciente) {
         let conn;
         try {
@@ -209,9 +234,11 @@ class Paciente {
             SELECT 
                 p.nombre, 
                 p.apellido, 
-                p.dni 
+                p.dni,
+                u.email 
             FROM pacientes pac
             INNER JOIN personas p ON pac.id_persona = p.id
+            INNER JOIN usuarios u ON pac.id_usuario = u.id -- <--- UNIMOS CON USUARIOS
             WHERE pac.id = ?`, [id_paciente]);
 
             return rows[0] || null;
@@ -222,6 +249,9 @@ class Paciente {
             if (conn) conn.end();
         }
     }
+
+
+
 
     // ======================================================
     // OBTENER PERFIL POR ID DE USUARIO (PARA EL PANEL)

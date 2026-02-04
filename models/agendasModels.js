@@ -5,42 +5,88 @@ class Agenda {
     // =====================================================
     // 1. OBTENER TODAS LAS AGENDAS (Para el Listado)
     // =====================================================
+    // static async getAll() {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         const [agendas] = await conn.query(`        
+    //         SELECT 
+    //             a.id,
+    //             a.id_medico,    
+    //             a.fecha_creacion,
+    //             a.fecha_fin,
+    //             p.nombre AS nombre,
+    //             p.apellido AS apellido,
+    //             GROUP_CONCAT(DISTINCT d.dia ORDER BY d.id SEPARATOR ', ') AS dias,
+    //             a.hora_inicio,
+    //             a.hora_fin,
+    //             a.limite_sobreturnos,
+    //             a.duracion_turnos,
+    //             e.nombre AS especialidad,
+    //             s.nombre AS sucursal,
+    //             c.nombre AS clasificacion
+    //         FROM agendas a
+    //         LEFT JOIN agenda_dias ad ON a.id = ad.id_agenda
+    //         LEFT JOIN dias d ON ad.id_dia = d.id
+    //         LEFT JOIN medicos m ON m.id_medico = a.id_medico
+    //         LEFT JOIN personas p ON m.id_persona = p.id
+    //         LEFT JOIN especialidades e ON e.id = a.id_especialidad
+    //         LEFT JOIN sucursales s ON a.id_sucursal = s.id
+    //         LEFT JOIN clasificaciones c ON a.id_clasificacion = c.id
+    //         GROUP BY 
+    //             a.id, a.fecha_creacion, a.fecha_fin,
+    //             p.nombre, p.apellido,
+    //             a.hora_inicio, a.hora_fin,
+    //             a.limite_sobreturnos, a.duracion_turnos,
+    //             e.nombre, s.nombre, c.nombre
+    //         ORDER BY a.id DESC;
+    //         `);
+    //         return agendas;
+    //     } catch (error) {
+    //         console.error('Error fetching agendas:', error);
+    //         throw new Error('Error al traer agendas');
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
     static async getAll() {
         let conn;
         try {
             conn = await createConnection();
             const [agendas] = await conn.query(`        
-            SELECT 
-                a.id,
-                a.id_medico,    
-                a.fecha_creacion,
-                a.fecha_fin,
-                p.nombre AS nombre,
-                p.apellido AS apellido,
-                GROUP_CONCAT(DISTINCT d.dia ORDER BY d.id SEPARATOR ', ') AS dias,
-                a.hora_inicio,
-                a.hora_fin,
-                a.limite_sobreturnos,
-                a.duracion_turnos,
-                e.nombre AS especialidad,
-                s.nombre AS sucursal,
-                c.nombre AS clasificacion
-            FROM agendas a
-            LEFT JOIN agenda_dias ad ON a.id = ad.id_agenda
-            LEFT JOIN dias d ON ad.id_dia = d.id
-            LEFT JOIN medicos m ON m.id_medico = a.id_medico
-            LEFT JOIN personas p ON m.id_persona = p.id
-            LEFT JOIN especialidades e ON e.id = a.id_especialidad
-            LEFT JOIN sucursales s ON a.id_sucursal = s.id
-            LEFT JOIN clasificaciones c ON a.id_clasificacion = c.id
-            GROUP BY 
-                a.id, a.fecha_creacion, a.fecha_fin,
-                p.nombre, p.apellido,
-                a.hora_inicio, a.hora_fin,
-                a.limite_sobreturnos, a.duracion_turnos,
-                e.nombre, s.nombre, c.nombre
-            ORDER BY a.id DESC;
-            `);
+        SELECT 
+            a.id,
+            a.id_medico,    
+            a.fecha_creacion,
+            a.fecha_fin,
+            p.nombre AS nombre,
+            p.apellido AS apellido,
+            GROUP_CONCAT(DISTINCT d.dia ORDER BY d.id SEPARATOR ', ') AS dias,
+            a.hora_inicio,
+            a.hora_fin,
+            a.limite_sobreturnos,
+            a.duracion_turnos,
+            e.nombre AS especialidad,
+            s.nombre AS sucursal,
+            c.nombre AS clasificacion
+        FROM agendas a
+        LEFT JOIN agenda_dias ad ON a.id = ad.id_agenda
+        LEFT JOIN dias d ON ad.id_dia = d.id
+        LEFT JOIN medicos m ON m.id_medico = a.id_medico
+        LEFT JOIN personas p ON m.id_persona = p.id
+        LEFT JOIN especialidades e ON e.id = a.id_especialidad
+        LEFT JOIN sucursales s ON a.id_sucursal = s.id
+        LEFT JOIN clasificaciones c ON a.id_clasificacion = c.id
+        WHERE m.estado = 1  -- <--- FILTRO AGREGADO: Solo médicos activos
+        GROUP BY 
+            a.id, a.fecha_creacion, a.fecha_fin,
+            p.nombre, p.apellido,
+            a.hora_inicio, a.hora_fin,
+            a.limite_sobreturnos, a.duracion_turnos,
+            e.nombre, s.nombre, c.nombre
+        ORDER BY a.id DESC;
+        `);
             return agendas;
         } catch (error) {
             console.error('Error fetching agendas:', error);

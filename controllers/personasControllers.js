@@ -1,5 +1,4 @@
 const Persona = require('../models/personasModels')
-//const { validatePersona, validatePartialPersona } = require('../schemas/validation')
 const { obtenerFechaFormateada } = require('../utils/dateFormatter');
 
 class PersonasController {
