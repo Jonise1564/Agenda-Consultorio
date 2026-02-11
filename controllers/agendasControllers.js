@@ -28,8 +28,9 @@ class AgendasController {
     async get(req, res, next) {
         try {
             // 1. Obtenemos los datos base
+            // Agenda.getAll() ahora ya filtra internamente WHERE activo = 1
             const [agendas, especialidades, medicos] = await Promise.all([
-                Agenda.getAll(), // Asegúrate que este método traiga el id_medico
+                Agenda.getAll(),
                 Especialidad.getAll(),
                 Medico.listar()
             ]);
@@ -37,12 +38,11 @@ class AgendasController {
             // 2. Obtenemos las ausencias activas de hoy            
             const ausenciasHoy = await Medico.obtenerAusenciasActivas();
             const agendasFormateadas = agendas.map(a => {
-                // Usamos == por si acaso un ID viene como string desde la DB
                 const estaAusente = ausenciasHoy.some(idAusente => idAusente == a.id_medico);
 
                 return {
                     ...a,
-                    ausente: estaAusente, // Esto activa el naranja
+                    ausente: estaAusente,
                     fecha_creacion: a.fecha_creacion ? obtenerFechaFormateada(parseDateOnly(a.fecha_creacion)) : null,
                     fecha_fin: a.fecha_fin ? obtenerFechaFormateada(parseDateOnly(a.fecha_fin)) : null,
                     hora_inicio: a.hora_inicio ? obtenerHoraFormateada(a.hora_inicio) : null,
@@ -50,17 +50,22 @@ class AgendasController {
                 };
             });
 
-            const { nombreStore, nombreUpdate, error: errorQuery } = req.query;
+            // 3. Manejo de notificaciones por Query String
+            const { nombreStore, nombreUpdate, deleted, error: errorQuery } = req.query;
             let mensaje = null;
+
             if (nombreStore) mensaje = 'Agenda creada correctamente';
             if (nombreUpdate) mensaje = 'Agenda actualizada correctamente';
+            // Agregamos el mensaje para cuando se desactiva (borrado lógico)
+            if (deleted) mensaje = 'La agenda ha sido desactivada con éxito';
 
             res.render('agendas/inicio', {
                 agendas: agendasFormateadas,
                 especialidades,
                 medicos,
                 mensaje,
-                error: errorQuery === 'no_encontrada' ? 'La agenda solicitada no existe' : null
+                // Si getAgendaById devuelve null por estar inactiva, redirige aquí con este error
+                error: errorQuery === 'no_encontrada' ? 'La agenda solicitada no existe o fue desactivada' : null
             });
         } catch (error) {
             console.error("Error en AgendasController.get:", error);
@@ -279,15 +284,42 @@ class AgendasController {
         }
     }
 
-    // ELIMINAR AGENDA
+    // ELIMINAR AGENDA(DESACTIVAR)    
     async eliminarAgenda(req, res, next) {
         try {
-            await Agenda.eliminar(req.params.id);
-            res.redirect('/agendas');
+            const { id } = req.params;
+
+            // 1. Verificar existencia (El modelo getAgendaById ya filtra por activo=1)
+            const agenda = await Agenda.getAgendaById(id);
+            if (!agenda) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'La agenda ya no existe o ya fue desactivada.'
+                });
+            }
+
+            // 2. Ejecutar desactivación (Borrado lógico)
+            // El método eliminar() en tu modelo ahora hace: UPDATE agendas SET activo = 0
+            await Agenda.eliminar(id);
+
+            return res.status(200).json({
+                success: true,
+                message: 'La agenda se ha desactivado correctamente y ya no recibirá turnos.'
+            });
+
         } catch (error) {
-            next(error);
+            console.error("Error al desactivar agenda:", error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error interno al procesar la baja de la agenda.'
+            });
         }
     }
+
+
+
+
+
 }
 
 module.exports = new AgendasController();

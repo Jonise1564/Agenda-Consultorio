@@ -200,31 +200,7 @@ class Paciente {
     }
 
 
-    //obtener datos completos del paciente para mostrar en el crear lista de espera
-    // static async getDatosCompletos(id_paciente) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         const [rows] = await conn.query(`
-    //         SELECT 
-    //             p.nombre, 
-    //             p.apellido, 
-    //             p.dni 
-    //         FROM pacientes pac
-    //         INNER JOIN personas p ON pac.id_persona = p.id
-    //         WHERE pac.id = ?`, [id_paciente]);
 
-    //         return rows[0] || null;
-    //     } catch (error) {
-    //         console.error("Error al obtener datos del paciente:", error);
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
-
-
-    
     // Obtener datos completos del paciente incluyendo EMAIL para notificaciones
     static async getDatosCompletos(id_paciente) {
         let conn;
@@ -348,6 +324,34 @@ class Paciente {
         } catch (error) {
             console.error("Error en Paciente.getById:", error);
             throw error;
+        }
+    }
+
+
+    // ======================================================
+    // VERIFICAR SI EL PACIENTE YA TIENE UN TURNO EN LA FECHA
+    // ======================================================
+    static async verificarTurnoExistente(id_paciente, fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+            // Buscamos turnos que NO estén cancelados para ese paciente en esa fecha
+            const sql = `
+                SELECT t.id 
+                FROM turnos t
+                INNER JOIN agendas a ON t.id_agenda = a.id
+                WHERE t.id_paciente = ? 
+                AND a.fecha = ? 
+                AND t.estado != 'cancelado'
+                LIMIT 1
+            `;
+            const [rows] = await conn.query(sql, [id_paciente, fecha]);
+            return rows.length > 0; // Retorna true si ya existe un turno
+        } catch (error) {
+            console.error("Error en verificarTurnoExistente:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
         }
     }
 

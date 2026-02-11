@@ -21,7 +21,7 @@ class MedicosController {
 
             const medicos = await Medico.listarPaginado(limit, offset, search);
             const totalMedicos = await Medico.contarTodos(search);
-            const especialidades = await Especialidad.getAll(); 
+            const especialidades = await Especialidad.getAll();
 
             const totalPages = Math.ceil(totalMedicos / limit);
 
@@ -41,7 +41,7 @@ class MedicosController {
 
             res.render('medicos/index', {
                 medicos: medicosConFecha,
-                especialidades, 
+                especialidades,
                 mensaje,
                 currentPage: page,
                 totalPages: totalPages,
@@ -173,39 +173,6 @@ class MedicosController {
     // ================================================================
     // EDITAR (FORM)
     // ================================================================
-    // async edit(req, res, next) {
-    //     try {
-    //         const { id_medico } = req.params;
-    //         const medico = await Medico.obtenerPorId(id_medico);
-
-    //         if (!medico) return res.status(404).send('Médico no encontrado');
-
-    //         const persona = {
-    //             id: medico.id_persona,
-    //             nombre: medico.nombre,
-    //             apellido: medico.apellido,
-    //             nacimiento: medico.nacimiento ? new Date(medico.nacimiento) : null
-    //         };
-
-    //         const usuario = {
-    //             id: medico.id_usuario,
-    //             email: medico.email
-    //         };
-
-    //         const especialidades = await Especialidad.getAll();
-    //         const especialidadesAsignadas = await Especialidad.getPorMedico(id_medico);
-
-    //         res.render('medicos/editar', {
-    //             medico,
-    //             persona,
-    //             usuario,
-    //             especialidades,
-    //             especialidadesAsignadas
-    //         });
-    //     } catch (err) {
-    //         next(err);
-    //     }
-    // }
     async edit(req, res, next) {
         try {
             const { id_medico } = req.params;
@@ -248,62 +215,8 @@ class MedicosController {
     // ================================================================
     // ACTUALIZAR (UPDATE)
     // ================================================================
-    // async update(req, res, next) {
-    //     try {
-    //         const { id_medico } = req.params;
-    //         const {
-    //             nombre, apellido, nacimiento, email, password,
-    //             matricula, especialidades, especialidades_modificadas,
-    //             telefonos, telefonos_modificados
-    //         } = req.body;
 
-    //         const medico = await Medico.obtenerPorId(id_medico);
-    //         if (!medico) return res.status(404).send('Médico no encontrado');
-
-    //         // Actualizar Persona
-    //         await Persona.updatePersona(medico.id_persona, { nombre, apellido, nacimiento });
-
-    //         // Actualizar Usuario (Email y Password si existe)
-    //         const userUpdates = {};
-    //         if (email) userUpdates.email = email.trim();
-    //         if (password && password.trim() !== '') {
-    //             userUpdates.password = await bcrypt.hash(password.trim(), 10);
-    //         }
-    //         if (Object.keys(userUpdates).length > 0) {
-    //             await Usuario.updateUsuario(medico.id_usuario, userUpdates);
-    //         }
-
-    //         // Actualizar Matrícula
-    //         if (matricula) await Medico.updateMatricula(id_medico, matricula);
-
-    //         // Actualizar Especialidades si cambiaron
-    //         if (especialidades_modificadas === '1') {
-    //             const listaEspecialidades = Array.isArray(especialidades) ? especialidades : (especialidades ? [especialidades] : []);
-    //             await Especialidad.desactivarTodasPorMedico(id_medico);
-    //             for (const idEsp of listaEspecialidades) {
-    //                 await Especialidad.asignarAMedico(id_medico, idEsp);
-    //             }
-    //         }
-
-    //         // Actualizar Teléfonos si cambiaron
-    //         if (telefonos_modificados === '1') {
-    //             const telefonosArray = Array.isArray(telefonos) ? telefonos : (telefonos ? [telefonos] : []);
-    //             const telefonosLimpios = telefonosArray.map(t => t?.trim()).filter(Boolean);
-
-    //             await Persona.eliminarTelefonos(medico.id_persona);
-    //             for (const tel of telefonosLimpios) {
-    //                 await Persona.addTelefono(medico.id_persona, tel);
-    //             }
-    //         }
-
-    //         res.redirect('/medicos?nombreUpdate=1');
-    //     } catch (error) {
-    //         console.error('Error al actualizar médico:', error);
-    //         next(error);
-    //     }
-    // }
-
-async update(req, res, next) {
+    async update(req, res, next) {
         try {
             const { id_medico } = req.params;
             const {
@@ -373,7 +286,7 @@ async update(req, res, next) {
         }
     }
 
-    
+
     // ================================================================
     // ESTADO (ACTIVAR/INACTIVAR)
     // ================================================================

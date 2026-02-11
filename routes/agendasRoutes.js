@@ -18,6 +18,9 @@ AgendasRouter.get('/edit/:id', AgendasController.edit);
 AgendasRouter.post('/update/:id', AgendasController.update);
 
 // Eliminar agenda (usar POST si es desde formulario HTML)
-AgendasRouter.post('/delete/:id', AgendasController.eliminarAgenda);
+AgendasRouter.delete('/:id', AgendasController.eliminarAgenda);
+//AgendasRouter.post('/delete/:id', AgendasController.eliminarAgenda);
+
+
 
 module.exports = AgendasRouter;

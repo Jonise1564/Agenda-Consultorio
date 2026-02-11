@@ -2,31 +2,41 @@ const createConnection = require('../config/configDb');
 
 class ListaEspera {
 
-
-    //Verifica si ya existe el paciente para ese médico y especialidad con estado Pendiente
-    static async verificarSiExiste(id_paciente, id_medico, id_especialidad) {
-        let conn;
+    // 1. Verificar duplicados (ahora con soporte opcional para transacciones)
+    static async verificarSiExiste(id_paciente, id_medico, id_especialidad, connection = null) {
+        const conn = connection || await createConnection();
         try {
-            conn = await createConnection();
-            const sql = `
-                SELECT id FROM lista_espera 
-                WHERE id_paciente = ? 
-                AND id_medico = ? 
-                AND id_especialidad = ? 
-                AND estado = 'Pendiente' 
-                LIMIT 1
-            `;
-            const [rows] = await conn.query(sql, [id_paciente, id_medico, id_especialidad]);
-            return rows.length > 0;
+            // Consulta 1: Buscar en Lista de Espera Pendiente
+            const sqlEspera = `
+            SELECT id FROM lista_espera 
+            WHERE id_paciente = ? AND id_medico = ? AND id_especialidad = ? 
+            AND estado = 'Pendiente' LIMIT 1`;
+
+            // Consulta 2: Buscar en Turnos Activos (Confirmados o Pendientes) a futuro
+            const sqlTurno = `
+            SELECT t.id FROM turnos t
+            INNER JOIN agendas a ON t.id_agenda = a.id
+            WHERE t.id_paciente = ? AND a.id_medico = ? AND a.id_especialidad = ?
+            AND t.fecha >= CURDATE() 
+            AND t.estado IN ('Confirmado', 'Pendiente') LIMIT 1`;
+
+            const [resEspera] = await conn.query(sqlEspera, [Number(id_paciente), Number(id_medico), Number(id_especialidad)]);
+            const [resTurno] = await conn.query(sqlTurno, [Number(id_paciente), Number(id_medico), Number(id_especialidad)]);
+
+            return {
+                enLista: resEspera.length > 0,
+                tieneTurno: resTurno.length > 0,
+                bloqueado: resEspera.length > 0 || resTurno.length > 0
+            };
         } catch (error) {
-            console.error("Error en verificarSiExiste:", error);
+            console.error("Error en verificarSiExiste integral:", error);
             throw error;
         } finally {
-            if (conn) conn.end();
+            if (!connection && conn) conn.end();
         }
     }
 
-    //Crea un nuevo registro en la lista de espera
+    // 2. Crear registro (incluye sanitización de strings)
     static async create(data) {
         let conn;
         try {
@@ -38,12 +48,12 @@ class ListaEspera {
             `;
 
             const [result] = await conn.query(sql, [
-                data.id_paciente,
-                data.id_medico,
-                data.id_especialidad,
+                Number(data.id_paciente),
+                Number(data.id_medico),
+                Number(data.id_especialidad),
                 data.prioridad || 'Media',
-                data.motivo_prioridad || null,
-                data.observaciones || null,
+                data.motivo_prioridad ? data.motivo_prioridad.toString().substring(0, 255) : null,
+                data.observaciones ? data.observaciones.toString().substring(0, 500) : null,
                 data.id_usuario_creador
             ]);
 
@@ -56,8 +66,7 @@ class ListaEspera {
         }
     }
 
-
-    //Obtiene los pacientes pendientes con datos de contacto y profesional asignado
+    // 3. Obtener pendientes (tu consulta está perfecta, la mantenemos igual)
     static async getPendientes() {
         let conn;
         try {
@@ -69,7 +78,6 @@ class ListaEspera {
                 p_pac.nombre AS paciente_nombre, 
                 p_pac.apellido AS paciente_apellido,
                 p_pac.dni AS paciente_dni,
-                /* Usamos GROUP_CONCAT por si hay varios teléfonos */
                 GROUP_CONCAT(DISTINCT t.numero SEPARATOR ' / ') AS paciente_telefono,
                 p_pac.email AS paciente_email,
                 p_med.apellido AS medico_apellido,
@@ -83,7 +91,6 @@ class ListaEspera {
             INNER JOIN personas p_med ON m.id_persona = p_med.id
             INNER JOIN especialidades e ON le.id_especialidad = e.id
             WHERE le.estado = 'Pendiente'
-            /* ESTA LÍNEA ES CLAVE PARA ELIMINAR DUPLICADOS */
             GROUP BY le.id 
             ORDER BY 
                 CASE le.prioridad 
@@ -91,7 +98,7 @@ class ListaEspera {
                     WHEN 'Media' THEN 2 
                     WHEN 'Baja' THEN 3 
                 END, le.fecha_registro ASC
-        `;
+            `;
             const [rows] = await conn.query(sql);
             return rows;
         } catch (error) {
@@ -102,24 +109,21 @@ class ListaEspera {
         }
     }
 
-
-    // Actualiza el estado de un registro (Ej: a 'Atendido')
-    static async updateEstado(id, nuevoEstado) {
-        let conn;
+    // 4. Update Estado (Soporta transacciones para cuando asignas un turno)
+    static async updateEstado(id, nuevoEstado, connection = null) {
+        const conn = connection || await createConnection();
         try {
-            conn = await createConnection();
             await conn.query('UPDATE lista_espera SET estado = ? WHERE id = ?', [nuevoEstado, id]);
             return true;
         } catch (error) {
             console.error("Error al actualizar estado:", error);
             throw error;
         } finally {
-            if (conn) conn.end();
+            if (!connection && conn) conn.end();
         }
     }
 
-
-    //Realiza un borrado lógico cambiando el estado a 'Cancelado'
+    // 5. Borrado lógico
     static async delete(id) {
         let conn;
         try {
@@ -134,52 +138,30 @@ class ListaEspera {
         }
     }
 
-
-    //Obtiene un registro específico por ID
-    //Útil para recuperar id_paciente e id_especialidad antes de asignar un turno
-    // static async getById(id) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         const sql = `SELECT * FROM lista_espera WHERE id = ?`;
-    //         const [rows] = await conn.query(sql, [id]);
-    //         return rows[0] || null;
-    //     } catch (error) {
-    //         console.error("Error en ListaEspera.getById:", error);
-    //         throw error;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
-
     static async getById(id) {
-    let conn;
-    try {
-        conn = await createConnection();
-        const sql = `
-            SELECT 
-                le.*, 
-                pe_med.apellido AS medico_apellido,
-                e.nombre AS especialidad_nombre
-            FROM lista_espera le
-            INNER JOIN medicos m ON le.id_medico = m.id_medico
-            INNER JOIN personas pe_med ON m.id_persona = pe_med.id
-            INNER JOIN especialidades e ON le.id_especialidad = e.id
-            WHERE le.id = ?
-        `;
-        const [rows] = await conn.query(sql, [id]);
-        return rows[0] || null;
-    } catch (error) {
-        console.error("Error en ListaEspera.getById:", error);
-        throw error;
-    } finally {
-        if (conn) conn.end();
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+                SELECT 
+                    le.*, 
+                    pe_med.apellido AS medico_apellido,
+                    e.nombre AS especialidad_nombre
+                FROM lista_espera le
+                INNER JOIN medicos m ON le.id_medico = m.id_medico
+                INNER JOIN personas pe_med ON m.id_persona = pe_med.id
+                INNER JOIN especialidades e ON le.id_especialidad = e.id
+                WHERE le.id = ?
+            `;
+            const [rows] = await conn.query(sql, [id]);
+            return rows[0] || null;
+        } catch (error) {
+            console.error("Error en ListaEspera.getById:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
-
-
-
-
 }
 
 module.exports = ListaEspera;

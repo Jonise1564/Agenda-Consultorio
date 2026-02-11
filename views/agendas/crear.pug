@@ -1,8 +1,252 @@
+//- extends ../layout
+
+//- block contenido
+//-   //- Forzamos la carga de iconos por si el layout falla
+//-   link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
+  
+//-   .container.py-5
+//-     // ---------- ENCABEZADO ----------
+//-     .row.mb-4
+//-       .col-md-8.mx-auto
+//-         a.btn.btn-outline-primary.btn-sm.rounded-pill.mb-3(href="/agendas")
+//-           i.bi.bi-arrow-left.me-2
+//-           | Volver a Agendas
+//-         h2.fw-bold.text-primary
+//-           i.bi.bi-calendar-plus.me-2
+//-           | Crear Nueva Agenda Médica
+//-         p.text-muted Configure los días, horarios y parámetros de atención para un profesional.
+
+//-     // ---------- FORMULARIO ----------
+//-     .row
+//-       .col-md-8.mx-auto
+//-         if error
+//-           .alert.alert-danger.shadow-sm.border-0.mb-4(role="alert")
+//-             i.bi.bi-exclamation-triangle-fill.me-2
+//-             | #{error}
+
+//-         form(
+//-           action="/agendas" 
+//-           method="POST" 
+//-           id="crear-agenda-form"
+//-           class="needs-validation" 
+//-           novalidate
+//-         )
+          
+//-           //- SECCIÓN 1: PROFESIONAL Y UBICACIÓN
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.mb-0.text-dark.fw-bold
+//-                 i.bi.bi-person-badge.text-primary.me-2
+//-                 | Profesional y Ubicación
+//-             .card-body.bg-light.bg-opacity-50
+//-               .row.g-3
+//-                 .col-md-12.mb-2
+//-                   label.form-label.small.fw-bold Buscar Médico
+//-                   .input-group.shadow-sm
+//-                     span.input-group-text: i.bi.bi-search
+//-                     input#buscarMedico.form-control(
+//-                       type="text" 
+//-                       placeholder="Escriba apellido o nombre..." 
+//-                       value=old.buscarMedico || ''
+//-                     )
+                
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold Médico Seleccionado
+//-                   select#medicoSelect.form-select.shadow-sm(name="id_medico" required)
+//-                     option(value="") Seleccione un médico
+//-                     if old.id_medico
+//-                       option(value=old.id_medico selected)= old.medicoNombre || 'Médico seleccionado'
+//-                   .invalid-feedback Por favor, busque y seleccione un médico.
+                
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold Especialidad
+//-                   select#especialidadSelect.form-select.shadow-sm(name="id_especialidad" required)
+//-                     option(value="") Seleccione especialidad
+//-                     if old.id_especialidad
+//-                       option(value=old.id_especialidad selected)= old.especialidadNombre || 'Especialidad seleccionada'
+//-                   .invalid-feedback Requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold Sucursal
+//-                   select.form-select.shadow-sm(name="id_sucursal" required)
+//-                     option(value="") Seleccione sucursal
+//-                     option(value="1" selected=(old.id_sucursal=="1")) Clínica Argentina
+//-                     option(value="2" selected=(old.id_sucursal=="2")) Clínica España
+                
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold Clasificación
+//-                   select.form-select.shadow-sm(name="id_clasificacion" required)
+//-                     option(value="1" selected=(old.id_clasificacion=="1" || !old.id_clasificacion)) Normal
+//-                     option(value="2" selected=(old.id_clasificacion=="2")) Especial
+//-                     option(value="3" selected=(old.id_clasificacion=="3")) VIP
+
+//-           //- SECCIÓN 2: DÍAS Y HORARIOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.mb-0.text-dark.fw-bold
+//-                 i.bi.bi-clock-history.text-primary.me-2
+//-                 | Disponibilidad Horaria
+//-             .card-body
+//-               .row.g-3.mb-4
+//-                 .col-md-3
+//-                   label.form-label.small.fw-bold Fecha Desde
+//-                   input.form-control.shadow-sm(type="date" name="fecha_creacion" required value=old.fecha_creacion || '')
+//-                 .col-md-3
+//-                   label.form-label.small.fw-bold Fecha Hasta
+//-                   input.form-control.shadow-sm(type="date" name="fecha_fin" required value=old.fecha_fin || '')
+//-                 .col-md-3
+//-                   label.form-label.small.fw-bold Hora Inicio
+//-                   input.form-control.shadow-sm(type="time" name="hora_inicio" required value=old.hora_inicio || '')
+//-                 .col-md-3
+//-                   label.form-label.small.fw-bold Hora Fin
+//-                   input.form-control.shadow-sm(type="time" name="hora_fin" required value=old.hora_fin || '')
+
+//-               label.form-label.small.fw-bold.mb-3 Días de atención
+//-               .row.bg-light.p-3.rounded.mx-0
+//-                 - const diasSemana = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+//-                 each dia, i in diasSemana
+//-                   - const valorDiaDB = (i + 1).toString()
+//-                   - let isChecked = false
+//-                   if old && old.dias
+//-                     - isChecked = Array.isArray(old.dias) ? old.dias.includes(valorDiaDB) : (old.dias == valorDiaDB)
+//-                   .col-md-3.col-6.mb-2
+//-                     .form-check.form-switch
+//-                       input.form-check-input(type="checkbox" name="dias" id=`dia_${valorDiaDB}` value=valorDiaDB checked=isChecked)
+//-                       label.form-check-label.small(for=`dia_${valorDiaDB}`) #{dia}
+
+//-           //- SECCIÓN 3: PARÁMETROS DE TURNOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.mb-0.text-dark.fw-bold
+//-                 i.bi.bi-gear-fill.text-primary.me-2
+//-                 | Configuración de Turnos
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold Duración de la consulta
+//-                   .input-group.shadow-sm
+//-                     select.form-select(name="duracion_turnos" required)
+//-                       option(value="") Seleccione...
+//-                       each d in [15,20,25,30,35,40,45,50,60]
+//-                         option(value=d selected=(old.duracion_turnos == d)) #{d} minutos
+//-                     span.input-group-text: i.bi.bi-stopwatch
+                
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold Límite de sobreturnos
+//-                   .input-group.shadow-sm
+//-                     input.form-control(type="number" min="0" name="limite_sobreturnos" required value=old.limite_sobreturnos || 0)
+//-                     span.input-group-text: i.bi.bi-person-plus
+
+//-           // ---------- ACCIONES ----------
+//-           .d-grid.gap-2.d-md-flex.justify-content-md-end.mt-4.mb-5
+//-             a.btn.btn-light.btn-lg.px-5.text-muted(href="/agendas") Cancelar
+//-             button.btn.btn-success.btn-lg.px-5.shadow(type="submit")
+//-               i.bi.bi-check-circle.me-2
+//-               | Crear Agenda
+
+//-   // ---------- SCRIPTS ----------
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const form = document.getElementById('crear-agenda-form');
+//-       const inputBuscar = document.getElementById('buscarMedico');
+//-       const medicoSelect = document.getElementById('medicoSelect');
+//-       const especialidadSelect = document.getElementById('especialidadSelect');
+
+//-       let timeout;
+
+//-       // 1. Buscador dinámico de médicos
+//-       inputBuscar.addEventListener('input', () => {
+//-         clearTimeout(timeout);
+//-         const texto = inputBuscar.value.trim();
+//-         if (texto.length < 2) return;
+
+//-         timeout = setTimeout(async () => {
+//-           try {
+//-             const res = await fetch(`/medicos/buscar?q=${encodeURIComponent(texto)}`);
+//-             const medicos = await res.json();
+//-             medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+//-             medicos.forEach(m => {
+//-               const opt = document.createElement('option');
+//-               opt.value = m.id_medico;
+//-               opt.textContent = `${m.apellido}, ${m.nombre}`;
+//-               medicoSelect.appendChild(opt);
+//-             });
+//-           } catch (err) { console.error("Error al buscar médicos:", err); }
+//-         }, 300);
+//-       });
+
+//-       // 2. Carga de especialidades al seleccionar médico
+//-       medicoSelect.addEventListener('change', async () => {
+//-         const idMedico = medicoSelect.value;
+//-         especialidadSelect.innerHTML = '<option value="">Cargando...</option>';
+//-         if (!idMedico) return;
+//-         try {
+//-           const res = await fetch(`/medicos/${idMedico}/especialidades`);
+//-           const especialidades = await res.json();
+//-           especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
+//-           especialidades.forEach(e => {
+//-             const opt = document.createElement('option');
+//-             opt.value = e.id;
+//-             opt.textContent = e.nombre;
+//-             especialidadSelect.appendChild(opt);
+//-           });
+//-         } catch (err) { console.error("Error al cargar especialidades:", err); }
+//-       });
+
+//-       // 3. Validación y Envío con SweetAlert2
+//-       form.addEventListener('submit', (e) => {
+//-         const diasChecked = form.querySelectorAll('input[name="dias"]:checked');
+        
+//-         // Validar Días de Atención
+//-         if (diasChecked.length === 0) {
+//-           e.preventDefault();
+//-           e.stopPropagation();
+//-           Swal.fire({
+//-             title: 'Faltan datos',
+//-             text: 'Debe seleccionar al menos un día de atención.',
+//-             icon: 'warning',
+//-             confirmButtonColor: '#0d6efd'
+//-           });
+//-           return false;
+//-         }
+
+//-         // Validar Coherencia de Fechas
+//-         const fInicio = new Date(form.fecha_creacion.value);
+//-         const fFin = new Date(form.fecha_fin.value);
+//-         if (fFin < fInicio) {
+//-           e.preventDefault();
+//-           Swal.fire({
+//-             title: 'Error en fechas',
+//-             text: 'La fecha "Hasta" no puede ser menor a la fecha "Desde".',
+//-             icon: 'error',
+//-             confirmButtonColor: '#0d6efd'
+//-           });
+//-           return false;
+//-         }
+
+//-         // Validación de Bootstrap
+//-         if (!form.checkValidity()) {
+//-           e.preventDefault();
+//-           e.stopPropagation();
+//-           Swal.fire({
+//-             title: 'Campos incompletos',
+//-             text: 'Por favor, complete todos los campos requeridos marcados en rojo.',
+//-             icon: 'info',
+//-             confirmButtonColor: '#0d6efd'
+//-           });
+//-         }
+
+//-         form.classList.add('was-validated');
+//-       });
+//-     });
+
+
 extends ../layout
 
 block contenido
-  //- Forzamos la carga de iconos por si el layout falla
+  //- Forzamos la carga de iconos y SweetAlert2
   link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   
   .container.py-5
     // ---------- ENCABEZADO ----------
@@ -152,6 +396,18 @@ block contenido
       const medicoSelect = document.getElementById('medicoSelect');
       const especialidadSelect = document.getElementById('especialidadSelect');
 
+      // Mostrar SweetAlert si la URL trae el parámetro de éxito
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('status') === 'success') {
+        Swal.fire({
+          title: '¡Agenda Creada!',
+          text: 'La agenda y sus turnos se generaron correctamente.',
+          icon: 'success',
+          confirmButtonColor: '#198754'
+        });
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       let timeout;
 
       // 1. Buscador dinámico de médicos
@@ -197,10 +453,8 @@ block contenido
       form.addEventListener('submit', (e) => {
         const diasChecked = form.querySelectorAll('input[name="dias"]:checked');
         
-        // Validar Días de Atención
         if (diasChecked.length === 0) {
           e.preventDefault();
-          e.stopPropagation();
           Swal.fire({
             title: 'Faltan datos',
             text: 'Debe seleccionar al menos un día de atención.',
@@ -210,7 +464,6 @@ block contenido
           return false;
         }
 
-        // Validar Coherencia de Fechas
         const fInicio = new Date(form.fecha_creacion.value);
         const fFin = new Date(form.fecha_fin.value);
         if (fFin < fInicio) {
@@ -219,20 +472,27 @@ block contenido
             title: 'Error en fechas',
             text: 'La fecha "Hasta" no puede ser menor a la fecha "Desde".',
             icon: 'error',
-            confirmButtonColor: '#0d6efd'
+            confirmButtonColor: '#d33'
           });
           return false;
         }
 
-        // Validación de Bootstrap
         if (!form.checkValidity()) {
           e.preventDefault();
           e.stopPropagation();
           Swal.fire({
             title: 'Campos incompletos',
-            text: 'Por favor, complete todos los campos requeridos marcados en rojo.',
+            text: 'Por favor, complete todos los campos requeridos.',
             icon: 'info',
             confirmButtonColor: '#0d6efd'
+          });
+        } else {
+          // Loader para proceso largo de creación de turnos
+          Swal.fire({
+            title: 'Procesando...',
+            text: 'Generando agenda médica, por favor espere.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
           });
         }
 

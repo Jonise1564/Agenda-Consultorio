@@ -173,33 +173,67 @@ class Turno {
 
     // ============================================
     // AGENDAR TURNO VIRTUAL
-    // ============================================
-
+    // ============================================    
     static async agendarTurnoVirtual(data) {
         let conn;
         try {
             conn = await createConnection();
-            // 1. Desestructuramos el nuevo campo
             const { fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni, es_sobreturno } = data;
-
-            // Aseguramos que sea 0 o 1 para la DB
             const sobreturnoBit = es_sobreturno ? 1 : 0;
 
+            // 1. OBTENER INFO DE LA AGENDA ACTUAL (Médico y Especialidad)
+            const [agendaActual] = await conn.query(
+                "SELECT id_medico, id_especialidad FROM agendas WHERE id = ?",
+                [id_agenda]
+            );
+            const { id_medico, id_especialidad } = agendaActual[0];
+
+            // 2. VALIDAR: 1 SOLO TURNO POR DÍA PARA ESA ESPECIALIDAD CON ESE MÉDICO
+            // Esto permite que el paciente vea al mismo médico hoy, pero por OTRA especialidad distinta.
+            const [mismoMedicoEspecialidad] = await conn.query(`
+            SELECT t.id 
+            FROM turnos t
+            INNER JOIN agendas a ON t.id_agenda = a.id
+            WHERE t.id_paciente = ? 
+              AND t.fecha = ? 
+              AND a.id_medico = ? 
+              AND a.id_especialidad = ?
+              AND t.estado NOT IN ('Cancelado')
+            LIMIT 1
+        `, [id_paciente, fecha, id_medico, id_especialidad]);
+
+            if (mismoMedicoEspecialidad.length > 0) {
+                throw new Error(`Ya tienes un turno agendado para esta especialidad con el profesional en el día seleccionado.`);
+            }
+
+            // 3. VALIDAR: SOLAPAMIENTO DE HORARIO (El paciente no puede estar en dos citas a la vez)
+            const [mismoHorario] = await conn.query(`
+            SELECT t.id 
+            FROM turnos t
+            WHERE t.id_paciente = ? 
+              AND t.fecha = ? 
+              AND t.hora_inicio = ? 
+              AND t.estado NOT IN ('Cancelado')
+            LIMIT 1
+        `, [id_paciente, fecha, hora_inicio]);
+
+            if (mismoHorario.length > 0) {
+                throw new Error(`Ya tienes otro turno asignado a las ${hora_inicio.substring(0, 5)} hs. para este día.`);
+            }
+
+            // --- LÓGICA DE GUARDADO ---
             const [existe] = await conn.query(
                 "SELECT id FROM turnos WHERE id_agenda = ? AND fecha = ? AND hora_inicio = ?",
                 [id_agenda, fecha, hora_inicio]
             );
 
             if (existe.length > 0) {
-                // 2. Si existe, actualizamos también la marca de sobreturno 
-                // (por si un turno libre se convierte en sobreturno manualmente)
                 await conn.query(
                     `UPDATE turnos SET estado = 'Reservado', id_paciente = ?, motivo = ?, archivo_dni = ?, es_sobreturno = ? WHERE id = ?`,
                     [id_paciente, motivo, archivo_dni, sobreturnoBit, existe[0].id]
                 );
                 return existe[0].id;
             } else {
-                // 3. Si no existe (es un horario nuevo/extra), insertamos con la marca
                 const [result] = await conn.query(
                     `INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda, archivo_dni, es_sobreturno)
                  VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?, ?)`,
@@ -215,7 +249,6 @@ class Turno {
         }
     }
 
-
     // ============================================
     // LISTAR CON FILTROS (VISTA SECRETARÍA)
     // ============================================
@@ -224,30 +257,30 @@ class Turno {
         try {
             conn = await createConnection();
             let sql = `
-            SELECT 
-                t.id, 
-                t.fecha, 
-                DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
-                t.estado, 
-                t.motivo, 
-                t.archivo_dni,
-                
-                p_per.nombre AS paciente_nombre, 
-                p_per.apellido AS paciente_apellido, 
-                p_per.dni AS paciente_dni,
-                m.id_medico, 
-                m_per.nombre AS medico_nombre, 
-                m_per.apellido AS medico_apellido,
-                e.nombre AS especialidad_nombre
-            FROM turnos t
-            LEFT JOIN pacientes p ON t.id_paciente = p.id
-            LEFT JOIN personas p_per ON p.id_persona = p_per.id
-            LEFT JOIN agendas a ON t.id_agenda = a.id
-            LEFT JOIN medicos m ON a.id_medico = m.id_medico
-            LEFT JOIN personas m_per ON m.id_persona = m_per.id
-            LEFT JOIN especialidades e ON a.id_especialidad = e.id
-            WHERE 1=1
-            `;
+        SELECT 
+            t.id, 
+            t.fecha, 
+            DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+            t.estado, 
+            t.motivo, 
+            t.archivo_dni,
+            
+            p_per.nombre AS paciente_nombre, 
+            p_per.apellido AS paciente_apellido, 
+            p_per.dni AS paciente_dni,
+            m.id_medico, 
+            m_per.nombre AS medico_nombre, 
+            m_per.apellido AS medico_apellido,
+            e.nombre AS especialidad_nombre
+        FROM turnos t
+        LEFT JOIN pacientes p ON t.id_paciente = p.id
+        LEFT JOIN personas p_per ON p.id_persona = p_per.id
+        LEFT JOIN agendas a ON t.id_agenda = a.id
+        LEFT JOIN medicos m ON a.id_medico = m.id_medico
+        LEFT JOIN personas m_per ON m.id_persona = m_per.id
+        LEFT JOIN especialidades e ON a.id_especialidad = e.id
+        WHERE 1=1
+        `;
 
             const params = [];
 
@@ -266,7 +299,7 @@ class Turno {
                 params.push(filtros.fecha);
             }
 
-            // sql += ` ORDER BY t.fecha DESC, t.hora_inicio ASC LIMIT 200`;
+            // Cambiamos ASC por DESC para mostrar los más nuevos primero
             sql += ` ORDER BY t.fecha ASC, t.hora_inicio ASC LIMIT 200`;
 
             const [rows] = await conn.query(sql, params);
@@ -280,7 +313,7 @@ class Turno {
     }
 
     // ============================================
-    // AUXILIARES
+    // Obtener Horarios Ocupados
     // ============================================
     static async obtenerHorariosOcupados(id_agenda, fecha) {
         let conn;
@@ -366,69 +399,28 @@ class Turno {
     }
 
     // listarPaginado
-    // static async listarPaginado(filtros, limit, offset) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         let sql = `
-    //         SELECT 
-    //             t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado, t.motivo, t.archivo_dni, t.es_sobreturno,
-    //             p_per.nombre AS paciente_nombre, p_per.apellido AS paciente_apellido, p_per.dni AS paciente_dni,
-    //             m.id_medico, m_per.nombre AS medico_nombre, m_per.apellido AS medico_apellido,
-    //             e.nombre AS especialidad_nombre
-    //         FROM turnos t
-    //         LEFT JOIN pacientes p ON t.id_paciente = p.id
-    //         LEFT JOIN personas p_per ON p.id_persona = p_per.id
-    //         LEFT JOIN agendas a ON t.id_agenda = a.id
-    //         LEFT JOIN medicos m ON a.id_medico = m.id_medico
-    //         LEFT JOIN personas m_per ON m.id_persona = m_per.id
-    //         LEFT JOIN especialidades e ON a.id_especialidad = e.id
-    //         WHERE 1=1
-    //     `;
-
-    //         const params = [];
-    //         if (filtros.paciente) {
-    //             sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
-    //             params.push(`%${filtros.paciente}%`, `%${filtros.paciente}%`, `%${filtros.paciente}%`);
-    //         }
-    //         if (filtros.profesional) {
-    //             sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
-    //             params.push(`%${filtros.profesional}%`, `%${filtros.profesional}%`);
-    //         }
-    //         if (filtros.fecha) {
-    //             sql += ` AND t.fecha = ?`;
-    //             params.push(filtros.fecha);
-    //         }
-
-    //         sql += ` ORDER BY t.fecha ASC, t.hora_inicio ASC LIMIT ? OFFSET ?`;
-    //         params.push(limit, offset);
-
-    //         const [rows] = await conn.query(sql, params);
-    //         return rows;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
-
-
-
     static async listarPaginado(filtros, limit, offset) {
         let conn;
         try {
             conn = await createConnection();
 
             // --- LIMPIEZA DE FILTROS ---
-            // Si el valor es el string "null", undefined o está vacío, lo convertimos en null real
             const cleanPaciente = (filtros.paciente === 'null' || !filtros.paciente) ? null : filtros.paciente;
             const cleanProfesional = (filtros.profesional === 'null' || !filtros.profesional) ? null : filtros.profesional;
             const cleanFecha = (filtros.fecha === 'null' || !filtros.fecha) ? null : filtros.fecha;
+            const cleanSucursal = (filtros.sucursal === 'null' || !filtros.sucursal) ? null : filtros.sucursal;
+
+            // CORRECCIÓN: Usamos 'filtros.especialidad' y 'filtros.status' que vienen del Controller
+            const cleanEspecialidad = (filtros.especialidad === 'null' || !filtros.especialidad) ? null : filtros.especialidad;
+            const cleanEstado = (filtros.status === 'null' || !filtros.status) ? null : filtros.status;
 
             let sql = `
             SELECT 
-                t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado, t.motivo, t.archivo_dni, t.es_sobreturno,
+                t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado, t.motivo, t.archivo_dni, t.es_sobreturno, t.observaciones,
                 p_per.nombre AS paciente_nombre, p_per.apellido AS paciente_apellido, p_per.dni AS paciente_dni,
                 m.id_medico, m_per.nombre AS medico_nombre, m_per.apellido AS medico_apellido,
-                e.nombre AS especialidad_nombre
+                e.nombre AS especialidad_nombre,
+                s.nombre AS sucursal_nombre
             FROM turnos t
             LEFT JOIN pacientes p ON t.id_paciente = p.id
             LEFT JOIN personas p_per ON p.id_persona = p_per.id
@@ -436,71 +428,57 @@ class Turno {
             LEFT JOIN medicos m ON a.id_medico = m.id_medico
             LEFT JOIN personas m_per ON m.id_persona = m_per.id
             LEFT JOIN especialidades e ON a.id_especialidad = e.id
+            LEFT JOIN sucursales s ON a.id_sucursal = s.id
             WHERE 1=1
         `;
 
             const params = [];
 
-            // Usamos los valores limpios para las condiciones
             if (cleanPaciente) {
                 sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
                 params.push(`%${cleanPaciente}%`, `%${cleanPaciente}%`, `%${cleanPaciente}%`);
             }
-
             if (cleanProfesional) {
                 sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
                 params.push(`%${cleanProfesional}%`, `%${cleanProfesional}%`);
             }
-
-            // Aquí es donde fallaba: validamos que cleanFecha tenga un valor real
             if (cleanFecha) {
                 sql += ` AND t.fecha = ?`;
                 params.push(cleanFecha);
             }
+            if (cleanSucursal) {
+                sql += ` AND s.nombre = ?`;
+                params.push(cleanSucursal);
+            }
 
-            sql += ` ORDER BY t.fecha ASC, t.hora_inicio ASC LIMIT ? OFFSET ?`;
-            params.push(limit, offset);
+            // Filtro de Especialidad: Si tu select envía el NOMBRE, usamos e.nombre. 
+            // Si envía el ID, deberías cambiar a a.id_especialidad = ?
+            if (cleanEspecialidad) {
+                sql += ` AND e.nombre = ?`;
+                params.push(cleanEspecialidad);
+            }
+
+            // Filtro de Estado (Status)
+            if (cleanEstado) {
+                sql += ` AND t.estado = ?`;
+                params.push(cleanEstado);
+            }
+
+            sql += ` ORDER BY t.fecha DESC, t.hora_inicio DESC LIMIT ? OFFSET ?`;
+            params.push(Number(limit), Number(offset));
 
             const [rows] = await conn.query(sql, params);
             return rows;
+        } catch (error) {
+            console.error("Error en listarPaginado:", error);
+            throw error;
         } finally {
             if (conn) conn.end();
         }
     }
 
-    // static async contarTurnos(filtros) {
-    //     let conn;
-    //     try {
-    //         conn = await createConnection();
-    //         let sql = `
-    //         SELECT COUNT(*) as total 
-    //         FROM turnos t
-    //         LEFT JOIN pacientes p ON t.id_paciente = p.id
-    //         LEFT JOIN personas p_per ON p.id_persona = p_per.id
-    //         LEFT JOIN agendas a ON t.id_agenda = a.id
-    //         LEFT JOIN medicos m ON a.id_medico = m.id_medico
-    //         LEFT JOIN personas m_per ON m.id_persona = m_per.id
-    //         WHERE 1=1
-    //     `;
-    //         const params = [];
-    //         if (filtros.paciente) {
-    //             sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
-    //             params.push(`%${filtros.paciente}%`, `%${filtros.paciente}%`, `%${filtros.paciente}%`);
-    //         }
-    //         if (filtros.profesional) {
-    //             sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
-    //             params.push(`%${filtros.profesional}%`, `%${filtros.profesional}%`);
-    //         }
-    //         if (filtros.fecha) {
-    //             sql += ` AND t.fecha = ?`;
-    //             params.push(filtros.fecha);
-    //         }
-    //         const [rows] = await conn.query(sql, params);
-    //         return rows[0].total;
-    //     } finally {
-    //         if (conn) conn.end();
-    //     }
-    // }
+
+
 
     static async contarTurnos(filtros) {
         let conn;
@@ -508,10 +486,14 @@ class Turno {
             conn = await createConnection();
 
             // --- LIMPIEZA DE FILTROS ---
-            // Convertimos el texto "null" (que viene de la URL) en un valor nulo real de JS
             const cleanPaciente = (filtros.paciente === 'null' || !filtros.paciente) ? null : filtros.paciente;
             const cleanProfesional = (filtros.profesional === 'null' || !filtros.profesional) ? null : filtros.profesional;
             const cleanFecha = (filtros.fecha === 'null' || !filtros.fecha) ? null : filtros.fecha;
+            const cleanSucursal = (filtros.sucursal === 'null' || !filtros.sucursal) ? null : filtros.sucursal;
+
+            // CORRECCIÓN: Usamos 'especialidad' y 'status' para coincidir con el controlador
+            const cleanEspecialidad = (filtros.especialidad === 'null' || !filtros.especialidad) ? null : filtros.especialidad;
+            const cleanEstado = (filtros.status === 'null' || !filtros.status) ? null : filtros.status;
 
             let sql = `
             SELECT COUNT(*) as total 
@@ -521,6 +503,8 @@ class Turno {
             LEFT JOIN agendas a ON t.id_agenda = a.id
             LEFT JOIN medicos m ON a.id_medico = m.id_medico
             LEFT JOIN personas m_per ON m.id_persona = m_per.id
+            LEFT JOIN especialidades e ON a.id_especialidad = e.id
+            LEFT JOIN sucursales s ON a.id_sucursal = s.id
             WHERE 1=1
         `;
 
@@ -530,24 +514,37 @@ class Turno {
                 sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
                 params.push(`%${cleanPaciente}%`, `%${cleanPaciente}%`, `%${cleanPaciente}%`);
             }
-
             if (cleanProfesional) {
                 sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
                 params.push(`%${cleanProfesional}%`, `%${cleanProfesional}%`);
             }
-
-            // Si cleanFecha es null, esta condición no se cumple y NO se agrega al SQL
             if (cleanFecha) {
                 sql += ` AND t.fecha = ?`;
                 params.push(cleanFecha);
             }
+            if (cleanSucursal) {
+                sql += ` AND s.nombre = ?`;
+                params.push(cleanSucursal);
+            }
+            if (cleanEspecialidad) {
+                sql += ` AND e.nombre = ?`;
+                params.push(cleanEspecialidad);
+            }
+            if (cleanEstado) {
+                sql += ` AND t.estado = ?`;
+                params.push(cleanEstado);
+            }
 
             const [rows] = await conn.query(sql, params);
             return rows[0].total;
+        } catch (error) {
+            console.error("Error en contarTurnos:", error);
+            throw error;
         } finally {
             if (conn) conn.end();
         }
     }
+
 
     static async buscarPrimerHuecoLibre(id_medico, id_especialidad) {
         let conn;
@@ -659,6 +656,137 @@ class Turno {
             if (conn) conn.end();
         }
     }
+
+    // ============================================
+    // VERIFICAR SI UN PACIENTE YA TIENE TURNO EN EL DÍA (REGLA ESTRICTA)
+    // ============================================
+    static async verificarTurnoDia(id_paciente, fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+            // Buscamos cualquier turno (normal o sobreturno) para ese paciente en ese día
+            // Ignoramos los cancelados para permitir re-agendar si canceló el anterior
+            const [rows] = await conn.query(`
+            SELECT id, DATE_FORMAT(hora_inicio, '%H:%i') AS hora 
+            FROM turnos 
+            WHERE id_paciente = ? 
+            AND fecha = ? 
+            AND estado NOT IN ('Cancelado')
+            LIMIT 1
+        `, [id_paciente, fecha]);
+
+            return rows.length > 0 ? rows[0] : null;
+        } catch (error) {
+            console.error("Error en verificarTurnoDia:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+
+    // ============================================
+    // OBTENER TURNOS DE AGENDAS DESACTIVADAS
+    // ============================================
+    static async getTurnosAgendasNoActivas() {
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+          SELECT 
+            t.id AS id, 
+            t.fecha, 
+            DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+            t.estado, 
+
+            p_per.nombre AS paciente_nombre, 
+            p_per.apellido AS paciente_apellido, 
+            tel.numero AS paciente_telefono, 
+
+            m_per.apellido AS medico_apellido, 
+            e.nombre AS especialidad_nombre
+        FROM turnos t
+        INNER JOIN agendas a ON t.id_agenda = a.id
+        INNER JOIN pacientes pac ON t.id_paciente = pac.id
+        INNER JOIN personas p_per ON pac.id_persona = p_per.id
+
+        LEFT JOIN telefonos tel 
+        ON tel.id_persona = p_per.id
+        AND tel.id = (
+            SELECT MIN(id)
+            FROM telefonos
+            WHERE id_persona = p_per.id
+        )
+
+        LEFT JOIN medicos m 
+            ON a.id_medico = m.id_medico
+        LEFT JOIN personas m_per 
+            ON m.id_persona = m_per.id
+        LEFT JOIN especialidades e 
+            ON a.id_especialidad = e.id
+
+        WHERE a.activo = 0 
+        AND t.estado IN ('Pendiente', 'Reservado', 'Confirmado')
+        AND t.fecha >= CURDATE()
+        ORDER BY t.fecha ASC, t.hora_inicio ASC;
+
+        `;
+            const [rows] = await conn.query(sql);
+            return rows;
+        } catch (error) {
+            console.error("Error en getTurnosAfectadosPorBaja:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+    // Validar si el paciente ya tiene un turno con el mismo médico el mismo día
+    static async verificarTurnoMedicoDia(id_paciente, fecha, id_agenda) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
+                SELECT t.id 
+                FROM turnos t
+                INNER JOIN agendas a_existente ON t.id_agenda = a_existente.id
+                WHERE t.id_paciente = ? 
+                  AND t.fecha = ? 
+                  AND t.estado NOT IN ('Cancelado')
+                  AND a_existente.id_medico = (SELECT id_medico FROM agendas WHERE id = ?)
+                LIMIT 1
+            `, [id_paciente, fecha, id_agenda]);
+
+            return rows.length > 0; // Retorna true si ya existe un turno
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+    // Validar si el paciente ya tiene un turno a esa misma hora (con cualquier médico)
+    static async verificarTurnoHora(id_paciente, fecha, hora) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
+                SELECT id FROM turnos 
+                WHERE id_paciente = ? AND fecha = ? AND hora_inicio = ? 
+                AND estado NOT IN ('Cancelado')
+                LIMIT 1
+            `, [id_paciente, fecha, hora]);
+
+            return rows.length > 0; // Retorna true si hay solapamiento
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+
+
+
 
 
 }

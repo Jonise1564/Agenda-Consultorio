@@ -11,15 +11,15 @@ block contenido
       z-index: 1;
     }
     .hover-expand:hover { 
-      transform: scale(1.2); /* Crece un 8% */
-      z-index: 10; /* Se pone por encima de las otras cards */
+      transform: scale(1.05);
+      z-index: 10; 
       box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-      cursor: ;
     }
     
     .bg-soft-primary { background-color: rgba(13, 110, 253, 0.08); color: #0d6efd; font-size: 0.65rem; }
     .border-absence { border-left: 4px solid #fd7e14 !important; }
-    .bg-soft-warning { background-color: rgba(253, 126, 20, 0.08); color: #fd7e14; font-size: 0.65rem; }
+    .bg-soft-warning { background-color: rgba(253, 126, 20, 0.15); color: #fd7e14; font-size: 0.65rem; font-weight: bold; }
+    .bg-light-orange { background-color: #fffaf5; }
     .small-text { font-size: 0.75rem; }
     .tiny-text { font-size: 0.65rem; }
 
@@ -63,9 +63,9 @@ block contenido
             select.form-select.form-select-sm(id="f-sucursal" onchange="applyFilters()")
               option(value="") Sucursal: Todas
               option(value="Clínica Argentina") Clínica Argentina
-              option(value="Centro España") Centro España
+              option(value="Clínica España") Clínica España
 
-    //- Grilla Ajustada (Más cards por fila: 5 en pantallas grandes)
+    //- Grilla de Cards
     .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.row-cols-xl-5.g-3#agendas-list
       if agendas && agendas.length > 0
         each agenda in agendas
@@ -75,13 +75,12 @@ block contenido
             data-dia=agenda.dias
             data-sucursal=agenda.sucursal
           )
-            //- Aplicamos la clase hover-expand aquí
-            .card.h-100.border-0.shadow-sm.hover-expand.border-start.border-4(class=agenda.ausente ? 'border-absence' : 'border-primary')
-              .card-header.bg-white.pt-2.pb-1.border-0
+            .card.h-100.border-0.shadow-sm.hover-expand.border-start.border-4(class=agenda.ausente ? 'border-absence bg-light-orange' : 'border-primary')
+              .card-header.bg-transparent.pt-2.pb-1.border-0
                 .d-flex.justify-content-between.align-items-start
                   div
                     p.fw-bold.mb-0.small-text #{agenda.apellido}, #{agenda.nombre}
-                    span.badge.tiny-text(class=agenda.ausente ? 'bg-soft-warning' : 'bg-soft-primary')= agenda.especialidad
+                    span.badge.tiny-text(class=agenda.ausente ? 'bg-soft-warning text-warning' : 'bg-soft-primary')= agenda.especialidad
                   
                   if agenda.ausente
                     i.bi.bi-exclamation-triangle-fill.text-warning.fs-6
@@ -111,7 +110,7 @@ block contenido
                     span.text-muted Dur: #{agenda.duracion_turnos}m
                     span.text-muted Sob: #{agenda.limite_sobreturnos}
 
-              .card-footer.bg-white.border-0.pt-0.pb-2
+              .card-footer.bg-transparent.border-0.pt-0.pb-2
                 .d-grid.gap-1
                   a.btn.btn-xs.py-0(href=`/turnos/${agenda.id}` class=agenda.ausente ? 'btn-warning' : 'btn-primary' style="font-size: 0.7rem")
                     | Gestionar Turnos
@@ -128,38 +127,55 @@ block contenido
           h5.text-muted.mt-3 No hay agendas cargadas
 
   script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('nombreStore')) Swal.fire({ icon: 'success', title: '¡Creada!', text: 'Agenda cargada correctamente', timer: 2000, showConfirmButton: false });
+      if (params.get('nombreUpdate')) Swal.fire({ icon: 'success', title: '¡Actualizada!', text: 'Cambios guardados con éxito', timer: 2000, showConfirmButton: false });
+      if (params.get('deleted')) Swal.fire({ icon: 'success', title: 'Desactivada', text: 'La agenda ya no recibirá nuevos turnos', timer: 2000, showConfirmButton: false });
+      if (params.get('error') === 'no_encontrada') Swal.fire({ icon: 'error', title: 'Error', text: 'La agenda no existe o no está activa' });
+
+      const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+    });
+
     function confirmDelete(id) {
       Swal.fire({
-        title: '¿Eliminar?',
+        title: '¿Desactivar Agenda?',
+        text: 'La agenda ya no aparecerá en la lista de turnos.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        confirmButtonText: 'Sí',
-        cancelButtonText: 'No'
+        confirmButtonText: 'Sí, eliminar'
       }).then((result) => {
         if (result.isConfirmed) {
-          fetch(`/agendas/${id}`, { method: 'DELETE' })
-            .then(res => {
-              if (!res.ok) throw new Error();
-              location.reload();
-            })
-            .catch(() => Swal.fire('Error', 'No se pudo eliminar.', 'error'));
+          fetch(`/agendas/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) window.location.href = '/agendas?deleted=true';
+            else Swal.fire('Error', data.message, 'error');
+          });
         }
       });
     }
 
     function applyFilters() {
-      const fEsp = document.getElementById('f-especialidad').value;
-      const fMed = document.getElementById('f-medico').value;
-      const fDia = document.getElementById('f-dia').value;
-      const fSuc = document.getElementById('f-sucursal').value;
+      // Capturamos valores y pasamos a minúsculas para comparar seguro
+      const fEsp = document.getElementById('f-especialidad').value.toLowerCase();
+      const fMed = document.getElementById('f-medico').value.toLowerCase();
+      const fDia = document.getElementById('f-dia').value.toLowerCase();
+      const fSuc = document.getElementById('f-sucursal').value.toLowerCase();
 
       document.querySelectorAll('.agenda-card').forEach(card => {
+        const cEsp = (card.dataset.especialidad || "").toLowerCase();
+        const cMed = (card.dataset.medico || "").toLowerCase();
+        const cDia = (card.dataset.dia || "").toLowerCase();
+        const cSuc = (card.dataset.sucursal || "").toLowerCase();
+
         const match = 
-          (fEsp === "" || card.dataset.especialidad === fEsp) &&
-          (fMed === "" || card.dataset.medico === fMed) &&
-          (fDia === "" || card.dataset.dia.includes(fDia)) &&
-          (fSuc === "" || card.dataset.sucursal === fSuc);
+          (fEsp === "" || cEsp === fEsp) &&
+          (fMed === "" || cMed === fMed) &&
+          (fDia === "" || cDia.includes(fDia)) &&
+          (fSuc === "" || cSuc === fSuc);
 
         card.style.display = match ? "block" : "none";
       });

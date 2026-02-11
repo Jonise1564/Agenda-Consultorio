@@ -24,7 +24,6 @@ block contenido
     .fila-ausencia {
       border-left: 5px solid #ffc107 !important;
     }
-    /* Estilo para Sobreturnos */
     .fila-sobreturno {
       background-color: #f8f9fa !important;
       border-left: 5px solid #343a40 !important;
@@ -34,6 +33,14 @@ block contenido
       vertical-align: middle;
       background-color: #343a40;
       color: white;
+    }
+    .nav-tabs .nav-link {
+      color: #6c757d;
+      font-weight: bold;
+    }
+    .nav-tabs .nav-link.active {
+      color: #0d6efd;
+      border-bottom: 3px solid #0d6efd;
     }
 
   .container-fluid.py-4
@@ -78,124 +85,209 @@ block contenido
     .card.border-0.shadow-sm.mb-4.d-print-none
       .card-body.bg-light.rounded
         form.row.g-3(method="GET" action="/secretaria/turnos")
-          .col-md-3
+          .col-md-2
             label.form-label.small.fw-bold Paciente / DNI
             input.form-control(type="text" name="paciente" placeholder="Ej: Camargo..." value=filtros.paciente)
-          .col-md-3
+          .col-md-2
             label.form-label.small.fw-bold Profesional
             input.form-control(type="text" name="profesional" placeholder="Ej: Benitez..." value=filtros.profesional)
-          .col-md-3
+          .col-md-2
+            label.form-label.small.fw-bold Especialidad
+            select.form-select(name="especialidad")
+              option(value="") Todas
+              if especialidades
+                each esp in especialidades
+                  option(value=esp.nombre selected=(filtros.especialidad == esp.nombre))= esp.nombre
+          .col-md-2
+            label.form-label.small.fw-bold Sucursal
+            select.form-select(name="sucursal")
+              option(value="") Todas
+              - let sedes = []
+              if turnos && turnos.length > 0
+                - sedes = [...new Set(turnos.map(t => t.sucursal_nombre).filter(s => s))]
+              each sede in sedes
+                option(value=sede selected=(filtros.sucursal === sede))= sede
+          .col-md-2
+            label.form-label.small.fw-bold Estado
+            //- CAMBIO: name="estado" por name="status" para coincidir con el controlador
+            select.form-select(name="status")
+              option(value="") Todos
+              each est in ['Reservado', 'Confirmado', 'Atendido', 'Cancelado', 'Ausente']
+                option(value=est selected=(filtros.status == est))= est
+          .col-md-2
             label.form-label.small.fw-bold Fecha
             input.form-control(type="date" name="fecha" value=filtros.fecha)
-          .col-md-3.d-flex.align-items-end.gap-2
-            button.btn.btn-info.text-white.flex-fill(type="submit")
+          
+          .col-12.d-flex.justify-content-end.gap-2
+            button.btn.btn-info.text-white.px-4(type="submit")
               i.fa-solid.fa-magnifying-glass.me-1
               | Filtrar
-            a.btn.btn-secondary.flex-fill(href="/secretaria/turnos")
+            a.btn.btn-secondary.px-4(href="/secretaria/turnos")
               i.fa-solid.fa-eraser.me-1
               | Limpiar
 
-    //- --- TABLA ---
-    .card.border-0.shadow-sm
-      .table-responsive
-        table.table.table-hover.align-middle.mb-0
-          thead.text-white(style="background-color: #5bc0de;")
-            tr
-              th Turno para
-              th Médico
-              th Especialidad
-              th.text-center Fecha
-              th.text-center Hora
-              th.text-center Estado
-              th.d-print-none Acciones
-          tbody
-            if turnos && turnos.length > 0
-              each turno in turnos
-                tr(class=(turno.medicoAusente ? 'table-warning fila-ausencia' : (turno.es_sobreturno ? 'fila-sobreturno' : (turno.estado === 'Reservado' ? 'table-warning' : ''))))
-                  td
-                    .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
-                    div.d-flex.align-items-center.gap-2
-                      small.text-muted DNI: #{turno.paciente_dni}
-                      if turno.es_sobreturno
-                        span.badge.badge-sobreturno
-                          i.fa-solid.fa-plus.me-1
-                          | SOBRETURNO
-                  td 
-                    | #{turno.medico_apellido}, #{turno.medico_nombre}
-                    if turno.medicoAusente
-                      span.badge.bg-danger.ms-2(title=`Motivo: ${turno.motivoAusencia || 'No especificado'}`)
-                        i.fa-solid.fa-user-slash.me-1
-                        | AUSENTE
-                  td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
-                  td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
-                  td.text-center: span.fw-bold #{turno.hora}
-                  td.text-center
-                    span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : (turno.estado === 'Atendido' ? 'bg-info' : 'bg-secondary')))) #{turno.estado}
-                  td.d-print-none
-                    .d-flex.flex-column.gap-1
-                      button.btn.btn-sm.btn-warning.shadow-sm(onclick=`abrirModalEditarTurno(${JSON.stringify(turno)})`)
-                        i.fa-solid.fa-pen-to-square.me-1
-                        | Editar
-                      button.btn.btn-sm(class=turno.medicoAusente ? 'btn-danger shadow-sm' : 'btn-primary' onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
-                        i.fa-solid.fa-arrow-right-arrow-left.me-1
-                        | Trasladar
-                      button.btn.btn-sm.btn-outline-info(onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
-                        i.fa-solid.fa-eye.me-1
-                        | Detalles
-            else
-              tr: td.text-center.py-5(colspan="7") No se encontraron turnos.
+    //- --- TABS ---
+    ul.nav.nav-tabs.mb-0.border-bottom-0(role="tablist")
+      li.nav-item(role="presentation")
+        button.nav-link.active(data-bs-toggle="tab" data-bs-target="#tab-activos" type="button" role="tab")
+          i.fa-solid.fa-calendar-days.me-2
+          | Turnos Activos
+      li.nav-item(role="presentation")
+        button.nav-link.position-relative(data-bs-toggle="tab" data-bs-target="#tab-reubicacion" type="button" role="tab")
+          i.fa-solid.fa-triangle-exclamation.me-2.text-danger
+          | Necesitan Reubicación
+          if turnosUrgentes && turnosUrgentes.length > 0
+            span.position-absolute.top-0.start-100.translate-middle.badge.rounded-pill.bg-danger
+              | #{turnosUrgentes.length}
 
-      //- --- PAGINACIÓN ---
-      .card-footer.bg-white.d-print-none
-        if totalPages > 1
-          nav(aria-label="Paginación de turnos")
-            ul.pagination.justify-content-center.mb-0
-              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
-                a.page-link(href=`/secretaria/turnos?page=1&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
-                  i.fa-solid.fa-angles-left
-              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
-                a.page-link(href=`/secretaria/turnos?page=${currentPage - 1}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
-                  i.fa-solid.fa-angle-left
+    .tab-content
+      .tab-pane.fade.show.active#tab-activos(role="tabpanel")
+        .card.border-0.shadow-sm(style="border-top-left-radius: 0;")
+          .table-responsive
+            table.table.table-hover.align-middle.mb-0
+              thead.text-white(style="background-color: #5bc0de;")
+                tr
+                  th Turno para
+                  th Médico
+                  th Especialidad
+                  th Sucursal
+                  th.text-center Fecha
+                  th.text-center Hora
+                  th.text-center Estado
+                  th.d-print-none Acciones
+              tbody
+                if turnos && turnos.length > 0
+                  each turno in turnos
+                    tr(class=(turno.medicoAusente ? 'table-warning fila-ausencia' : (turno.es_sobreturno ? 'fila-sobreturno' : (turno.estado === 'Reservado' ? 'table-warning' : ''))))
+                      td
+                        .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
+                        div.d-flex.align-items-center.gap-2
+                          small.text-muted DNI: #{turno.paciente_dni}
+                          if turno.es_sobreturno
+                            span.badge.badge-sobreturno
+                              i.fa-solid.fa-plus.me-1
+                              | SOBRETURNO
+                      td 
+                        | #{turno.medico_apellido}, #{turno.medico_nombre}
+                        if turno.medicoAusente
+                          span.badge.bg-danger.ms-2(title=`Motivo: ${turno.motivoAusencia || 'No especificado'}`)
+                            i.fa-solid.fa-user-slash.me-1
+                            | AUSENTE
+                      td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
+                      td
+                        span.text-muted.small
+                          i.fa-solid.fa-location-dot.me-1.text-danger
+                          | #{turno.sucursal_nombre || 'N/A'}
+                      td.text-center #{new Date(turno.fecha).toLocaleDateString('es-AR')}
+                      td.text-center: span.fw-bold #{turno.hora}
+                      td.text-center
+                        span.badge(class=(turno.estado === 'Reservado' ? 'bg-warning text-dark' : (turno.estado === 'Confirmado' ? 'bg-success' : (turno.estado === 'Atendido' ? 'bg-info' : 'bg-secondary')))) #{turno.estado}
+                      td.d-print-none
+                        .d-flex.flex-column.gap-1
+                          button.btn.btn-sm.btn-warning.shadow-sm(onclick=`abrirModalEditarTurno(${JSON.stringify(turno)})`)
+                            i.fa-solid.fa-pen-to-square.me-1
+                            | Editar
+                          button.btn.btn-sm(class=turno.medicoAusente ? 'btn-danger shadow-sm' : 'btn-primary' onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
+                            i.fa-solid.fa-arrow-right-arrow-left.me-1
+                            | Trasladar
+                          button.btn.btn-sm.btn-outline-info(onclick=`verDetallesTurno(${JSON.stringify(turno)})`) 
+                            i.fa-solid.fa-eye.me-1
+                            | Detalles
+                else
+                  tr: td.text-center.py-5(colspan="8") No se encontraron turnos.
 
-              - var start = Math.max(1, currentPage - 2)
-              - var end = Math.min(totalPages, currentPage + 2)
-              
-              if start > 1
-                li.page-item.disabled: span.page-link ...
+          .card-footer.bg-white.d-print-none
+            if totalPages > 1
+              //- CAMBIO: Se usa status en lugar de estado en la query string
+              - const queryParams = `&paciente=${filtros.paciente || ''}&profesional=${filtros.profesional || ''}&fecha=${filtros.fecha || ''}&sucursal=${filtros.sucursal || ''}&especialidad=${filtros.especialidad || ''}&status=${filtros.status || ''}`
+              nav(aria-label="Paginación")
+                ul.pagination.justify-content-center.mb-0
+                  li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                    a.page-link(href=`/secretaria/turnos?page=1${queryParams}`)
+                      i.fa-solid.fa-angles-left
+                  li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                    a.page-link(href=`/secretaria/turnos?page=${currentPage - 1}${queryParams}`)
+                      i.fa-solid.fa-angle-left
 
-              - for (var i = start; i <= end; i++)
-                li.page-item(class=(currentPage === i ? 'active' : ''))
-                  a.page-link(href=`/secretaria/turnos?page=${i}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)= i
+                  - var start = Math.max(1, currentPage - 2)
+                  - var end = Math.min(totalPages, currentPage + 2)
+                  
+                  if start > 1
+                    li.page-item.disabled: span.page-link ...
 
-              if end < totalPages
-                li.page-item.disabled: span.page-link ...
+                  - for (var i = start; i <= end; i++)
+                    li.page-item(class=(currentPage === i ? 'active' : ''))
+                      a.page-link(href=`/secretaria/turnos?page=${i}${queryParams}`)= i
 
-              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
-                a.page-link(href=`/secretaria/turnos?page=${currentPage + 1}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
-                  i.fa-solid.fa-angle-right
-              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
-                a.page-link(href=`/secretaria/turnos?page=${totalPages}&paciente=${filtros.paciente}&profesional=${filtros.profesional}&fecha=${filtros.fecha}`)
-                  i.fa-solid.fa-angles-right
-        
-        .text-center.mt-2.small.text-muted
-          | Mostrando página #{currentPage} de #{totalPages} (Total: #{totalTurnos} turnos)
+                  if end < totalPages
+                    li.page-item.disabled: span.page-link ...
+
+                  li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                    a.page-link(href=`/secretaria/turnos?page=${currentPage + 1}${queryParams}`)
+                      i.fa-solid.fa-angle-right
+                  li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                    a.page-link(href=`/secretaria/turnos?page=${totalPages}${queryParams}`)
+                      i.fa-solid.fa-angles-right
+            
+            .text-center.mt-2.small.text-muted
+              | Mostrando página #{currentPage} de #{totalPages} (Total: #{totalTurnos} turnos)
+
+      .tab-pane.fade#tab-reubicacion(role="tabpanel")
+        .card.border-0.shadow-sm(style="border-top-left-radius: 0;")
+          .alert.alert-danger.m-3.mb-0.d-flex.align-items-center
+            i.fa-solid.fa-circle-exclamation.fa-2xl.me-3
+            div
+              strong Atención: 
+              | Estos turnos pertenecen a agendas que han sido desactivadas. Debe contactar al paciente para reprogramar.
+          
+          .table-responsive.p-3
+            table.table.table-hover.align-middle
+              thead.table-dark
+                tr
+                  th Paciente
+                  th Contacto
+                  th Médico Original
+                  th Sucursal
+                  th Fecha / Hora
+                  th.text-center Acciones
+              tbody
+                if turnosUrgentes && turnosUrgentes.length > 0
+                  each tUrge in turnosUrgentes
+                    tr
+                      td.fw-bold.text-uppercase #{tUrge.paciente_apellido}, #{tUrge.paciente_nombre}
+                      td
+                        if tUrge.paciente_telefono
+                          a.btn.btn-sm.btn-outline-success(href=`https://wa.me/${tUrge.paciente_telefono.replace(/\D/g,'')}` target="_blank")
+                            i.fa-brands.fa-whatsapp.me-1
+                            | WhatsApp
+                        else
+                          span.text-muted Sin tel.
+                      td Dr. #{tUrge.medico_apellido}
+                      td: small.text-muted= tUrge.sucursal_nombre
+                      td
+                        span.d-block #{new Date(tUrge.fecha).toLocaleDateString('es-AR')}
+                        small.fw-bold #{tUrge.hora} hs
+                      td.text-center
+                        button.btn.btn-sm.btn-primary(onclick=`abrirModalTraslado('${tUrge.id}', '${tUrge.paciente_nombre} ${tUrge.paciente_apellido}')`)
+                          i.fa-solid.fa-calendar-plus.me-1
+                          | Reubicar Ahora
+                else
+                  tr: td.text-center.py-5.text-muted(colspan="6") No hay turnos pendientes.
 
   //- --- MODALES ---
-
-  //- MODAL EDITAR ESTADO
   #modalEditarTurno.modal.fade(tabindex="-1")
     .modal-dialog.modal-dialog-centered
       .modal-content.border-0.shadow-lg
         .modal-header.bg-warning.text-dark
           h5.modal-title 
             i.fa-solid.fa-pen-to-square.me-2
-            | Editar Estado del Turno
+            | Editar Estado
           button.btn-close(data-bs-dismiss="modal")
         .modal-body
           form(action="/secretaria/actualizar-estado-turno" method="POST")
             input#editTurnoId(type="hidden" name="id_turno")
             .mb-3
-              label.form-label.fw-bold Estado del Turno
+              label.form-label.fw-bold Estado
               select.form-select.form-select-lg(name="estado" id="editEstado")
                 option(value="Reservado") Reservado
                 option(value="Confirmado") Confirmado
@@ -203,12 +295,11 @@ block contenido
                 option(value="Atendido") Atendido
                 option(value="Ausente") Ausente
             .mb-3
-              label.form-label.fw-bold Observaciones Internas
-              textarea.form-control(name="observaciones" id="editObservaciones" rows="3" placeholder="Ej: El paciente requiere silla de ruedas...")
+              label.form-label.fw-bold Observaciones
+              textarea.form-control(name="observaciones" id="editObservaciones" rows="3")
             .mt-4.d-grid
-              button.btn.btn-warning.fw-bold(type="submit") Actualizar Turno
+              button.btn.btn-warning.fw-bold(type="submit") Actualizar
 
-  //- MODAL TRASLADO
   #modalTrasladoIndividual.modal.fade(tabindex="-1")
     .modal-dialog.modal-dialog-centered
       .modal-content.border-0.shadow-lg
@@ -237,7 +328,6 @@ block contenido
             .mt-4.d-grid
               button.btn.btn-primary.fw-bold(type="submit") Confirmar Traslado
 
-  //- MODAL DETALLES
   #modalDetallesTurno.modal.fade(tabindex="-1")
     .modal-dialog.modal-lg.modal-dialog-centered
       .modal-content.border-0.shadow-lg
@@ -256,10 +346,10 @@ block contenido
               p.mb-1#det-fecha-hora
           hr
           .text-center
-            h6.fw-bold Foto DNI (Click para ampliar)
+            h6.fw-bold Foto DNI
             a#linkFotoDni(target="_blank")
-              img#fotoDniPreview.img-fluid.rounded.shadow-sm(style="max-height: 350px; display:none;" title="Ver imagen completa")
-            #sinFotoDni.alert.alert-light.border No hay foto cargada.
+              img#fotoDniPreview.img-fluid.rounded.shadow-sm(style="max-height: 350px; display:none;")
+            #sinFotoDni.alert.alert-light.border No hay foto.
         .modal-footer
           button.btn.btn-secondary(data-bs-dismiss="modal") Cerrar
 

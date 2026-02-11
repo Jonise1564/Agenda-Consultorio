@@ -1,7 +1,7 @@
 const express = require('express');
 const EspecialidadesRouter = express.Router();
 const especialidadesControllers = require('../controllers/EspecialidadesControllers');
-// Ya no necesitas 'const router = express.Router();' -> Borra esa línea
+
 
 const { verificarAcceso } = require('../middlewares/auth');
 

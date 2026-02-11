@@ -117,7 +117,7 @@ class AdministracionController {
         let conn;
         try {
             const { nombre, apellido, email, password } = req.body;
-            const usuario = req.user; 
+            const usuario = req.user;
             if (!usuario) return res.redirect('/auth/login');
             conn = await createConnection();
             let sql = "UPDATE usuarios u JOIN personas p ON u.id_persona = p.id SET p.nombre = ?, p.apellido = ?, u.email = ?";
@@ -141,13 +141,13 @@ class AdministracionController {
             const { fecha, descripcion } = req.body;
             // Validación extra de seguridad
             if (!fecha || !descripcion) throw new Error("Datos incompletos");
-            
+
             conn = await createConnection();
             await conn.query('INSERT INTO FERIADOS (fecha, descripcion) VALUES (?, ?)', [fecha, descripcion]);
             res.redirect('/admin/bloqueos?status=feriado_success');
-        } catch (error) { 
+        } catch (error) {
             console.error("Error al guardar feriado:", error);
-            res.redirect('/admin/bloqueos?status=error'); 
+            res.redirect('/admin/bloqueos?status=error');
         } finally { if (conn) conn.end(); }
     }
 
@@ -157,102 +157,62 @@ class AdministracionController {
             conn = await createConnection();
             await conn.query('DELETE FROM FERIADOS WHERE id = ?', [req.params.id]);
             res.redirect('/admin/bloqueos?status=feriado_deleted');
-        } catch (error) { 
-            res.redirect('/admin/bloqueos?status=error'); 
+        } catch (error) {
+            res.redirect('/admin/bloqueos?status=error');
         } finally { if (conn) conn.end(); }
     }
 
+    async importarFeriadosExcel(req, res) {
+        let conn;
+        try {
+            if (!req.file) throw new Error("No se subió ningún archivo");
 
-//     async importarFeriadosExcel(req, res) {
-//     let conn;
-//     try {
-//         if (!req.file) throw new Error("No se subió ningún archivo");
+            // 1. LEER EL EXCEL con cellDates: true para manejar fechas de Excel (números seriales)
+            const workbook = xlsx.readFile(req.file.path, { cellDates: true });
+            const sheetName = workbook.SheetNames[0];
+            const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-//         // 1. LEER EL EXCEL con cellDates: true para que convierta los números a fechas JS
-//         const workbook = xlsx.readFile(req.file.path, { cellDates: true });
-//         const sheetName = workbook.SheetNames[0];
-//         const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            conn = await createConnection();
 
-//         conn = await createConnection();
-        
-//         for (const fila of data) {
-//             let { fecha, descripcion } = fila;
-            
-//             if (fecha && descripcion) {
-//                 // 2. FORMATEAR LA FECHA para MySQL (YYYY-MM-DD)
-//                 // Si la librería lo detectó como fecha de JS, la formateamos
-//                 const fechaFinal = new Date(fecha).toISOString().split('T')[0];
+            for (const fila of data) {
+                // Usamos nombres flexibles por si en el Excel vienen con mayúsculas
+                let fechaRaw = fila.fecha || fila.Fecha;
+                let descripcion = fila.descripcion || fila.Descripcion;
 
-//                 await conn.query(
-//                     'INSERT INTO FERIADOS (fecha, descripcion) VALUES (?, ?)', 
-//                     [fechaFinal, descripcion]
-//                 );
-//             }
-//         }
+                if (fechaRaw && descripcion) {
+                    // 2. FORMATEAR LA FECHA para MySQL (YYYY-MM-DD)
+                    // Si es un objeto Date (gracias a cellDates: true), lo convertimos.
+                    // Si viene como texto, intentamos parsearlo.
+                    const fechaFinal = new Date(fechaRaw).toISOString().split('T')[0];
 
-//         // Borrar archivo temporal
-//         if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-
-//         res.redirect('/admin/bloqueos?status=import_success');
-//     } catch (error) {
-//         console.error("Error en importación:", error);
-//         res.redirect('/admin/bloqueos?status=error_import');
-//     } finally {
-//         if (conn) conn.end();
-//     }
-// }
-
-async importarFeriadosExcel(req, res) {
-    let conn;
-    try {
-        if (!req.file) throw new Error("No se subió ningún archivo");
-
-        // 1. LEER EL EXCEL con cellDates: true para manejar fechas de Excel (números seriales)
-        const workbook = xlsx.readFile(req.file.path, { cellDates: true });
-        const sheetName = workbook.SheetNames[0];
-        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-        conn = await createConnection();
-        
-        for (const fila of data) {
-            // Usamos nombres flexibles por si en el Excel vienen con mayúsculas
-            let fechaRaw = fila.fecha || fila.Fecha;
-            let descripcion = fila.descripcion || fila.Descripcion;
-            
-            if (fechaRaw && descripcion) {
-                // 2. FORMATEAR LA FECHA para MySQL (YYYY-MM-DD)
-                // Si es un objeto Date (gracias a cellDates: true), lo convertimos.
-                // Si viene como texto, intentamos parsearlo.
-                const fechaFinal = new Date(fechaRaw).toISOString().split('T')[0];
-
-                // OPCIÓN B: INSERT O UPDATE si la fecha ya existe (Evita el error ER_DUP_ENTRY)
-                await conn.query(`
+                    // OPCIÓN B: INSERT O UPDATE si la fecha ya existe (Evita el error ER_DUP_ENTRY)
+                    await conn.query(`
                     INSERT INTO FERIADOS (fecha, descripcion) 
                     VALUES (?, ?) 
                     ON DUPLICATE KEY UPDATE descripcion = VALUES(descripcion)
                 `, [fechaFinal, descripcion]);
+                }
             }
-        }
 
-        // Borrar archivo temporal para no llenar el disco
-        if (fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+            // Borrar archivo temporal para no llenar el disco
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
 
-        res.redirect('/admin/bloqueos?status=import_success');
-    } catch (error) {
-        console.error("Error en importación:", error);
-        
-        // Limpieza de archivo incluso si hay error
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+            res.redirect('/admin/bloqueos?status=import_success');
+        } catch (error) {
+            console.error("Error en importación:", error);
 
-        res.redirect('/admin/bloqueos?status=error_import');
-    } finally {
-        if (conn) conn.end();
+            // Limpieza de archivo incluso si hay error
+            if (req.file && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+
+            res.redirect('/admin/bloqueos?status=error_import');
+        } finally {
+            if (conn) conn.end();
+        }
     }
-}
 
 
 }

@@ -26,6 +26,10 @@ router.get("/:id", TurnosController.get);
 // CAMBIO CLAVE: Cambiamos reservarForm por establecerForm
 router.get("/reservar/:id", TurnosController.establecerForm);
 
+
+
+router.get('/validar-duplicado', TurnosController.validarTurnoDia);
+
 // 3. PROCESAR LA RESERVA
 // IMPORTANTE: El nombre en upload.single debe ser 'archivo_dni' 
 // para coincidir con tu base de datos y lo que espera el controlador.
@@ -33,5 +37,7 @@ router.post("/reservar/:id?", upload.single('archivo_dni'), TurnosController.res
 
 // 4. ELIMINAR turno
 router.delete("/:id", TurnosController.delete);
+
+router.get('/verificar-turno-paciente', TurnosController.validarTurnoDia);
 
 module.exports = router;

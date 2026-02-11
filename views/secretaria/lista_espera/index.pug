@@ -1579,6 +1579,918 @@
 //-     .modal-header .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
 
 
+//- extends ../../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- --- CABECERA ---
+//-     .row.mb-4.align-items-center
+//-       .col-md-6
+//-         h2.fw-bold.text-primary 
+//-           i.fa-solid.fa-rectangle-list.me-2
+//-           | Lista de Espera Inteligente
+//-         p.text-muted.mb-0 Se encontraron #{espera.length} pacientes pendientes. 
+//-       .col-md-6.text-md-end
+//-         a.btn.btn-outline-secondary.me-2(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+//-         button.btn.btn-primary.shadow-sm(type="button" data-bs-toggle="modal" data-bs-target="#modalNuevaSolicitud")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nueva Solicitud
+
+//-     //- --- TABLA DE REGISTROS ---
+//-     .card.border-0.shadow-sm
+//-       .card-body.p-0
+//-         .table-responsive
+//-           table.table.table-hover.align-middle.mb-0
+//-             thead.bg-light
+//-               tr.text-secondary.small.text-uppercase
+//-                 th.ps-4.py-3 Paciente / Contacto
+//-                 th Profesional / Especialidad
+//-                 th.text-center Próxima Disponibilidad
+//-                 th Prioridad
+//-                 th.text-end.pe-4 Acciones
+//-             tbody
+//-               if espera && espera.length > 0
+//-                 each item in espera
+//-                   tr
+//-                     td.ps-4
+//-                       .d-flex.flex-column
+//-                         span.fw-bold.text-dark #{item.paciente_apellido}, #{item.paciente_nombre}
+//-                         .d-flex.align-items-center.gap-2.mt-1
+//-                           span.badge.bg-light.text-dark.border.fw-normal DNI: #{item.paciente_dni}
+//-                           if item.paciente_telefono
+//-                             button.btn.btn-xs.btn-outline-success.py-0.px-1(type="button" onclick=`enviarWS('${item.paciente_telefono}', '${item.paciente_nombre}', '${item.especialidad_nombre}', '${item.medico_apellido}')` data-bs-toggle="tooltip" title="WhatsApp")
+//-                               i.fa-brands.fa-whatsapp
+//-                             a.btn.btn-xs.btn-outline-primary.py-0.px-1(href=`tel:${item.paciente_telefono.replace(/[^0-9]/g, '')}` data-bs-toggle="tooltip" title="Llamar")
+//-                               i.fa-solid.fa-phone
+//-                           if item.paciente_email
+//-                             a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}` data-bs-toggle="tooltip" title="Email")
+//-                               i.fa-solid.fa-envelope
+                    
+//-                     td
+//-                       .d-flex.flex-column
+//-                         span.fw-bold Dra/er. #{item.medico_apellido}
+//-                         span.badge.bg-info.text-dark.small(style="width: fit-content") #{item.especialidad_nombre}
+                    
+//-                     td.text-center
+//-                       if item.hueco_disponible
+//-                         .p-2.rounded.bg-success.bg-opacity-10.border.border-success.border-opacity-25
+//-                           span.text-success.fw-bold.small 
+//-                             i.fa-solid.fa-calendar-check.me-1
+//-                             | ¡Turno Libre!
+//-                           - const f = item.hueco_disponible.fecha.split('-')
+//-                           .small.text-dark.fw-bold #{f[2]}/#{f[1]}/#{f[0]}
+//-                           .small.text-muted #{item.hueco_disponible.hora} hs
+//-                           button.btn.btn-sm.btn-success.w-100.mt-1.py-0(
+//-                             style="font-size: 0.7rem" 
+//-                             onclick=`confirmarAsignacionDirecta('${item.id}', '${item.id_paciente}', '${item.paciente_nombre}', '${item.hueco_disponible.fecha}', '${item.hueco_disponible.hora}', '${item.id_medico}')`
+//-                           ) Asignar Ya
+//-                       else
+//-                         span.text-muted.small 
+//-                           i.fa-solid.fa-clock.me-1
+//-                           | Sin disponibilidad inmediata
+
+//-                     td: span.badge.rounded-pill(class=item.prioridad==='Alta'?'bg-danger':(item.prioridad==='Media'?'bg-warning text-dark':'bg-success')) #{item.prioridad}
+                    
+//-                     td.text-end.pe-4
+//-                       form(id=`form-delete-${item.id}` action=`/secretaria/lista-espera/delete/${item.id}` method="POST" style="display:inline")
+//-                         button.btn.btn-sm.btn-outline-danger.ms-2(type="button" onclick=`confirmarBorrado(${item.id}, '${item.paciente_apellido}')`)
+//-                           i.fa-solid.fa-trash-can
+//-               else
+//-                 tr: td.text-center.py-5(colspan="5") No hay solicitudes pendientes.
+
+//-     //- --- MODAL NUEVA SOLICITUD ---
+//-     #modalNuevaSolicitud.modal.fade(tabindex="-1" aria-hidden="true")
+//-       .modal-dialog.modal-lg.modal-dialog-centered
+//-         .modal-content.border-0.shadow-lg(style="border-radius: 15px;")
+//-           .modal-header.bg-primary.text-white.py-3
+//-             h4.modal-title.mb-0.fw-bold
+//-               i.fa-solid.fa-clock-rotate-left.me-2
+//-               | Nueva Entrada en Lista de Espera
+//-             button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal")
+//-           .modal-body.p-4
+//-             form#formEspera(action="/secretaria/lista-espera/store" method="POST" autocomplete="off")
+//-               .mb-4
+//-                 label.form-label.small.fw-bold PACIENTE
+//-                 #wrapperBusquedaPaciente
+//-                   .input-group
+//-                     span.input-group-text: i.fa-solid.fa-search
+//-                     input#searchPaciente.form-control(type="text" placeholder="Buscar por DNI o Apellido..." required)
+//-                   #resultsPaciente.list-group.shadow-sm.position-absolute.w-100.z-3
+//-                 #fichaPaciente.p-3.border.rounded.bg-light.d-none.align-items-center
+//-                   .bg-primary.text-white.rounded-circle.me-3.d-flex.align-items-center.justify-content-center(style="width:45px; height:45px;")
+//-                     i.fa-solid.fa-user
+//-                   div
+//-                     h6#le_nombre_paciente.mb-0.fw-bold -
+//-                     small#le_dni_paciente.text-muted DNI: -
+//-                   button.btn.btn-sm.btn-link.ms-auto.text-danger(type="button" onclick="resetPaciente()") Cambiar
+//-                 input#id_paciente_hidden(type="hidden" name="id_paciente" required)
+
+//-               .row.g-3.mb-4
+//-                 .col-md-6.position-relative
+//-                   label.form-label.small.fw-bold PROFESIONAL
+//-                   .input-group
+//-                     span.input-group-text: i.fa-solid.fa-user-md
+//-                     input#searchMedico.form-control(type="text" placeholder="Buscar médico..." required)
+//-                   #resultsMedico.list-group.position-absolute.w-100.z-3.shadow-sm
+//-                   input#id_medico_hidden(type="hidden" name="id_medico" required)
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold ESPECIALIDAD
+//-                   select#id_especialidad.form-select(name="id_especialidad" required onchange="validarDuplicado()")
+//-                     option(value="") Seleccione un médico...
+
+//-               .row.g-3.mb-4
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold PRIORIDAD
+//-                   select.form-select(name="prioridad")
+//-                     option(value="Baja") Baja
+//-                     option(value="Media" selected) Media
+//-                     option(value="Alta") Alta
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold MOTIVO
+//-                   input.form-control(type="text" name="motivo_prioridad" placeholder="Ej: Urgencia...")
+
+//-               .mb-4
+//-                 label.form-label.small.fw-bold OBSERVACIONES
+//-                 textarea.form-control(name="observaciones" rows="2")
+
+//-               .d-flex.justify-content-end.gap-2
+//-                 button.btn.btn-light(type="button" data-bs-dismiss="modal") Cancelar
+//-                 button#btnSubmitEspera.btn.btn-primary.px-4(type="submit") Confirmar Registro
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     // 0. VALIDACIÓN DE DUPLICADOS
+//-     async function validarDuplicado() {
+//-       const idPaciente = document.getElementById('id_paciente_hidden').value;
+//-       const idMedico = document.getElementById('id_medico_hidden').value;
+//-       const idEspecialidad = document.getElementById('id_especialidad').value;
+//-       const btnSubmit = document.getElementById('btnSubmitEspera');
+
+//-       if (idPaciente && idMedico && idEspecialidad) {
+//-         try {
+//-           const res = await fetch(`/secretaria/lista-espera/verificar?paciente=${idPaciente}&medico=${idMedico}&especialidad=${idEspecialidad}`);
+//-           const data = await res.json();
+          
+//-           if (data.existe) {
+//-             Swal.fire({
+//-               title: 'Paciente ya registrado',
+//-               text: 'Este paciente ya se encuentra en lista de espera para el profesional y especialidad seleccionados.',
+//-               icon: 'warning',
+//-               confirmButtonColor: '#0d6efd'
+//-             });
+//-             btnSubmit.disabled = true;
+//-           } else {
+//-             btnSubmit.disabled = false;
+//-           }
+//-         } catch (err) {
+//-           console.error('Error al validar duplicado:', err);
+//-         }
+//-       }
+//-     }
+
+//-     // 1. ASIGNACIÓN CON NOTIFICACIÓN DE MAIL
+//-     function confirmarAsignacionDirecta(esperaId, pacienteId, pacienteNombre, fecha, hora, medicoId) {
+//-       const f = fecha.split('-');
+//-       const fechaLegible = `${f[2]}/${f[1]}/${f[0]}`;
+
+//-       Swal.fire({
+//-         title: '¿Confirmar turno y notificar?',
+//-         html: `Se agendará a <b>${pacienteNombre}</b><br>Día: <b>${fechaLegible}</b><br>Hora: <b>${hora} hs</b><br><br><small class="text-success">Se enviará un mail automático de confirmación.</small>`,
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#198754',
+//-         confirmButtonText: 'Sí, agendar y avisar',
+//-         cancelButtonText: 'Cancelar',
+//-         showLoaderOnConfirm: true,
+//-         preConfirm: () => {
+//-           Swal.showLoading();
+//-           window.location.href = `/secretaria/lista-espera/asignar-turno?esperaId=${esperaId}&id_paciente=${pacienteId}&fecha=${fecha}&hora=${hora}&id_medico=${medicoId}&notificar=true`;
+//-         }
+//-       });
+//-     }
+
+//-     // 2. DETECTAR RESULTADOS DE LA NOTIFICACIÓN
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-         const urlParams = new URLSearchParams(window.location.search);
+        
+//-         if (urlParams.get('notif') === 'sent') {
+//-             Swal.fire({
+//-                 title: '¡Turno Asignado!',
+//-                 text: 'El paciente ha sido agendado y el correo de notificación fue enviado con éxito.',
+//-                 icon: 'success',
+//-                 confirmButtonColor: '#0d6efd'
+//-             });
+//-             window.history.replaceState({}, document.title, window.location.pathname);
+//-         } else if (urlParams.get('notif') === 'error') {
+//-             Swal.fire({
+//-                 title: 'Turno agendado, pero...',
+//-                 text: 'No se pudo enviar el correo de notificación. Por favor, avise al paciente manualmente.',
+//-                 icon: 'warning',
+//-                 confirmButtonColor: '#f39c12'
+//-             });
+//-             window.history.replaceState({}, document.title, window.location.pathname);
+//-         }
+
+//-         initAutocomplete('searchPaciente', 'resultsPaciente', 'id_paciente_hidden', '/pacientes/buscar');
+//-         initAutocomplete('searchMedico', 'resultsMedico', 'id_medico_hidden', '/medicos/buscar', true);
+//-     });
+
+//-     // 3. AUTOCOMPLETE LOGIC
+//-     function initAutocomplete(inputId, resultsId, hiddenId, url, isMedico = false) {
+//-       const input = document.getElementById(inputId);
+//-       const results = document.getElementById(resultsId);
+//-       const hidden = document.getElementById(hiddenId);
+
+//-       input.addEventListener('input', async (e) => {
+//-         const query = e.target.value;
+//-         if (query.length < 2) { results.innerHTML = ''; return; }
+//-         try {
+//-           const res = await fetch(`${url}?q=${query}`);
+//-           const data = await res.json();
+//-           results.innerHTML = data.map(item => {
+//-             const actualId = item.id_medico || item.id_paciente || item.id;
+//-             return `
+//-               <button type="button" class="list-group-item list-group-item-action py-2" 
+//-                 onclick="selectItem('${inputId}', '${resultsId}', '${hiddenId}', '${actualId}', '${item.nombre} ${item.apellido}', ${isMedico}, '${item.dni || ''}')">
+//-                 <div class="d-flex justify-content-between align-items-center">
+//-                   <span>${item.nombre} ${item.apellido}</span>
+//-                   <small class="text-muted">${isMedico ? (item.especialidad_nombre || '') : 'DNI: '+item.dni}</small>
+//-                 </div>
+//-               </button>`;
+//-           }).join('');
+//-         } catch (err) { console.error(err); }
+//-       });
+//-     }
+
+//-     function selectItem(inputId, resultsId, hiddenId, id, text, isMedico, dni) {
+//-       document.getElementById(hiddenId).value = id;
+//-       document.getElementById(resultsId).innerHTML = '';
+//-       if (!isMedico) {
+//-         document.getElementById('wrapperBusquedaPaciente').classList.add('d-none');
+//-         document.getElementById('fichaPaciente').classList.replace('d-none', 'd-flex');
+//-         document.getElementById('le_nombre_paciente').innerText = text;
+//-         document.getElementById('le_dni_paciente').innerText = 'DNI: ' + dni;
+//-       } else {
+//-         document.getElementById(inputId).value = text;
+//-         const select = document.getElementById('id_especialidad');
+//-         select.innerHTML = '<option value="">Cargando...</option>';
+//-         fetch(`/medicos/${id}/especialidades`).then(res => res.json()).then(data => {
+//-           select.innerHTML = '<option value="">Seleccione especialidad...</option>' + data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+//-         });
+//-       }
+//-       validarDuplicado();
+//-     }
+
+//-     function resetPaciente() {
+//-       document.getElementById('id_paciente_hidden').value = '';
+//-       document.getElementById('searchPaciente').value = '';
+//-       document.getElementById('wrapperBusquedaPaciente').classList.remove('d-none');
+//-       document.getElementById('fichaPaciente').classList.replace('d-flex', 'd-none');
+//-       document.getElementById('btnSubmitEspera').disabled = false;
+//-     }
+
+//-     // 4. WHATSAPP & BORRADO
+//-     function enviarWS(tel, nom, esp, med) {
+//-       const t = tel.replace(/[^0-9]/g, '');
+//-       const msg = `Hola ${nom}, tenemos un turno libre para ${esp} con el Dr. ${med}. ¿Te interesa?`;
+//-       window.open(`https://api.whatsapp.com/send?phone=${t}&text=${encodeURIComponent(msg)}`, '_blank');
+//-     }
+
+//-     function confirmarBorrado(id, apellido) {
+//-       Swal.fire({ title: '¿Remover?', text: `Se cancelará la solicitud de ${apellido}.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, quitar' })
+//-       .then((r) => { if (r.isConfirmed) document.getElementById('form-delete-' + id).submit(); });
+//-     }
+
+//-   style.
+//-     .btn-xs { padding: 0.1rem 0.3rem; font-size: 0.7rem; border-radius: 4px; }
+//-     .bg-success.bg-opacity-10 { background-color: rgba(25, 135, 84, 0.1) !important; }
+//-     .list-group.position-absolute { z-index: 2000; max-height: 200px; overflow-y: auto; }
+//-     .z-3 { z-index: 1060; }
+//-     .modal-header .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+
+
+
+
+
+
+
+
+
+
+//- extends ../../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- --- CABECERA ---
+//-     .row.mb-4.align-items-center
+//-       .col-md-6
+//-         h2.fw-bold.text-primary 
+//-           i.fa-solid.fa-rectangle-list.me-2
+//-           | Lista de Espera Inteligente
+//-         p.text-muted.mb-0 Se encontraron #{espera.length} pacientes pendientes. 
+//-       .col-md-6.text-md-end
+//-         a.btn.btn-outline-secondary.me-2(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+//-         button.btn.btn-primary.shadow-sm(type="button" data-bs-toggle="modal" data-bs-target="#modalNuevaSolicitud")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nueva Solicitud
+
+//-     //- --- TABLA DE REGISTROS ---
+//-     .card.border-0.shadow-sm
+//-       .card-body.p-0
+//-         .table-responsive
+//-           table.table.table-hover.align-middle.mb-0
+//-             thead.bg-light
+//-               tr.text-secondary.small.text-uppercase
+//-                 th.ps-4.py-3 Paciente / Contacto
+//-                 th Profesional / Especialidad
+//-                 th.text-center Próxima Disponibilidad
+//-                 th Prioridad
+//-                 th.text-end.pe-4 Acciones
+//-             tbody
+//-               if espera && espera.length > 0
+//-                 each item in espera
+//-                   tr
+//-                     td.ps-4
+//-                       .d-flex.flex-column
+//-                         span.fw-bold.text-dark #{item.paciente_apellido}, #{item.paciente_nombre}
+//-                         .d-flex.align-items-center.gap-2.mt-1
+//-                           span.badge.bg-light.text-dark.border.fw-normal DNI: #{item.paciente_dni}
+//-                           if item.paciente_telefono
+//-                             button.btn.btn-xs.btn-outline-success.py-0.px-1(type="button" onclick=`enviarWS('${item.paciente_telefono}', '${item.paciente_nombre}', '${item.especialidad_nombre}', '${item.medico_apellido}')` data-bs-toggle="tooltip" title="WhatsApp")
+//-                               i.fa-brands.fa-whatsapp
+//-                             a.btn.btn-xs.btn-outline-primary.py-0.px-1(href=`tel:${item.paciente_telefono.replace(/[^0-9]/g, '')}` data-bs-toggle="tooltip" title="Llamar")
+//-                               i.fa-solid.fa-phone
+//-                           if item.paciente_email
+//-                             a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}` data-bs-toggle="tooltip" title="Email")
+//-                               i.fa-solid.fa-envelope
+                    
+//-                     td
+//-                       .d-flex.flex-column
+//-                         span.fw-bold Dra/er. #{item.medico_apellido}
+//-                         span.badge.bg-info.text-dark.small(style="width: fit-content") #{item.especialidad_nombre}
+                    
+//-                     td.text-center
+//-                       if item.hueco_disponible
+//-                         .p-2.rounded.bg-success.bg-opacity-10.border.border-success.border-opacity-25
+//-                           span.text-success.fw-bold.small 
+//-                             i.fa-solid.fa-calendar-check.me-1
+//-                             | ¡Turno Libre!
+//-                           - const f = item.hueco_disponible.fecha.split('-')
+//-                           .small.text-dark.fw-bold #{f[2]}/#{f[1]}/#{f[0]}
+//-                           .small.text-muted #{item.hueco_disponible.hora} hs
+//-                           button.btn.btn-sm.btn-success.w-100.mt-1.py-0(
+//-                             style="font-size: 0.7rem" 
+//-                             onclick=`confirmarAsignacionDirecta('${item.id}', '${item.id_paciente}', '${item.paciente_nombre}', '${item.hueco_disponible.fecha}', '${item.hueco_disponible.hora}', '${item.id_medico}')`
+//-                           ) Asignar Ya
+//-                       else
+//-                         span.text-muted.small 
+//-                           i.fa-solid.fa-clock.me-1
+//-                           | Sin disponibilidad inmediata
+
+//-                     td: span.badge.rounded-pill(class=item.prioridad==='Alta'?'bg-danger':(item.prioridad==='Media'?'bg-warning text-dark':'bg-success')) #{item.prioridad}
+                    
+//-                     td.text-end.pe-4
+//-                       form(id=`form-delete-${item.id}` action=`/secretaria/lista-espera/delete/${item.id}` method="POST" style="display:inline")
+//-                         button.btn.btn-sm.btn-outline-danger.ms-2(type="button" onclick=`confirmarBorrado(${item.id}, '${item.paciente_apellido}')`)
+//-                           i.fa-solid.fa-trash-can
+//-               else
+//-                 tr: td.text-center.py-5(colspan="5") No hay solicitudes pendientes.
+
+//-     //- --- MODAL NUEVA SOLICITUD ---
+//-     #modalNuevaSolicitud.modal.fade(tabindex="-1" aria-hidden="true")
+//-       .modal-dialog.modal-lg.modal-dialog-centered
+//-         .modal-content.border-0.shadow-lg(style="border-radius: 15px;")
+//-           .modal-header.bg-primary.text-white.py-3
+//-             h4.modal-title.mb-0.fw-bold
+//-               i.fa-solid.fa-clock-rotate-left.me-2
+//-               | Nueva Entrada en Lista de Espera
+//-             button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal")
+//-           .modal-body.p-4
+//-             form#formEspera(action="/secretaria/lista-espera/store" method="POST" autocomplete="off")
+//-               .mb-4
+//-                 label.form-label.small.fw-bold PACIENTE
+//-                 #wrapperBusquedaPaciente
+//-                   .input-group
+//-                     span.input-group-text: i.fa-solid.fa-search
+//-                     input#searchPaciente.form-control(type="text" placeholder="Buscar por DNI o Apellido..." required)
+//-                   #resultsPaciente.list-group.shadow-sm.position-absolute.w-100.z-3
+//-                 #fichaPaciente.p-3.border.rounded.bg-light.d-none.align-items-center
+//-                   .bg-primary.text-white.rounded-circle.me-3.d-flex.align-items-center.justify-content-center(style="width:45px; height:45px;")
+//-                     i.fa-solid.fa-user
+//-                   div
+//-                     h6#le_nombre_paciente.mb-0.fw-bold -
+//-                     small#le_dni_paciente.text-muted DNI: -
+//-                   button.btn.btn-sm.btn-link.ms-auto.text-danger(type="button" onclick="resetPaciente()") Cambiar
+//-                 input#id_paciente_hidden(type="hidden" name="id_paciente" required)
+
+//-               .row.g-3.mb-4
+//-                 .col-md-6.position-relative
+//-                   label.form-label.small.fw-bold PROFESIONAL
+//-                   .input-group
+//-                     span.input-group-text: i.fa-solid.fa-user-md
+//-                     input#searchMedico.form-control(type="text" placeholder="Buscar médico..." required)
+//-                   #resultsMedico.list-group.position-absolute.w-100.z-3.shadow-sm
+//-                   input#id_medico_hidden(type="hidden" name="id_medico" required)
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold ESPECIALIDAD
+//-                   select#id_especialidad.form-select(name="id_especialidad" required onchange="validarDuplicado()")
+//-                     option(value="") Seleccione un médico...
+
+//-               .row.g-3.mb-4
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold PRIORIDAD
+//-                   select.form-select(name="prioridad")
+//-                     option(value="Baja") Baja
+//-                     option(value="Media" selected) Media
+//-                     option(value="Alta") Alta
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold MOTIVO
+//-                   input.form-control(type="text" name="motivo_prioridad" placeholder="Ej: Urgencia...")
+
+//-               .mb-4
+//-                 label.form-label.small.fw-bold OBSERVACIONES
+//-                 textarea.form-control(name="observaciones" rows="2")
+
+//-               .d-flex.justify-content-end.gap-2
+//-                 button.btn.btn-light(type="button" data-bs-dismiss="modal") Cancelar
+//-                 button#btnSubmitEspera.btn.btn-primary.px-4(type="submit") Confirmar Registro
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     // 0. VALIDACIÓN DE DUPLICADOS EN TIEMPO REAL
+//-     async function validarDuplicado() {
+//-       const idPaciente = document.getElementById('id_paciente_hidden').value;
+//-       const idMedico = document.getElementById('id_medico_hidden').value;
+//-       const idEspecialidad = document.getElementById('id_especialidad').value;
+//-       const btnSubmit = document.getElementById('btnSubmitEspera');
+
+//-       if (idPaciente && idMedico && idEspecialidad) {
+//-         try {
+//-           const res = await fetch(`/secretaria/lista-espera/verificar?paciente=${idPaciente}&medico=${idMedico}&especialidad=${idEspecialidad}`);
+//-           const data = await res.json();
+          
+//-           if (data.existe) {
+//-             Swal.fire({
+//-               title: 'Paciente ya registrado',
+//-               text: 'Este paciente ya se encuentra en lista de espera para el profesional y especialidad seleccionados.',
+//-               icon: 'warning',
+//-               confirmButtonColor: '#0d6efd'
+//-             });
+//-             btnSubmit.disabled = true;
+//-           } else {
+//-             btnSubmit.disabled = false;
+//-           }
+//-         } catch (err) {
+//-           console.error('Error al validar duplicado:', err);
+//-         }
+//-       }
+//-     }
+
+//-     // 1. ASIGNACIÓN RÁPIDA
+//-     function confirmarAsignacionDirecta(esperaId, pacienteId, pacienteNombre, fecha, hora, medicoId) {
+//-       const f = fecha.split('-');
+//-       const fechaLegible = `${f[2]}/${f[1]}/${f[0]}`;
+
+//-       Swal.fire({
+//-         title: '¿Confirmar turno y notificar?',
+//-         html: `Se agendará a <b>${pacienteNombre}</b><br>Día: <b>${fechaLegible}</b><br>Hora: <b>${hora} hs</b><br><br><small class="text-success">Se enviará un mail automático de confirmación.</small>`,
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#198754',
+//-         confirmButtonText: 'Sí, agendar y avisar',
+//-         cancelButtonText: 'Cancelar',
+//-         showLoaderOnConfirm: true,
+//-         preConfirm: () => {
+//-           Swal.showLoading();
+//-           window.location.href = `/secretaria/lista-espera/asignar-turno?esperaId=${esperaId}&id_paciente=${pacienteId}&fecha=${fecha}&hora=${hora}&id_medico=${medicoId}&notificar=true`;
+//-         }
+//-       });
+//-     }
+
+//-     // 2. DETECTAR STATUS DE LA URL (ALERTAS GLOBALES)
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-         const urlParams = new URLSearchParams(window.location.search);
+//-         const status = urlParams.get('status');
+        
+//-         // Manejo de éxitos
+//-         if (status === 'success') {
+//-             Swal.fire({ title: '¡Operación Exitosa!', text: 'Se ha procesado el registro correctamente.', icon: 'success' });
+//-         } 
+//-         // Manejo de Duplicados (Registro en Lista)
+//-         else if (status === 'duplicado') {
+//-             Swal.fire({ title: 'Solicitud Duplicada', text: 'El paciente ya figura en la lista de espera para este médico.', icon: 'warning' });
+//-         }
+//-         // Manejo de Error: Ya tiene turno (Asignación Ya)
+//-         else if (status === 'error_ya_tiene_turno') {
+//-             Swal.fire({ 
+//-                 title: 'No se puede asignar', 
+//-                 text: 'El paciente ya cuenta con un turno activo y confirmado para este médico/especialidad.', 
+//-                 icon: 'error' 
+//-             });
+//-         }
+//-         // Otros errores
+//-         else if (status === 'error_sin_agenda') {
+//-             Swal.fire({ title: 'Error de Agenda', text: 'No se encontró una agenda vigente para la fecha seleccionada.', icon: 'error' });
+//-         }
+//-         else if (status === 'error') {
+//-             Swal.fire({ title: 'Error', text: 'Ocurrió un problema inesperado. Reintente.', icon: 'error' });
+//-         }
+
+//-         // Limpiar URL
+//-         if (status) window.history.replaceState({}, document.title, window.location.pathname);
+
+//-         initAutocomplete('searchPaciente', 'resultsPaciente', 'id_paciente_hidden', '/pacientes/buscar');
+//-         initAutocomplete('searchMedico', 'resultsMedico', 'id_medico_hidden', '/medicos/buscar', true);
+//-     });
+
+//-     // 3. AUTOCOMPLETE LOGIC
+//-     function initAutocomplete(inputId, resultsId, hiddenId, url, isMedico = false) {
+//-       const input = document.getElementById(inputId);
+//-       const results = document.getElementById(resultsId);
+//-       const hidden = document.getElementById(hiddenId);
+
+//-       input.addEventListener('input', async (e) => {
+//-         const query = e.target.value;
+//-         if (query.length < 2) { results.innerHTML = ''; return; }
+//-         try {
+//-           const res = await fetch(`${url}?q=${query}`);
+//-           const data = await res.json();
+//-           results.innerHTML = data.map(item => {
+//-             const actualId = item.id_medico || item.id_paciente || item.id;
+//-             return `
+//-               <button type="button" class="list-group-item list-group-item-action py-2" 
+//-                 onclick="selectItem('${inputId}', '${resultsId}', '${hiddenId}', '${actualId}', '${item.nombre} ${item.apellido}', ${isMedico}, '${item.dni || ''}')">
+//-                 <div class="d-flex justify-content-between align-items-center">
+//-                   <span>${item.nombre} ${item.apellido}</span>
+//-                   <small class="text-muted">${isMedico ? (item.especialidad_nombre || '') : 'DNI: '+item.dni}</small>
+//-                 </div>
+//-               </button>`;
+//-           }).join('');
+//-         } catch (err) { console.error(err); }
+//-       });
+//-     }
+
+//-     function selectItem(inputId, resultsId, hiddenId, id, text, isMedico, dni) {
+//-       document.getElementById(hiddenId).value = id;
+//-       document.getElementById(resultsId).innerHTML = '';
+//-       if (!isMedico) {
+//-         document.getElementById('wrapperBusquedaPaciente').classList.add('d-none');
+//-         document.getElementById('fichaPaciente').classList.replace('d-none', 'd-flex');
+//-         document.getElementById('le_nombre_paciente').innerText = text;
+//-         document.getElementById('le_dni_paciente').innerText = 'DNI: ' + dni;
+//-       } else {
+//-         document.getElementById(inputId).value = text;
+//-         const select = document.getElementById('id_especialidad');
+//-         select.innerHTML = '<option value="">Cargando...</option>';
+//-         fetch(`/medicos/${id}/especialidades`).then(res => res.json()).then(data => {
+//-           select.innerHTML = '<option value="">Seleccione especialidad...</option>' + data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+//-         });
+//-       }
+//-       validarDuplicado();
+//-     }
+
+//-     function resetPaciente() {
+//-       document.getElementById('id_paciente_hidden').value = '';
+//-       document.getElementById('searchPaciente').value = '';
+//-       document.getElementById('wrapperBusquedaPaciente').classList.remove('d-none');
+//-       document.getElementById('fichaPaciente').classList.replace('d-flex', 'd-none');
+//-       document.getElementById('btnSubmitEspera').disabled = false;
+//-     }
+
+//-     // 4. WHATSAPP & BORRADO
+//-     function enviarWS(tel, nom, esp, med) {
+//-       const t = tel.replace(/[^0-9]/g, '');
+//-       const msg = `Hola ${nom}, tenemos un turno libre para ${esp} con el Dr. ${med}. ¿Te interesa?`;
+//-       window.open(`https://api.whatsapp.com/send?phone=${t}&text=${encodeURIComponent(msg)}`, '_blank');
+//-     }
+
+//-     function confirmarBorrado(id, apellido) {
+//-       Swal.fire({ title: '¿Remover?', text: `Se cancelará la solicitud de ${apellido}.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, quitar' })
+//-       .then((r) => { if (r.isConfirmed) document.getElementById('form-delete-' + id).submit(); });
+//-     }
+
+//-   style.
+//-     .btn-xs { padding: 0.1rem 0.3rem; font-size: 0.7rem; border-radius: 4px; }
+//-     .bg-success.bg-opacity-10 { background-color: rgba(25, 135, 84, 0.1) !important; }
+//-     .list-group.position-absolute { z-index: 2000; max-height: 200px; overflow-y: auto; }
+//-     .z-3 { z-index: 1060; }
+//-     .modal-header .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+
+
+
+
+
+//- extends ../../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- --- CABECERA ---
+//-     .row.mb-4.align-items-center
+//-       .col-md-6
+//-         h2.fw-bold.text-primary 
+//-           i.fa-solid.fa-rectangle-list.me-2
+//-           | Lista de Espera Inteligente
+//-         p.text-muted.mb-0 Se encontraron #{espera.length} pacientes pendientes. 
+//-       .col-md-6.text-md-end
+//-         a.btn.btn-outline-secondary.me-2(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+//-         button.btn.btn-primary.shadow-sm(type="button" data-bs-toggle="modal" data-bs-target="#modalNuevaSolicitud")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nueva Solicitud
+
+//-     //- --- TABLA DE REGISTROS ---
+//-     .card.border-0.shadow-sm
+//-       .card-body.p-0
+//-         .table-responsive
+//-           table.table.table-hover.align-middle.mb-0
+//-             thead.bg-light
+//-               tr.text-secondary.small.text-uppercase
+//-                 th.ps-4.py-3 Paciente / Contacto
+//-                 th Profesional / Especialidad
+//-                 th.text-center Próxima Disponibilidad
+//-                 th Prioridad
+//-                 th.text-end.pe-4 Acciones
+//-             tbody
+//-               if espera && espera.length > 0
+//-                 each item in espera
+//-                   tr
+//-                     td.ps-4
+//-                       .d-flex.flex-column
+//-                         span.fw-bold.text-dark #{item.paciente_apellido}, #{item.paciente_nombre}
+//-                         .d-flex.align-items-center.gap-2.mt-1
+//-                           span.badge.bg-light.text-dark.border.fw-normal DNI: #{item.paciente_dni}
+//-                           if item.paciente_telefono
+//-                             button.btn.btn-xs.btn-outline-success.py-0.px-1(type="button" onclick=`enviarWS('${item.paciente_telefono}', '${item.paciente_nombre}', '${item.especialidad_nombre}', '${item.medico_apellido}')` data-bs-toggle="tooltip" title="WhatsApp")
+//-                               i.fa-brands.fa-whatsapp
+//-                             a.btn.btn-xs.btn-outline-primary.py-0.px-1(href=`tel:${item.paciente_telefono.replace(/[^0-9]/g, '')}` data-bs-toggle="tooltip" title="Llamar")
+//-                               i.fa-solid.fa-phone
+//-                           if item.paciente_email
+//-                             a.btn.btn-xs.btn-outline-secondary.py-0.px-1(href=`mailto:${item.paciente_email}` data-bs-toggle="tooltip" title="Email")
+//-                               i.fa-solid.fa-envelope
+                    
+//-                     td
+//-                       .d-flex.flex-column
+//-                         span.fw-bold Dra/er. #{item.medico_apellido}
+//-                         span.badge.bg-info.text-dark.small(style="width: fit-content") #{item.especialidad_nombre}
+                    
+//-                     td.text-center
+//-                       if item.hueco_disponible
+//-                         .p-2.rounded.bg-success.bg-opacity-10.border.border-success.border-opacity-25
+//-                           span.text-success.fw-bold.small 
+//-                             i.fa-solid.fa-calendar-check.me-1
+//-                             | ¡Turno Libre!
+//-                           - const f = item.hueco_disponible.fecha.split('-')
+//-                           .small.text-dark.fw-bold #{f[2]}/#{f[1]}/#{f[0]}
+//-                           .small.text-muted #{item.hueco_disponible.hora} hs
+//-                           button.btn.btn-sm.btn-success.w-100.mt-1.py-0(
+//-                             style="font-size: 0.7rem" 
+//-                             onclick=`confirmarAsignacionDirecta('${item.id}', '${item.id_paciente}', '${item.paciente_nombre}', '${item.hueco_disponible.fecha}', '${item.hueco_disponible.hora}', '${item.id_medico}')`
+//-                           ) Asignar Ya
+//-                       else
+//-                         span.text-muted.small 
+//-                           i.fa-solid.fa-clock.me-1
+//-                           | Sin disponibilidad inmediata
+
+//-                     td: span.badge.rounded-pill(class=item.prioridad==='Alta'?'bg-danger':(item.prioridad==='Media'?'bg-warning text-dark':'bg-success')) #{item.prioridad}
+                    
+//-                     td.text-end.pe-4
+//-                       form(id=`form-delete-${item.id}` action=`/secretaria/lista-espera/delete/${item.id}` method="POST" style="display:inline")
+//-                         button.btn.btn-sm.btn-outline-danger.ms-2(type="button" onclick=`confirmarBorrado(${item.id}, '${item.paciente_apellido}')`)
+//-                           i.fa-solid.fa-trash-can
+//-               else
+//-                 tr: td.text-center.py-5(colspan="5") No hay solicitudes pendientes.
+
+//-     //- --- MODAL NUEVA SOLICITUD ---
+//-     #modalNuevaSolicitud.modal.fade(tabindex="-1" aria-hidden="true")
+//-       .modal-dialog.modal-lg.modal-dialog-centered
+//-         .modal-content.border-0.shadow-lg(style="border-radius: 15px;")
+//-           .modal-header.bg-primary.text-white.py-3
+//-             h4.modal-title.mb-0.fw-bold
+//-               i.fa-solid.fa-clock-rotate-left.me-2
+//-               | Nueva Entrada en Lista de Espera
+//-             button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal")
+//-           .modal-body.p-4
+//-             form#formEspera(action="/secretaria/lista-espera/store" method="POST" autocomplete="off")
+//-               .mb-4
+//-                 label.form-label.small.fw-bold PACIENTE
+//-                 #wrapperBusquedaPaciente
+//-                   .input-group
+//-                     span.input-group-text: i.fa-solid.fa-search
+//-                     input#searchPaciente.form-control(type="text" placeholder="Buscar por DNI o Apellido..." required)
+//-                   #resultsPaciente.list-group.shadow-sm.position-absolute.w-100.z-3
+//-                 #fichaPaciente.p-3.border.rounded.bg-light.d-none.align-items-center
+//-                   .bg-primary.text-white.rounded-circle.me-3.d-flex.align-items-center.justify-content-center(style="width:45px; height:45px;")
+//-                     i.fa-solid.fa-user
+//-                   div
+//-                     h6#le_nombre_paciente.mb-0.fw-bold -
+//-                     small#le_dni_paciente.text-muted DNI: -
+//-                   button.btn.btn-sm.btn-link.ms-auto.text-danger(type="button" onclick="resetPaciente()") Cambiar
+//-                 input#id_paciente_hidden(type="hidden" name="id_paciente" required)
+
+//-               .row.g-3.mb-4
+//-                 .col-md-6.position-relative
+//-                   label.form-label.small.fw-bold PROFESIONAL
+//-                   .input-group
+//-                     span.input-group-text: i.fa-solid.fa-user-md
+//-                     input#searchMedico.form-control(type="text" placeholder="Buscar médico..." required)
+//-                   #resultsMedico.list-group.position-absolute.w-100.z-3.shadow-sm
+//-                   input#id_medico_hidden(type="hidden" name="id_medico" required)
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold ESPECIALIDAD
+//-                   select#id_especialidad.form-select(name="id_especialidad" required onchange="validarDuplicado()")
+//-                     option(value="") Seleccione un médico...
+
+//-               .row.g-3.mb-4
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold PRIORIDAD
+//-                   select.form-select(name="prioridad")
+//-                     option(value="Baja") Baja
+//-                     option(value="Media" selected) Media
+//-                     option(value="Alta") Alta
+//-                 .col-md-6
+//-                   label.form-label.small.fw-bold MOTIVO
+//-                   input.form-control(type="text" name="motivo_prioridad" placeholder="Ej: Urgencia...")
+
+//-               .mb-4
+//-                 label.form-label.small.fw-bold OBSERVACIONES
+//-                 textarea.form-control(name="observaciones" rows="2")
+
+//-               .d-flex.justify-content-end.gap-2
+//-                 button.btn.btn-light(type="button" data-bs-dismiss="modal") Cancelar
+//-                 button#btnSubmitEspera.btn.btn-primary.px-4(type="submit") Confirmar Registro
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     // 0. VALIDACIÓN DE DUPLICADOS Y TURNOS EXISTENTES
+//-     async function validarDuplicado() {
+//-       const idPaciente = document.getElementById('id_paciente_hidden').value;
+//-       const idMedico = document.getElementById('id_medico_hidden').value;
+//-       const idEspecialidad = document.getElementById('id_especialidad').value;
+//-       const btnSubmit = document.getElementById('btnSubmitEspera');
+
+//-       if (idPaciente && idMedico && idEspecialidad) {
+//-         try {
+//-           const res = await fetch(`/secretaria/lista-espera/verificar?paciente=${idPaciente}&medico=${idMedico}&especialidad=${idEspecialidad}`);
+//-           const data = await res.json();
+          
+//-           if (data.existe) {
+//-             // El mensaje cambia según el motivo devuelto por el objeto de verificación
+//-             let mensaje = 'Este paciente ya se encuentra registrado.';
+//-             if (data.tieneTurno) {
+//-                 mensaje = 'El paciente ya cuenta con un turno activo para este profesional y especialidad.';
+//-             } else if (data.enLista) {
+//-                 mensaje = 'Este paciente ya se encuentra en lista de espera para el profesional seleccionado.';
+//-             }
+
+//-             Swal.fire({
+//-               title: 'No se puede registrar',
+//-               text: mensaje,
+//-               icon: 'warning',
+//-               confirmButtonColor: '#0d6efd'
+//-             });
+//-             btnSubmit.disabled = true;
+//-           } else {
+//-             btnSubmit.disabled = false;
+//-           }
+//-         } catch (err) {
+//-           console.error('Error al validar duplicado:', err);
+//-         }
+//-       }
+//-     }
+
+//-     // 1. ASIGNACIÓN RÁPIDA
+//-     function confirmarAsignacionDirecta(esperaId, pacienteId, pacienteNombre, fecha, hora, medicoId) {
+//-       const f = fecha.split('-');
+//-       const fechaLegible = `${f[2]}/${f[1]}/${f[0]}`;
+
+//-       Swal.fire({
+//-         title: '¿Confirmar turno y notificar?',
+//-         html: `Se agendará a <b>${pacienteNombre}</b><br>Día: <b>${fechaLegible}</b><br>Hora: <b>${hora} hs</b><br><br><small class="text-success">Se enviará un mail automático de confirmación.</small>`,
+//-         icon: 'question',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#198754',
+//-         confirmButtonText: 'Sí, agendar y avisar',
+//-         cancelButtonText: 'Cancelar',
+//-         showLoaderOnConfirm: true,
+//-         preConfirm: () => {
+//-           Swal.showLoading();
+//-           window.location.href = `/secretaria/lista-espera/asignar-turno?esperaId=${esperaId}&id_paciente=${pacienteId}&fecha=${fecha}&hora=${hora}&id_medico=${medicoId}&notificar=true`;
+//-         }
+//-       });
+//-     }
+
+//-     // 2. DETECTAR STATUS DE LA URL (ALERTAS GLOBALES)
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-         const urlParams = new URLSearchParams(window.location.search);
+//-         const status = urlParams.get('status');
+        
+//-         if (status === 'success') {
+//-             Swal.fire({ title: '¡Operación Exitosa!', text: 'Se ha procesado el registro correctamente.', icon: 'success' });
+//-         } else if (status === 'duplicado') {
+//-             Swal.fire({ title: 'Solicitud Duplicada', text: 'El paciente ya figura en la lista de espera para este médico.', icon: 'warning' });
+//-         } else if (status === 'error_ya_tiene_turno') {
+//-             Swal.fire({ 
+//-                 title: 'No se puede registrar', 
+//-                 text: 'El paciente ya cuenta con un turno activo y confirmado para este médico/especialidad.', 
+//-                 icon: 'error' 
+//-             });
+//-         } else if (status === 'error_sin_agenda') {
+//-             Swal.fire({ title: 'Error de Agenda', text: 'No se encontró una agenda vigente para la fecha seleccionada.', icon: 'error' });
+//-         } else if (status === 'error') {
+//-             Swal.fire({ title: 'Error', text: 'Ocurrió un problema inesperado. Reintente.', icon: 'error' });
+//-         }
+
+//-         if (status) window.history.replaceState({}, document.title, window.location.pathname);
+
+//-         initAutocomplete('searchPaciente', 'resultsPaciente', 'id_paciente_hidden', '/pacientes/buscar');
+//-         initAutocomplete('searchMedico', 'resultsMedico', 'id_medico_hidden', '/medicos/buscar', true);
+//-     });
+
+//-     // 3. AUTOCOMPLETE LOGIC
+//-     function initAutocomplete(inputId, resultsId, hiddenId, url, isMedico = false) {
+//-       const input = document.getElementById(inputId);
+//-       const results = document.getElementById(resultsId);
+//-       const hidden = document.getElementById(hiddenId);
+
+//-       input.addEventListener('input', async (e) => {
+//-         const query = e.target.value;
+//-         if (query.length < 2) { results.innerHTML = ''; return; }
+//-         try {
+//-           const res = await fetch(`${url}?q=${query}`);
+//-           const data = await res.json();
+//-           results.innerHTML = data.map(item => {
+//-             const actualId = item.id_medico || item.id_paciente || item.id;
+//-             return `
+//-               <button type="button" class="list-group-item list-group-item-action py-2" 
+//-                 onclick="selectItem('${inputId}', '${resultsId}', '${hiddenId}', '${actualId}', '${item.nombre} ${item.apellido}', ${isMedico}, '${item.dni || ''}')">
+//-                 <div class="d-flex justify-content-between align-items-center">
+//-                   <span>${item.nombre} ${item.apellido}</span>
+//-                   <small class="text-muted">${isMedico ? (item.especialidad_nombre || '') : 'DNI: '+item.dni}</small>
+//-                 </div>
+//-               </button>`;
+//-           }).join('');
+//-         } catch (err) { console.error(err); }
+//-       });
+//-     }
+
+//-     function selectItem(inputId, resultsId, hiddenId, id, text, isMedico, dni) {
+//-       document.getElementById(hiddenId).value = id;
+//-       document.getElementById(resultsId).innerHTML = '';
+//-       if (!isMedico) {
+//-         document.getElementById('wrapperBusquedaPaciente').classList.add('d-none');
+//-         document.getElementById('fichaPaciente').classList.replace('d-none', 'd-flex');
+//-         document.getElementById('le_nombre_paciente').innerText = text;
+//-         document.getElementById('le_dni_paciente').innerText = 'DNI: ' + dni;
+//-       } else {
+//-         document.getElementById(inputId).value = text;
+//-         const select = document.getElementById('id_especialidad');
+//-         select.innerHTML = '<option value="">Cargando...</option>';
+//-         fetch(`/medicos/${id}/especialidades`).then(res => res.json()).then(data => {
+//-           select.innerHTML = '<option value="">Seleccione especialidad...</option>' + data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+//-         });
+//-       }
+//-       validarDuplicado();
+//-     }
+
+//-     function resetPaciente() {
+//-       document.getElementById('id_paciente_hidden').value = '';
+//-       document.getElementById('searchPaciente').value = '';
+//-       document.getElementById('wrapperBusquedaPaciente').classList.remove('d-none');
+//-       document.getElementById('fichaPaciente').classList.replace('d-flex', 'd-none');
+//-       document.getElementById('btnSubmitEspera').disabled = false;
+//-     }
+
+//-     function enviarWS(tel, nom, esp, med) {
+//-       const t = tel.replace(/[^0-9]/g, '');
+//-       const msg = `Hola ${nom}, tenemos un turno libre para ${esp} con el Dr. ${med}. ¿Te interesa?`;
+//-       window.open(`https://api.whatsapp.com/send?phone=${t}&text=${encodeURIComponent(msg)}`, '_blank');
+//-     }
+
+//-     function confirmarBorrado(id, apellido) {
+//-       Swal.fire({ title: '¿Remover?', text: `Se cancelará la solicitud de ${apellido}.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, quitar' })
+//-       .then((r) => { if (r.isConfirmed) document.getElementById('form-delete-' + id).submit(); });
+//-     }
+
+//-   style.
+//-     .btn-xs { padding: 0.1rem 0.3rem; font-size: 0.7rem; border-radius: 4px; }
+//-     .bg-success.bg-opacity-10 { background-color: rgba(25, 135, 84, 0.1) !important; }
+//-     .list-group.position-absolute { z-index: 2000; max-height: 200px; overflow-y: auto; }
+//-     .z-3 { z-index: 1060; }
+//-     .modal-header .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+
+
+
+
+
+
 extends ../../layout
 
 block contenido
@@ -1649,7 +2561,7 @@ block contenido
                       else
                         span.text-muted.small 
                           i.fa-solid.fa-clock.me-1
-                          | Sin huecos próximos
+                          | Sin disponibilidad inmediata
 
                     td: span.badge.rounded-pill(class=item.prioridad==='Alta'?'bg-danger':(item.prioridad==='Media'?'bg-warning text-dark':'bg-success')) #{item.prioridad}
                     
@@ -1721,7 +2633,7 @@ block contenido
 
   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
-    // 0. VALIDACIÓN DE DUPLICADOS
+    // 0. VALIDACIÓN DE DUPLICADOS Y TURNOS EXISTENTES
     async function validarDuplicado() {
       const idPaciente = document.getElementById('id_paciente_hidden').value;
       const idMedico = document.getElementById('id_medico_hidden').value;
@@ -1734,9 +2646,16 @@ block contenido
           const data = await res.json();
           
           if (data.existe) {
+            let mensaje = 'Este paciente ya se encuentra registrado.';
+            if (data.tieneTurno) {
+                mensaje = 'El paciente ya cuenta con un turno activo para este profesional y especialidad.';
+            } else if (data.enLista) {
+                mensaje = 'Este paciente ya se encuentra en lista de espera para el profesional seleccionado.';
+            }
+
             Swal.fire({
-              title: 'Paciente ya registrado',
-              text: 'Este paciente ya se encuentra en lista de espera para el profesional y especialidad seleccionados.',
+              title: 'Atención',
+              text: mensaje,
               icon: 'warning',
               confirmButtonColor: '#0d6efd'
             });
@@ -1746,52 +2665,44 @@ block contenido
           }
         } catch (err) {
           console.error('Error al validar duplicado:', err);
+          btnSubmit.disabled = false;
         }
       }
     }
 
-    // 1. ASIGNACIÓN CON NOTIFICACIÓN DE MAIL
+    // 1. ASIGNACIÓN RÁPIDA
     function confirmarAsignacionDirecta(esperaId, pacienteId, pacienteNombre, fecha, hora, medicoId) {
       const f = fecha.split('-');
       const fechaLegible = `${f[2]}/${f[1]}/${f[0]}`;
 
       Swal.fire({
         title: '¿Confirmar turno y notificar?',
-        html: `Se agendará a <b>${pacienteNombre}</b><br>Día: <b>${fechaLegible}</b><br>Hora: <b>${hora} hs</b><br><br><small class="text-success">Se enviará un mail automático de confirmación.</small>`,
+        html: `Se agendará a <b>${pacienteNombre}</b><br>Día: <b>${fechaLegible}</b><br>Hora: <b>${hora} hs</b>`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#198754',
-        confirmButtonText: 'Sí, agendar y avisar',
-        cancelButtonText: 'Cancelar',
-        showLoaderOnConfirm: true,
-        preConfirm: () => {
-          Swal.showLoading();
+        confirmButtonText: 'Sí, agendar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
           window.location.href = `/secretaria/lista-espera/asignar-turno?esperaId=${esperaId}&id_paciente=${pacienteId}&fecha=${fecha}&hora=${hora}&id_medico=${medicoId}&notificar=true`;
         }
       });
     }
 
-    // 2. DETECTAR RESULTADOS DE LA NOTIFICACIÓN
+    // 2. DETECTAR STATUS DE LA URL
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
         
-        if (urlParams.get('notif') === 'sent') {
-            Swal.fire({
-                title: '¡Turno Asignado!',
-                text: 'El paciente ha sido agendado y el correo de notificación fue enviado con éxito.',
-                icon: 'success',
-                confirmButtonColor: '#0d6efd'
-            });
-            window.history.replaceState({}, document.title, window.location.pathname);
-        } else if (urlParams.get('notif') === 'error') {
-            Swal.fire({
-                title: 'Turno agendado, pero...',
-                text: 'No se pudo enviar el correo de notificación. Por favor, avise al paciente manualmente.',
-                icon: 'warning',
-                confirmButtonColor: '#f39c12'
-            });
-            window.history.replaceState({}, document.title, window.location.pathname);
+        if (status === 'success') {
+            Swal.fire({ title: '¡Listo!', text: 'Registro procesado con éxito.', icon: 'success' });
+        } else if (status === 'duplicado' || status === 'error_ya_tiene_turno') {
+            const msg = status === 'duplicado' ? 'Ya está en lista de espera.' : 'Ya tiene un turno activo.';
+            Swal.fire({ title: 'Bloqueado', text: msg, icon: 'error' });
         }
+
+        if (status) window.history.replaceState({}, document.title, window.location.pathname);
 
         initAutocomplete('searchPaciente', 'resultsPaciente', 'id_paciente_hidden', '/pacientes/buscar');
         initAutocomplete('searchMedico', 'resultsMedico', 'id_medico_hidden', '/medicos/buscar', true);
@@ -1851,7 +2762,6 @@ block contenido
       document.getElementById('btnSubmitEspera').disabled = false;
     }
 
-    // 4. WHATSAPP & BORRADO
     function enviarWS(tel, nom, esp, med) {
       const t = tel.replace(/[^0-9]/g, '');
       const msg = `Hola ${nom}, tenemos un turno libre para ${esp} con el Dr. ${med}. ¿Te interesa?`;

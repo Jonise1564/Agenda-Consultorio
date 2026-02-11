@@ -26,29 +26,61 @@ function fechaParaInput(fecha) {
 class TurnosController {
 
     // ============================================
-    // NUEVO: LISTADO GENERAL (PARA SECRETARÍA)
-    // Este maneja el filtro de Profesional, Paciente y Fecha
+    // LISTADO GENERAL (PARA SECRETARÍA)
     // ============================================
     async getTurnosGeneral(req, res) {
         try {
-            // Capturamos los datos del formulario GET del PUG
-            const { paciente, profesional, fecha } = req.query;
+            // 1. Capturamos todos los filtros, incluyendo especialidad y estado
+            const { paciente, profesional, fecha, sucursal, especialidad, estado, page = 1 } = req.query;
+            const limit = 200;
+            const offset = (parseInt(page) - 1) * limit;
 
-            // Llamamos al método que ya existe en tu modelo
-            const turnos = await Turno.listarConFiltros({
+            // 2. Llamamos al modelo con el objeto de filtros completo
+            const turnos = await Turno.listarPaginado({
                 paciente,
                 profesional,
-                fecha
-            });
+                fecha,
+                sucursal,
+                especialidad,
+                estado
+            }, limit, offset);
 
-            // Traemos médicos para que el modal de traslado tenga opciones
+            // 3. Datos adicionales para la interfaz
+            const turnosUrgentes = await Turno.getTurnosAgendasNoActivas();
             const medicos = await Medico.getAll();
 
+            // Opcional: Si necesitas la lista de especialidades para el select, 
+            // asegúrate de tener el modelo importado o una consulta aquí.
+
+            // 4. Contar el total considerando los nuevos filtros para la paginación
+            const totalTurnos = await Turno.contarTurnos({
+                paciente,
+                profesional,
+                fecha,
+                sucursal,
+                especialidad,
+                estado
+            });
+
+            const totalPages = Math.ceil(totalTurnos / limit) || 1;
+
+            // 5. Renderizado con envío de filtros de vuelta a la vista
             res.render('secretaria/turnos', {
                 turnos,
+                turnosUrgentes,
                 medicos,
-                filtros: { paciente, profesional, fecha }, // Mantiene los textos en los inputs
-                status: req.query.status
+                filtros: {
+                    paciente,
+                    profesional,
+                    fecha,
+                    sucursal,
+                    especialidad,
+                    estado
+                },
+                status: req.query.status,
+                currentPage: parseInt(page),
+                totalPages: totalPages,
+                totalTurnos: totalTurnos
             });
         } catch (error) {
             console.error("Error en getTurnosGeneral:", error);
@@ -104,172 +136,78 @@ class TurnosController {
     }
 
     // GUARDAR RESERVA 
-    // async reservar(req, res) {
-    //     try {
-    //         const { id } = req.params;
-    //         const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
-
-    //         let agendaIdDestino = id_agenda;
-    //         if (!agendaIdDestino && id !== 'undefined') {
-    //             const tActual = await Turno.getById(id);
-    //             agendaIdDestino = tActual ? tActual.id_agenda : null;
-    //         }
-
-    //         const archivo_dni = req.file ? req.file.filename : null;
-
-    //         const datosTurno = {
-    //             fecha,
-    //             hora_inicio,
-    //             motivo,
-    //             estado: estado || 'pendiente',
-    //             id_paciente: id_paciente || null,
-    //             id_agenda: agendaIdDestino,
-    //             ...(archivo_dni && { archivo_dni })
-    //         };
-
-    //         if (id && id !== 'undefined') {
-    //             // Ojo: verifica si tu modelo usa 'update' o 'actualizar'
-    //             await Turno.actualizar(id, datosTurno);
-    //         } else {
-    //             await Turno.create(datosTurno);
-    //         }
-
-    //         res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}` : '/agendas');
-
-    //     } catch (error) {
-    //         console.error("Error al guardar reserva:", error);
-    //         res.status(500).send("Error al procesar la reserva");
-    //     }
-    // }
-
-
-
-    
-    // async reservar(req, res) {
-    //     let conn;
-    //     try {
-    //         const { id } = req.params;
-    //         const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
-
-    //         // 1. VALIDACIÓN CRÍTICA: ¿Es un día no laborable/feriado?
-    //         conn = await createConnection();
-    //         const [feriado] = await conn.query(
-    //             'SELECT descripcion FROM FERIADOS WHERE fecha = ?',
-    //             [fecha]
-    //         );
-
-    //         if (feriado.length > 0) {
-    //             // Si es feriado, bloqueamos la reserva
-    //             console.warn(`🛑 Intento de reserva en día no laborable: ${fecha} (${feriado[0].descripcion})`);
-
-    //             // Si es una petición AJAX podrías devolver JSON, 
-    //             // pero como parece ser un form tradicional, redirigimos con error.
-    //             return res.status(400).render('principal/error', {
-    //                 error: `El día ${formatearFecha(fecha)} es feriado (${feriado[0].descripcion}) y no se permiten reservas.`,
-    //                 page: 'error'
-    //             });
-    //         }
-
-    //         // 2. Lógica normal de búsqueda de agenda
-    //         let agendaIdDestino = id_agenda;
-    //         if (!agendaIdDestino && id !== 'undefined') {
-    //             const tActual = await Turno.getById(id);
-    //             agendaIdDestino = tActual ? tActual.id_agenda : null;
-    //         }
-
-    //         const archivo_dni = req.file ? req.file.filename : null;
-
-    //         const datosTurno = {
-    //             fecha,
-    //             hora_inicio,
-    //             motivo,
-    //             estado: estado || 'pendiente',
-    //             id_paciente: id_paciente || null,
-    //             id_agenda: agendaIdDestino,
-    //             ...(archivo_dni && { archivo_dni })
-    //         };
-
-    //         // 3. Guardado en BD
-    //         if (id && id !== 'undefined') {
-    //             await Turno.actualizar(id, datosTurno);
-    //         } else {
-    //             await Turno.create(datosTurno);
-    //         }
-
-    //         res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
-
-    //     } catch (error) {
-    //         console.error("Error al guardar reserva:", error);
-    //         res.status(500).send("Error al procesar la reserva");
-    //     } finally {
-    //         if (conn) conn.end(); // Cerramos la conexión manual de la validación
-    //     }
-    // }
-
-
-
     async reservar(req, res) {
-    try {
-        const { id } = req.params;
-        const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
+        try {
+            const { id } = req.params;
+            const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
 
-        // ========================================================
-        // 1. VALIDACIÓN DE BACKEND: FECHA PASADA
-        // ========================================================
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0); // Solo nos importa la fecha, no la hora actual
+            // ========================================================
+            // 1. VALIDACIÓN: FECHA PASADA
+            // ========================================================
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
 
-        // Convertimos la fecha recibida (YYYY-MM-DD) a objeto Date
-        // Importante: Usamos split para evitar problemas de zona horaria que restan un día
-        const [year, month, day] = fecha.split('-').map(Number);
-        const fechaTurno = new Date(year, month - 1, day);
+            const [year, month, day] = fecha.split('-').map(Number);
+            const fechaTurno = new Date(year, month - 1, day);
 
-        if (fechaTurno < hoy) {
-            console.error(`⚠️ Intento de hackeo o error: Fecha pasada recibida (${fecha})`);
-            // Opción A: Mandar a una página de error
-            return res.status(400).send("No se pueden agendar turnos en fechas que ya pasaron.");
-            // Opción B: Redirigir con un mensaje de error (si usas connect-flash)
-            // return res.redirect('back'); 
+            if (fechaTurno < hoy) {
+                console.error(`⚠️ Error: Fecha pasada recibida (${fecha})`);
+                return res.status(400).send("No se pueden agendar turnos en fechas que ya pasaron.");
+            }
+
+            // ========================================================
+            // 2. VALIDACIÓN DE TURNO DUPLICADO EN EL DÍA
+            // ========================================================
+            // Solo validamos si es un turno nuevo (id no definido)
+            if (!id || id === 'undefined') {
+                const yaTieneTurno = await Turno.verificarTurnoDia(id_paciente, fecha);
+                if (yaTieneTurno) {
+                    console.warn(`🛑 Bloqueo de duplicado: Paciente ${id_paciente} ya tiene turno el ${fecha}`);
+                    return res.status(400).send(`El paciente ya tiene un turno asignado para el día ${day}/${month}/${year} a las ${yaTieneTurno.hora}. No se permiten dos
+                        turnos el mismo día para el mismo Medico  y misma especialidad.`);
+                }
+            }
+
+            // ========================================================
+            // 3. PROCESAMIENTO DE DATOS
+            // ========================================================
+            let agendaIdDestino = id_agenda;
+            if (!agendaIdDestino && id !== 'undefined') {
+                const tActual = await Turno.getById(id);
+                agendaIdDestino = tActual ? tActual.id_agenda : null;
+            }
+
+            const archivo_dni = req.file ? req.file.filename : null;
+
+            const datosTurno = {
+                fecha,
+                hora_inicio,
+                motivo,
+                estado: estado || 'pendiente',
+                id_paciente: id_paciente || null,
+                id_agenda: agendaIdDestino,
+                ...(archivo_dni && { archivo_dni })
+            };
+
+            // ========================================================
+            // 4. PERSISTENCIA (GUARDADO EN BD)
+            // ========================================================
+            if (id && id !== 'undefined') {
+                await Turno.actualizar(id, datosTurno);
+            } else {
+                await Turno.create(datosTurno);
+            }
+
+            // Redirección con éxito
+            res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+
+        } catch (error) {
+            console.error("Error al guardar reserva:", error);
+            res.status(500).send("Error al procesar la reserva");
         }
-
-        // ========================================================
-        // 2. PROCESAMIENTO DE DATOS
-        // ========================================================
-        let agendaIdDestino = id_agenda;
-        if (!agendaIdDestino && id !== 'undefined') {
-            const tActual = await Turno.getById(id);
-            agendaIdDestino = tActual ? tActual.id_agenda : null;
-        }
-
-        const archivo_dni = req.file ? req.file.filename : null;
-
-        const datosTurno = {
-            fecha,
-            hora_inicio,
-            motivo,
-            estado: estado || 'pendiente',
-            id_paciente: id_paciente || null,
-            id_agenda: agendaIdDestino,
-            ...(archivo_dni && { archivo_dni })
-        };
-
-        // ========================================================
-        // 3. PERSISTENCIA (GUARDADO EN BD)
-        // ========================================================
-        if (id && id !== 'undefined') {
-            await Turno.actualizar(id, datosTurno);
-        } else {
-            await Turno.create(datosTurno);
-        }
-
-        // Redirección con éxito
-        res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
-
-    } catch (error) {
-        console.error("Error al guardar reserva:", error);
-        res.status(500).send("Error al procesar la reserva");
     }
-}
+
+
     // ELIMINAR
     async delete(req, res) {
         try {
@@ -283,6 +221,54 @@ class TurnosController {
             return res.status(500).json({ ok: false, error: "Error interno" });
         }
     }
+
+    // async validarTurnoDia(req, res) {
+    //     try {
+    //         const { id_paciente, fecha } = req.query;
+
+    //         if (!id_paciente || !fecha) {
+    //             return res.json({ existe: false }); // No hay suficientes datos para validar
+    //         }
+
+    //         // Llamamos al método que ya creaste en tu modelo
+    //         const turnoExistente = await Turno.verificarTurnoDia(id_paciente, fecha);
+
+    //         if (turnoExistente) {
+    //             return res.json({
+    //                 existe: true,
+    //                 mensaje: `El paciente ya tiene un turno para esta fecha a las ${turnoExistente.hora}.`
+    //             });
+    //         }
+
+    //         return res.json({ existe: false });
+    //     } catch (error) {
+    //         console.error("Error en validarTurnoDia:", error);
+    //         res.status(500).json({ error: "Error interno de validación" });
+    //     }
+    // }
+
+
+
+    // Dentro de TurnosController.js
+    async validarTurnoDia(req, res) {
+        try {
+            const { id_paciente, fecha } = req.query;
+            // Llama a tu modelo (ajusta el nombre del método según tu modelo de Turnos o Pacientes)
+            const existe = await Paciente.verificarTurnoExistente(id_paciente, fecha);
+
+            return res.json({
+                existe: !!existe,
+                msg: existe ? 'Ya tienes un turno agendado para esta fecha.' : ''
+            });
+        } catch (error) {
+            console.error("Error validando duplicado:", error);
+            res.status(500).json({ existe: false, error: 'Error de servidor' });
+        }
+    }
+
+
+
+
 }
 
 module.exports = new TurnosController();
