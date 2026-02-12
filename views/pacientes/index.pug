@@ -1,12 +1,325 @@
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.fa-solid.fa-hospital-user.me-2
+//-             | Gestión de Pacientes
+//-           if totalPacientes !== undefined
+//-             span.badge.bg-light.text-dark.border 
+//-               i.bi.bi-people.me-1
+//-               | Total: #{totalPacientes} registros
+        
+//-         a.btn.btn-primary.shadow-sm(href="/pacientes/crear")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nuevo Paciente
+//-         a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+
+
+//-     // Filtros y Buscador
+//-     .card.border-0.shadow-sm.mb-4
+//-       .card-body
+//-         form(method="GET" action="/pacientes")
+//-           .row.g-3.align-items-center
+//-             .col-md-auto
+//-               .input-group.input-group-sm
+//-                 label.input-group-text Mostrar
+//-                 select.form-select(name="limit" onchange="this.form.submit()" style="width: 75px;")
+//-                   option(value="5" selected=limit==5) 5
+//-                   option(value="10" selected=limit==10) 10
+//-                   option(value="25" selected=limit==25) 25
+//-                   option(value="50" selected=limit==50) 50
+            
+//-             .col-md
+//-               .input-group
+//-                 span.input-group-text.bg-white
+//-                   i.fa-solid.fa-magnifying-glass.text-muted
+//-                 input.form-control(
+//-                   type="text" 
+//-                   name="q" 
+//-                   placeholder="Buscar por DNI, Nombre o Obra Social..." 
+//-                   value=search
+//-                 )
+//-                 if search
+//-                   a.btn.btn-outline-secondary(href="/pacientes")
+//-                     i.fa-solid.fa-xmark
+//-                 button.btn.btn-primary.px-4(type="submit") Buscar
+
+//-     // Mensaje de SweetAlert (si existe)
+//-     if mensaje
+//-       script.
+//-         Swal.fire({ 
+//-           title: '¡Logrado!', 
+//-           text: '#{mensaje}', 
+//-           icon: 'success', 
+//-           confirmButtonColor: '#0a3d62'
+//-         });
+
+//-     // Tabla de Resultados
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0
+//-           thead.bg-light
+//-             tr
+//-               th.ps-3 DNI
+//-               th Paciente
+//-               th.text-center Foto
+//-               th Email
+//-               th Teléfonos
+//-               th Obra Social
+//-               th.text-center Estado
+//-               th.text-center Acciones
+
+//-           tbody
+//-             if pacientes && pacientes.length > 0
+//-               each paciente in pacientes
+//-                 - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+//-                 tr
+//-                   td.ps-3.fw-bold= paciente.dni
+//-                   td
+//-                     div.fw-bold= `${paciente.nombre} ${paciente.apellido}`
+//-                     small.text-muted= paciente.nacimiento
+//-                   td.text-center
+//-                     img.rounded-circle.border(
+//-                       src="/img/paciente-default.png" 
+//-                       width="38" 
+//-                       height="38" 
+//-                       alt="Paciente"
+//-                       style="object-fit: cover;"
+//-                     )
+//-                   td.text-muted= paciente.email
+//-                   td
+//-                     if telefonos.length > 1
+//-                       select.form-select.form-select-sm(style="max-width: 140px;")
+//-                         each tel in telefonos
+//-                           option= tel
+//-                     else
+//-                       span= telefonos[0] || '-'
+//-                   td
+//-                     span.badge.bg-info.text-dark.bg-opacity-10.border.border-info= paciente.obra_social
+//-                   td.text-center
+//-                     if paciente.estado === 1
+//-                       span.badge.rounded-pill.bg-success Activo
+//-                     else
+//-                       span.badge.rounded-pill.bg-danger Inactivo
+//-                   td.text-center
+//-                     .btn-group.btn-group-sm
+//-                       a.btn.btn-outline-primary(href=`/pacientes/editar/${paciente.id_paciente}` title="Editar")
+//-                         i.fa-solid.fa-pen-to-square
+//-                       a.btn.btn-outline-secondary(href=`/pacientes/foto/${paciente.id_paciente}` title="Foto")
+//-                         i.fa-solid.fa-camera
+//-                       if paciente.estado === 1
+//-                         a.btn.btn-outline-danger(
+//-                           href=`/pacientes/inactivar/${paciente.id_paciente}` 
+//-                           title="Dar de Baja" 
+//-                           onclick="return confirm('¿Seguro desea inactivar este paciente?')"
+//-                         )
+//-                           i.fa-solid.fa-user-minus
+//-                       else
+//-                         a.btn.btn-outline-success(href=`/pacientes/activar/${paciente.id_paciente}` title="Dar de Alta")
+//-                           i.fa-solid.fa-user-check
+//-             else
+//-               tr
+//-                 td.text-center.py-5(colspan="8")
+//-                   img(src="/images/empty.svg" width="100" class="mb-3 d-block mx-auto" style="opacity: 0.5")
+//-                   p.text-muted No se encontraron pacientes registrados.
+
+//-     // Paginación
+//-     if totalPages > 1
+//-       nav.mt-4
+//-         ul.pagination.justify-content-center
+//-           li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+//-             a.page-link(href=`/pacientes?page=${currentPage - 1}&limit=${limit}${search ? '&q='+search : ''}`)
+//-               i.bi.bi-chevron-left
+          
+//-           - var start = Math.max(1, currentPage - 2)
+//-           - var end = Math.min(totalPages, start + 4)
+//-           if (end - start < 4)
+//-             - start = Math.max(1, end - 4)
+          
+//-           - for (var n = Math.max(1, start); n <= end; n++)
+//-             li.page-item(class=(currentPage === n ? 'active' : ''))
+//-               a.page-link(href=`/pacientes?page=${n}&limit=${limit}${search ? '&q='+search : ''}`)= n
+          
+//-           li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+//-             a.page-link(href=`/pacientes?page=${currentPage + 1}&limit=${limit}${search ? '&q='+search : ''}`)
+//-               i.bi.bi-chevron-right
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.fa-solid.fa-hospital-user.me-2
+//-             | Gestión de Pacientes
+//-           if totalPacientes !== undefined
+//-             span.badge.bg-light.text-dark.border 
+//-               i.bi.bi-people.me-1
+//-               | Total: #{totalPacientes} registros
+        
+//-         a.btn.btn-primary.shadow-sm(href="/pacientes/crear")
+//-           i.fa-solid.fa-user-plus.me-2
+//-           | Nuevo Paciente
+//-         a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-2
+//-           | Volver al Panel
+
+
+//-     // Filtros y Buscador
+//-     .card.border-0.shadow-sm.mb-4
+//-       .card-body
+//-         form(method="GET" action="/pacientes")
+//-           .row.g-3.align-items-center
+//-             .col-md-auto
+//-               .input-group.input-group-sm
+//-                 label.input-group-text Mostrar
+//-                 select.form-select(name="limit" onchange="this.form.submit()" style="width: 75px;")
+//-                   option(value="5" selected=limit==5) 5
+//-                   option(value="10" selected=limit==10) 10
+//-                   option(value="25" selected=limit==25) 25
+//-                   option(value="50" selected=limit==50) 50
+            
+//-             .col-md
+//-               .input-group
+//-                 span.input-group-text.bg-white
+//-                   i.fa-solid.fa-magnifying-glass.text-muted
+//-                 input.form-control(
+//-                   type="text" 
+//-                   name="q" 
+//-                   placeholder="Buscar por DNI, Nombre o Obra Social..." 
+//-                   value=search
+//-                 )
+//-                 if search
+//-                   a.btn.btn-outline-secondary(href="/pacientes")
+//-                     i.fa-solid.fa-xmark
+//-                 button.btn.btn-primary.px-4(type="submit") Buscar
+
+//-     // Mensaje de SweetAlert (si existe)
+//-     if mensaje
+//-       script.
+//-         Swal.fire({ 
+//-           title: '¡Logrado!', 
+//-           text: '#{mensaje}', 
+//-           icon: 'success', 
+//-           confirmButtonColor: '#0a3d62'
+//-         });
+
+//-     // Tabla de Resultados
+//-     .card.border-0.shadow-sm
+//-       .table-responsive
+//-         table.table.table-hover.align-middle.mb-0
+//-           thead.bg-light
+//-             tr
+//-               th.ps-3 DNI
+//-               th Paciente
+//-               //- th.text-center Foto
+//-               th Email
+//-               th Teléfonos
+//-               th Obra Social
+//-               th.text-center Estado
+//-               th.text-center Acciones
+
+//-           tbody
+//-             if pacientes && pacientes.length > 0
+//-               each paciente in pacientes
+//-                 - const telefonos = paciente.telefonos ? paciente.telefonos.split(', ') : []
+//-                 tr
+//-                   td.ps-3.fw-bold= paciente.dni
+//-                   td
+//-                     div.fw-bold= `${paciente.nombre} ${paciente.apellido}`
+//-                     small.text-muted= paciente.nacimiento
+//-                   //- td.text-center
+//-                   //-   img.rounded-circle.border(
+//-                   //-     src="/img/paciente-default.png" 
+//-                   //-     width="38" 
+//-                   //-     height="38" 
+//-                   //-     alt="Paciente"
+//-                   //-     style="object-fit: cover;"
+//-                   //-   )
+//-                   td.text-muted= paciente.email
+//-                   td
+//-                     if telefonos.length > 1
+//-                       select.form-select.form-select-sm(style="max-width: 140px;")
+//-                         each tel in telefonos
+//-                           option= tel
+//-                     else
+//-                       span= telefonos[0] || '-'
+//-                   td
+//-                     span.badge.bg-info.text-dark.bg-opacity-10.border.border-info= paciente.obra_social
+//-                   td.text-center
+//-                     if paciente.estado === 1
+//-                       span.badge.rounded-pill.bg-success Activo
+//-                     else
+//-                       span.badge.rounded-pill.bg-danger Inactivo
+//-                   td.text-center
+//-                     .btn-group.btn-group-sm
+//-                       a.btn.btn-outline-primary(href=`/pacientes/editar/${paciente.id_paciente}` title="Editar")
+//-                         i.fa-solid.fa-pen-to-square
+//-                       //- a.btn.btn-outline-secondary(href=`/pacientes/foto/${paciente.id_paciente}` title="Foto")
+//-                       //-   i.fa-solid.fa-camera
+                      
+//-                       //- Ajuste: Solo mostramos Alta/Baja si es Administrador (Rol 1)
+//-                       if user && user.id_rol === 1
+//-                         if paciente.estado === 1
+//-                           a.btn.btn-outline-danger(
+//-                             href=`/pacientes/inactivar/${paciente.id_paciente}` 
+//-                             title="Dar de Baja" 
+//-                             onclick="return confirm('¿Seguro desea inactivar este paciente?')"
+//-                           )
+//-                             i.fa-solid.fa-user-minus
+//-                         else
+//-                           a.btn.btn-outline-success(href=`/pacientes/activar/${paciente.id_paciente}` title="Dar de Alta")
+//-                             i.fa-solid.fa-user-check
+//-             else
+//-               tr
+//-                 td.text-center.py-5(colspan="8")
+//-                   img(src="/images/empty.svg" width="100" class="mb-3 d-block mx-auto" style="opacity: 0.5")
+//-                   p.text-muted No se encontraron pacientes registrados.
+
+//-     // Paginación
+//-     if totalPages > 1
+//-       nav.mt-4
+//-         ul.pagination.justify-content-center
+//-           li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+//-             a.page-link(href=`/pacientes?page=${currentPage - 1}&limit=${limit}${search ? '&q='+search : ''}`)
+//-               i.bi.bi-chevron-left
+          
+//-           - var start = Math.max(1, currentPage - 2)
+//-           - var end = Math.min(totalPages, start + 4)
+//-           if (end - start < 4)
+//-             - start = Math.max(1, end - 4)
+          
+//-           - for (var n = Math.max(1, start); n <= end; n++)
+//-             li.page-item(class=(currentPage === n ? 'active' : ''))
+//-               a.page-link(href=`/pacientes?page=${n}&limit=${limit}${search ? '&q='+search : ''}`)= n
+          
+//-           li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+//-             a.page-link(href=`/pacientes?page=${currentPage + 1}&limit=${limit}${search ? '&q='+search : ''}`)
+//-               i.bi.bi-chevron-right
+
+
 extends ../layout
 
 block contenido
   .container-fluid
-    // Encabezado
+    // Encabezado - Botones agrupados para evitar desorden
     .row.mb-4
       .col-12.d-flex.justify-content-between.align-items-center
         div
-          h2.fw-bold.text-primary 
+          h2.fw-bold.text-primary.mb-0 
             i.fa-solid.fa-hospital-user.me-2
             | Gestión de Pacientes
           if totalPacientes !== undefined
@@ -14,12 +327,14 @@ block contenido
               i.bi.bi-people.me-1
               | Total: #{totalPacientes} registros
         
-        a.btn.btn-primary.shadow-sm(href="/pacientes/crear")
-          i.fa-solid.fa-user-plus.me-2
-          | Nuevo Paciente
-        a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
-          i.fa-solid.fa-house-user.me-2
-          | Volver al Panel
+        // Grupo de botones alineados a la derecha
+        .d-flex.gap-2
+          a.btn.btn-primary.shadow-sm(href="/pacientes/crear")
+            i.fa-solid.fa-user-plus.me-2
+            | Nuevo Paciente
+          a.btn.btn-outline-secondary.shadow-sm(href="/secretaria")
+            i.fa-solid.fa-house-user.me-2
+            | Volver al Panel
 
 
     // Filtros y Buscador
@@ -69,7 +384,7 @@ block contenido
             tr
               th.ps-3 DNI
               th Paciente
-              th.text-center Foto
+              //- th.text-center Foto
               th Email
               th Teléfonos
               th Obra Social
@@ -85,14 +400,14 @@ block contenido
                   td
                     div.fw-bold= `${paciente.nombre} ${paciente.apellido}`
                     small.text-muted= paciente.nacimiento
-                  td.text-center
-                    img.rounded-circle.border(
-                      src="/img/paciente-default.png" 
-                      width="38" 
-                      height="38" 
-                      alt="Paciente"
-                      style="object-fit: cover;"
-                    )
+                  //- td.text-center
+                  //-   img.rounded-circle.border(
+                  //-     src="/img/paciente-default.png" 
+                  //-     width="38" 
+                  //-     height="38" 
+                  //-     alt="Paciente"
+                  //-     style="object-fit: cover;"
+                  //-   )
                   td.text-muted= paciente.email
                   td
                     if telefonos.length > 1
@@ -112,18 +427,21 @@ block contenido
                     .btn-group.btn-group-sm
                       a.btn.btn-outline-primary(href=`/pacientes/editar/${paciente.id_paciente}` title="Editar")
                         i.fa-solid.fa-pen-to-square
-                      a.btn.btn-outline-secondary(href=`/pacientes/foto/${paciente.id_paciente}` title="Foto")
-                        i.fa-solid.fa-camera
-                      if paciente.estado === 1
-                        a.btn.btn-outline-danger(
-                          href=`/pacientes/inactivar/${paciente.id_paciente}` 
-                          title="Dar de Baja" 
-                          onclick="return confirm('¿Seguro desea inactivar este paciente?')"
-                        )
-                          i.fa-solid.fa-user-minus
-                      else
-                        a.btn.btn-outline-success(href=`/pacientes/activar/${paciente.id_paciente}` title="Dar de Alta")
-                          i.fa-solid.fa-user-check
+                      //- a.btn.btn-outline-secondary(href=`/pacientes/foto/${paciente.id_paciente}` title="Foto")
+                      //-   i.fa-solid.fa-camera
+                      
+                      //- Lógica de permisos para Administrador (Rol 1)
+                      if user && user.id_rol === 1
+                        if paciente.estado === 1
+                          a.btn.btn-outline-danger(
+                            href=`/pacientes/inactivar/${paciente.id_paciente}` 
+                            title="Dar de Baja" 
+                            onclick="return confirm('¿Seguro desea inactivar este paciente?')"
+                          )
+                            i.fa-solid.fa-user-minus
+                        else
+                          a.btn.btn-outline-success(href=`/pacientes/activar/${paciente.id_paciente}` title="Dar de Alta")
+                            i.fa-solid.fa-user-check
             else
               tr
                 td.text-center.py-5(colspan="8")
@@ -149,4 +467,4 @@ block contenido
           
           li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
             a.page-link(href=`/pacientes?page=${currentPage + 1}&limit=${limit}${search ? '&q='+search : ''}`)
-              i.bi.bi-chevron-right
+              i.bi.bi-chevron-right   

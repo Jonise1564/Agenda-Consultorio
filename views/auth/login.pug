@@ -113,7 +113,7 @@ block contenido
       // 2. Notificación de registro exitoso (si rediriges con query string)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('registro_exitoso')) {
-        // Si tienes una librería como Toastify o SweetAlert úsala aquí
+   
         alert('¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
         // Limpiar URL
         window.history.replaceState({}, document.title, window.location.pathname);

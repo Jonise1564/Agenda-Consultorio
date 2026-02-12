@@ -30,6 +30,183 @@ class SecretariaController {
     }
 
     // Consulta de slots horarios (RETORNA JSON)
+    // async disponibilidad(req, res, next) {
+    //     try {
+    //         const { id_medico, id_especialidad, fecha } = req.query;
+
+    //         if (!id_medico || !id_especialidad || !fecha) {
+    //             return res.status(400).json({ error: 'Faltan datos para la consulta' });
+    //         }
+
+    //         const feriadoDesc = await Agenda.esFeriado(fecha);
+    //         if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
+
+    //         const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
+    //         if (ausencia) {
+    //             return res.json({
+    //                 status: 'ausencia',
+    //                 tipo: ausencia.tipo,
+    //                 descripcion: ausencia.descripcion
+    //             });
+    //         }
+
+    //         const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
+    //         if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
+
+    //         const agenda = agendas[0];
+    //         const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
+
+    //         let horarios = [];
+    //         let [h, m] = agenda.hora_inicio.split(':');
+    //         let actual = new Date(2000, 0, 1, h, m);
+    //         let [hFin, mFin] = agenda.hora_fin.split(':');
+    //         let fin = new Date(2000, 0, 1, hFin, mFin);
+
+    //         while (actual < fin) {
+    //             const horaStr = actual.toTimeString().slice(0, 5);
+    //             horarios.push({
+    //                 hora: horaStr,
+    //                 ocupado: ocupados.includes(horaStr),
+    //                 id_agenda: agenda.id
+    //             });
+    //             actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
+    //         }
+
+    //         return res.json({ status: 'success', horarios });
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.status(500).json({ error: 'Error al cargar disponibilidad' });
+    //     }
+    // }
+
+
+    //     async disponibilidad(req, res, next) {
+    //     try {
+    //         const { id_medico, id_especialidad, fecha } = req.query;
+
+    //         if (!id_medico || !id_especialidad || !fecha) {
+    //             return res.status(400).json({ error: 'Faltan datos para la consulta' });
+    //         }
+
+    //         // 1. Verificación de Feriados y Ausencias
+    //         const feriadoDesc = await Agenda.esFeriado(fecha);
+    //         if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
+
+    //         const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
+    //         if (ausencia) {
+    //             return res.json({ status: 'ausencia', tipo: ausencia.tipo, descripcion: ausencia.descripcion });
+    //         }
+
+    //         // 2. Obtener Agenda y Turnos Ocupados
+    //         const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
+    //         if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
+
+    //         const agenda = agendas[0];
+    //         const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
+
+    //         // 3. Lógica de límites de Sobreturno
+    //         // Contamos cuántos sobreturnos totales hay en esta agenda/fecha
+    //         const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha); 
+    //         const limiteMax = agenda.limite_sobreturnos || 0;
+    //         const puedeMasSobreturnos = sobreturnosActuales < limiteMax;
+
+    //         let horarios = [];
+    //         let [h, m] = agenda.hora_inicio.split(':');
+    //         let actual = new Date(2000, 0, 1, h, m);
+    //         let [hFin, mFin] = agenda.hora_fin.split(':');
+    //         let fin = new Date(2000, 0, 1, hFin, mFin);
+
+    //         while (actual < fin) {
+    //             const horaStr = actual.toTimeString().slice(0, 5);
+    //             horarios.push({
+    //                 hora: horaStr,
+    //                 ocupado: ocupados.includes(horaStr),
+    //                 id_agenda: agenda.id,
+    //                 // Enviamos al front si este slot permitiría un sobreturno
+    //                 permitirSobre: puedeMasSobreturnos 
+    //             });
+    //             actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
+    //         }
+
+    //         return res.json({ 
+    //             status: 'success', 
+    //             horarios, 
+    //             limite_sobreturnos: limiteMax, 
+    //             sobreturnos_actuales: sobreturnosActuales 
+    //         });
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.status(500).json({ error: 'Error al cargar disponibilidad' });
+    //     }
+    // }
+
+
+    // async disponibilidad(req, res, next) {
+    //     try {
+    //         const { id_medico, id_especialidad, fecha } = req.query;
+
+    //         if (!id_medico || !id_especialidad || !fecha) {
+    //             return res.status(400).json({ error: 'Faltan datos para la consulta' });
+    //         }
+
+    //         // 1. Verificación de Feriados y Ausencias
+    //         const feriadoDesc = await Agenda.esFeriado(fecha);
+    //         if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
+
+    //         const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
+    //         if (ausencia) {
+    //             return res.json({ status: 'ausencia', tipo: ausencia.tipo, descripcion: ausencia.descripcion });
+    //         }
+
+    //         // 2. Obtener Agenda y Turnos Ocupados
+    //         const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
+    //         if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
+
+    //         const agenda = agendas[0];
+    //         const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
+
+    //         // 3. Lógica de límites de Sobretorno
+    //         // Obtenemos cuántos sobreturnos ya se asignaron para esta agenda y fecha específica
+    //         const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha); 
+    //         const limiteMax = agenda.limite_sobreturnos || 0;
+
+    //         // La posibilidad de dar más sobreturnos depende de no haber superado el límite diario
+    //         const cupoDisponibleParaSobre = sobreturnosActuales < limiteMax;
+
+    //         let horarios = [];
+    //         let [h, m] = agenda.hora_inicio.split(':');
+    //         let actual = new Date(2000, 0, 1, h, m);
+    //         let [hFin, mFin] = agenda.hora_fin.split(':');
+    //         let fin = new Date(2000, 0, 1, hFin, mFin);
+
+    //         while (actual < fin) {
+    //             const horaStr = actual.toTimeString().slice(0, 5);
+    //             const estaOcupado = ocupados.includes(horaStr);
+
+    //             horarios.push({
+    //                 hora: horaStr,
+    //                 ocupado: estaOcupado,
+    //                 id_agenda: agenda.id,
+    //                 // REGLA: Permitir sobreturno solo si el slot está ocupado 
+    //                 // Y todavía queda cupo en el límite diario del médico
+    //                 permitirSobre: estaOcupado && cupoDisponibleParaSobre 
+    //             });
+    //             actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
+    //         }
+
+    //         return res.json({ 
+    //             status: 'success', 
+    //             horarios, 
+    //             limite_sobreturnos: limiteMax, 
+    //             sobreturnos_actuales: sobreturnosActuales,
+    //             total_disponible_sobre: Math.max(0, limiteMax - sobreturnosActuales)
+    //         });
+    //     } catch (error) {
+    //         console.error("Error en disponibilidad:", error);
+    //         res.status(500).json({ error: 'Error al cargar disponibilidad' });
+    //     }
+    // }
+
     async disponibilidad(req, res, next) {
         try {
             const { id_medico, id_especialidad, fecha } = req.query;
@@ -38,23 +215,26 @@ class SecretariaController {
                 return res.status(400).json({ error: 'Faltan datos para la consulta' });
             }
 
+            // 1. Verificación de Feriados y Ausencias
             const feriadoDesc = await Agenda.esFeriado(fecha);
             if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
 
             const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
             if (ausencia) {
-                return res.json({
-                    status: 'ausencia',
-                    tipo: ausencia.tipo,
-                    descripcion: ausencia.descripcion
-                });
+                return res.json({ status: 'ausencia', tipo: ausencia.tipo, descripcion: ausencia.descripcion });
             }
 
+            // 2. Obtener Agenda y Turnos Ocupados
             const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
             if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
 
             const agenda = agendas[0];
             const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
+
+            // 3. Lógica de límites de Sobreturno
+            const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha);
+            const limiteMax = agenda.limite_sobreturnos || 0;
+            const hayCupoParaSobre = sobreturnosActuales < limiteMax;
 
             let horarios = [];
             let [h, m] = agenda.hora_inicio.split(':');
@@ -64,17 +244,28 @@ class SecretariaController {
 
             while (actual < fin) {
                 const horaStr = actual.toTimeString().slice(0, 5);
+                const estaOcupado = ocupados.includes(horaStr);
+
                 horarios.push({
                     hora: horaStr,
-                    ocupado: ocupados.includes(horaStr),
-                    id_agenda: agenda.id
+                    ocupado: estaOcupado,
+                    id_agenda: agenda.id,
+                    // Solo permitimos marcarlo como sobreturno si el horario está lleno
+                    // y el médico todavía no superó su límite diario.
+                    permitirSobre: estaOcupado && hayCupoParaSobre
                 });
                 actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
             }
 
-            return res.json({ status: 'success', horarios });
+            return res.json({
+                status: 'success',
+                horarios,
+                limite_sobreturnos: limiteMax,
+                sobreturnos_actuales: sobreturnosActuales,
+                disponibles_sobre: Math.max(0, limiteMax - sobreturnosActuales)
+            });
         } catch (error) {
-            console.error(error);
+            console.error("Error en disponibilidad:", error);
             res.status(500).json({ error: 'Error al cargar disponibilidad' });
         }
     }
@@ -194,6 +385,66 @@ class SecretariaController {
 
 
     // Proceso de agendar con Lógica de Sobreturnos   
+    // async agendar(req, res, next) {
+    //     try {
+    //         const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
+    //         const archivo_dni = req.file ? req.file.filename : null;
+
+    //         if (!id_paciente || !fecha || !hora_inicio || !id_agenda) {
+    //             return res.redirect('/secretaria?status=error_datos');
+    //         }
+
+    //         // 3. Obtener detalles de la agenda PRIMERO para saber qué médico es
+    //         const detallesAgenda = await Agenda.getAgendaById(id_agenda);
+    //         if (!detallesAgenda) {
+    //             return res.redirect('/secretaria?status=error_no_agenda');
+    //         }
+
+    //         const id_medico_nuevo = detallesAgenda.id_medico;
+
+    //         // --- VALIDACIÓN CORREGIDA ---
+
+    //         // A. Verificar si ya tiene turno con ESTE médico específico ese día
+    //         const tieneTurnoConMedico = await Turno.verificarTurnoMedicoDia(id_paciente, fecha, id_medico_nuevo);
+    //         if (tieneTurnoConMedico) {
+    //             return res.redirect('/secretaria?status=error_duplicado_medico');
+    //         }
+
+    //         // B. Verificar si el paciente ya tiene OTRO turno exactamente a la misma hora
+    //         const tieneTurnoMismaHora = await Turno.verificarTurnoHora(id_paciente, fecha, hora_inicio);
+    //         if (tieneTurnoMismaHora) {
+    //             return res.redirect('/secretaria?status=error_hora_ocupada');
+    //         }
+
+    //         // --- CONTINÚA LÓGICA DE SOBRETURNOS ---
+    //         const horariosOcupados = await Turno.obtenerHorariosOcupados(id_agenda, fecha);
+    //         const cantidadActualEnEsaHora = horariosOcupados.filter(h => h === hora_inicio).length;
+    //         const esSobretorno = cantidadActualEnEsaHora > 0;
+
+    //         if (esSobretorno && cantidadActualEnEsaHora > (detallesAgenda.limite_sobreturnos || 0)) {
+    //             return res.redirect('/secretaria?status=error_sobreturno_agotado');
+    //         }
+
+    //         await Turno.agendarTurnoVirtual({
+    //             fecha,
+    //             hora_inicio,
+    //             id_agenda,
+    //             id_paciente,
+    //             motivo: motivo || (esSobretorno ? 'SOBRETURNO' : 'Turno solicitado en secretaría'),
+    //             archivo_dni,
+    //             es_sobreturno: esSobretorno
+    //         });
+
+    //         this.enviarNotificacionSilenciosa(id_paciente, fecha, hora_inicio, detallesAgenda, motivo, esSobretorno);
+    //         res.redirect('/secretaria?status=success');
+
+    //     } catch (error) {
+    //         console.error("Error al agendar:", error);
+    //         res.redirect('/secretaria?status=error_server');
+    //     }
+    // }
+
+
     async agendar(req, res, next) {
         try {
             const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
@@ -203,7 +454,6 @@ class SecretariaController {
                 return res.redirect('/secretaria?status=error_datos');
             }
 
-            // 3. Obtener detalles de la agenda PRIMERO para saber qué médico es
             const detallesAgenda = await Agenda.getAgendaById(id_agenda);
             if (!detallesAgenda) {
                 return res.redirect('/secretaria?status=error_no_agenda');
@@ -211,29 +461,28 @@ class SecretariaController {
 
             const id_medico_nuevo = detallesAgenda.id_medico;
 
-            // --- VALIDACIÓN CORREGIDA ---
-
-            // A. Verificar si ya tiene turno con ESTE médico específico ese día
+            // A. Verificaciones de duplicados 
             const tieneTurnoConMedico = await Turno.verificarTurnoMedicoDia(id_paciente, fecha, id_medico_nuevo);
-            if (tieneTurnoConMedico) {
-                return res.redirect('/secretaria?status=error_duplicado_medico');
-            }
+            if (tieneTurnoConMedico) return res.redirect('/secretaria?status=error_duplicado_medico');
 
-            // B. Verificar si el paciente ya tiene OTRO turno exactamente a la misma hora
             const tieneTurnoMismaHora = await Turno.verificarTurnoHora(id_paciente, fecha, hora_inicio);
-            if (tieneTurnoMismaHora) {
-                return res.redirect('/secretaria?status=error_hora_ocupada');
-            }
+            if (tieneTurnoMismaHora) return res.redirect('/secretaria?status=error_hora_ocupada');
 
-            // --- CONTINÚA LÓGICA DE SOBRETURNOS ---
+            // B. Lógica de Sobreturnos (Validación de Seguridad en Backend)
             const horariosOcupados = await Turno.obtenerHorariosOcupados(id_agenda, fecha);
-            const cantidadActualEnEsaHora = horariosOcupados.filter(h => h === hora_inicio).length;
-            const esSobretorno = cantidadActualEnEsaHora > 0;
+            const esSobretorno = horariosOcupados.includes(hora_inicio);
 
-            if (esSobretorno && cantidadActualEnEsaHora > (detallesAgenda.limite_sobreturnos || 0)) {
-                return res.redirect('/secretaria?status=error_sobreturno_agotado');
+            if (esSobretorno) {
+                const sobreturnosActuales = await Turno.contarSobreturnos(id_agenda, fecha);
+                const limiteMax = detallesAgenda.limite_sobreturnos || 0;
+
+                if (sobreturnosActuales >= limiteMax) {
+                    // Bloqueo total: Se alcanzó el límite de sobreturnos para el día
+                    return res.redirect('/secretaria?status=error_sobreturno_agotado');
+                }
             }
 
+            // C. Proceder con el agendamiento
             await Turno.agendarTurnoVirtual({
                 fecha,
                 hora_inicio,
@@ -252,7 +501,6 @@ class SecretariaController {
             res.redirect('/secretaria?status=error_server');
         }
     }
-
 
     // NOTIFICACIÓN A MAIL
     async enviarNotificacionSilenciosa(id_paciente, fecha, hora, detalles, motivo, esSobre) {

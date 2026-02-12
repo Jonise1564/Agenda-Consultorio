@@ -268,6 +268,21 @@ class PacientesController {
             res.status(500).json({ error: "Error en el servidor" });
         }
     }
+    // ===========================================
+    // VERIFICAR EMAIL EXISTENTE (AJAX)
+    // ===========================================
+    async verificarEmail(req, res) {
+        try {
+            const { email } = req.params;
+            if (!email) return res.json({ existe: false });
+
+            const existeUsuario = await Usuario.getByEmail(email);
+            res.json({ existe: !!existeUsuario });
+        } catch (error) {
+            console.error("Error al verificar Email:", error);
+            res.status(500).json({ error: "Error en el servidor" });
+        }
+    }
 
 
 

@@ -122,5 +122,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor corriendo con éxito`);
     console.log(`🔗 Acceso: http://localhost:${PORT}`);
-    console.log(`⏰ Notificaciones automaticas 24hs antes configuradas para las 09:00 AM`);
+    console.log(`⏰ Notificaciones automaticas (24hs) antes configuradas para las 09:00 AM`);
 });

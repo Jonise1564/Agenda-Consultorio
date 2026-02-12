@@ -174,6 +174,82 @@ class Turno {
     // ============================================
     // AGENDAR TURNO VIRTUAL
     // ============================================    
+    // static async agendarTurnoVirtual(data) {
+    //     let conn;
+    //     try {
+    //         conn = await createConnection();
+    //         const { fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni, es_sobreturno } = data;
+    //         const sobreturnoBit = es_sobreturno ? 1 : 0;
+
+    //         // 1. OBTENER INFO DE LA AGENDA ACTUAL (Médico y Especialidad)
+    //         const [agendaActual] = await conn.query(
+    //             "SELECT id_medico, id_especialidad FROM agendas WHERE id = ?",
+    //             [id_agenda]
+    //         );
+    //         const { id_medico, id_especialidad } = agendaActual[0];
+
+    //         // 2. VALIDAR: 1 SOLO TURNO POR DÍA PARA ESA ESPECIALIDAD CON ESE MÉDICO
+    //         // Esto permite que el paciente vea al mismo médico hoy, pero por OTRA especialidad distinta.
+    //         const [mismoMedicoEspecialidad] = await conn.query(`
+    //         SELECT t.id 
+    //         FROM turnos t
+    //         INNER JOIN agendas a ON t.id_agenda = a.id
+    //         WHERE t.id_paciente = ? 
+    //           AND t.fecha = ? 
+    //           AND a.id_medico = ? 
+    //           AND a.id_especialidad = ?
+    //           AND t.estado NOT IN ('Cancelado')
+    //         LIMIT 1
+    //     `, [id_paciente, fecha, id_medico, id_especialidad]);
+
+    //         if (mismoMedicoEspecialidad.length > 0) {
+    //             throw new Error(`Ya tienes un turno agendado para esta especialidad con el profesional en el día seleccionado.`);
+    //         }
+
+    //         // 3. VALIDAR: SOLAPAMIENTO DE HORARIO (El paciente no puede estar en dos citas a la vez)
+    //         const [mismoHorario] = await conn.query(`
+    //         SELECT t.id 
+    //         FROM turnos t
+    //         WHERE t.id_paciente = ? 
+    //           AND t.fecha = ? 
+    //           AND t.hora_inicio = ? 
+    //           AND t.estado NOT IN ('Cancelado')
+    //         LIMIT 1
+    //     `, [id_paciente, fecha, hora_inicio]);
+
+    //         if (mismoHorario.length > 0) {
+    //             throw new Error(`Ya tienes otro turno asignado a las ${hora_inicio.substring(0, 5)} hs. para este día.`);
+    //         }
+
+    //         // --- LÓGICA DE GUARDADO ---
+    //         const [existe] = await conn.query(
+    //             "SELECT id FROM turnos WHERE id_agenda = ? AND fecha = ? AND hora_inicio = ?",
+    //             [id_agenda, fecha, hora_inicio]
+    //         );
+
+    //         if (existe.length > 0) {
+    //             await conn.query(
+    //                 `UPDATE turnos SET estado = 'Reservado', id_paciente = ?, motivo = ?, archivo_dni = ?, es_sobreturno = ? WHERE id = ?`,
+    //                 [id_paciente, motivo, archivo_dni, sobreturnoBit, existe[0].id]
+    //             );
+    //             return existe[0].id;
+    //         } else {
+    //             const [result] = await conn.query(
+    //                 `INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda, archivo_dni, es_sobreturno)
+    //              VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?, ?)`,
+    //                 [fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni, sobreturnoBit]
+    //             );
+    //             return result.insertId;
+    //         }
+    //     } catch (error) {
+    //         console.error("Error en agendarTurnoVirtual:", error);
+    //         throw error;
+    //     } finally {
+    //         if (conn) conn.end();
+    //     }
+    // }
+
+
     static async agendarTurnoVirtual(data) {
         let conn;
         try {
@@ -181,26 +257,36 @@ class Turno {
             const { fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni, es_sobreturno } = data;
             const sobreturnoBit = es_sobreturno ? 1 : 0;
 
+            // 0. VALIDAR CUPO DE SOBRETURNOS (Si corresponde)
+            if (es_sobreturno) {
+                // Usamos el método que ya tienes en la clase
+                const hayCupo = await Turno.tieneCupoSobreturno(id_agenda, fecha);
+                if (!hayCupo) {
+                    throw new Error("Lo sentimos, se ha alcanzado el límite máximo de sobreturnos para este profesional en el día seleccionado.");
+                }
+            }
+
             // 1. OBTENER INFO DE LA AGENDA ACTUAL (Médico y Especialidad)
             const [agendaActual] = await conn.query(
                 "SELECT id_medico, id_especialidad FROM agendas WHERE id = ?",
                 [id_agenda]
             );
+            
+            if (agendaActual.length === 0) throw new Error("La agenda seleccionada no existe.");
             const { id_medico, id_especialidad } = agendaActual[0];
 
             // 2. VALIDAR: 1 SOLO TURNO POR DÍA PARA ESA ESPECIALIDAD CON ESE MÉDICO
-            // Esto permite que el paciente vea al mismo médico hoy, pero por OTRA especialidad distinta.
             const [mismoMedicoEspecialidad] = await conn.query(`
-            SELECT t.id 
-            FROM turnos t
-            INNER JOIN agendas a ON t.id_agenda = a.id
-            WHERE t.id_paciente = ? 
-              AND t.fecha = ? 
-              AND a.id_medico = ? 
-              AND a.id_especialidad = ?
-              AND t.estado NOT IN ('Cancelado')
-            LIMIT 1
-        `, [id_paciente, fecha, id_medico, id_especialidad]);
+                SELECT t.id 
+                FROM turnos t
+                INNER JOIN agendas a ON t.id_agenda = a.id
+                WHERE t.id_paciente = ? 
+                  AND t.fecha = ? 
+                  AND a.id_medico = ? 
+                  AND a.id_especialidad = ?
+                  AND t.estado NOT IN ('Cancelado')
+                LIMIT 1
+            `, [id_paciente, fecha, id_medico, id_especialidad]);
 
             if (mismoMedicoEspecialidad.length > 0) {
                 throw new Error(`Ya tienes un turno agendado para esta especialidad con el profesional en el día seleccionado.`);
@@ -208,14 +294,14 @@ class Turno {
 
             // 3. VALIDAR: SOLAPAMIENTO DE HORARIO (El paciente no puede estar en dos citas a la vez)
             const [mismoHorario] = await conn.query(`
-            SELECT t.id 
-            FROM turnos t
-            WHERE t.id_paciente = ? 
-              AND t.fecha = ? 
-              AND t.hora_inicio = ? 
-              AND t.estado NOT IN ('Cancelado')
-            LIMIT 1
-        `, [id_paciente, fecha, hora_inicio]);
+                SELECT t.id 
+                FROM turnos t
+                WHERE t.id_paciente = ? 
+                  AND t.fecha = ? 
+                  AND t.hora_inicio = ? 
+                  AND t.estado NOT IN ('Cancelado')
+                LIMIT 1
+            `, [id_paciente, fecha, hora_inicio]);
 
             if (mismoHorario.length > 0) {
                 throw new Error(`Ya tienes otro turno asignado a las ${hora_inicio.substring(0, 5)} hs. para este día.`);
@@ -228,15 +314,17 @@ class Turno {
             );
 
             if (existe.length > 0) {
+                // Actualizar turno existente (si el hueco ya estaba creado en la tabla)
                 await conn.query(
                     `UPDATE turnos SET estado = 'Reservado', id_paciente = ?, motivo = ?, archivo_dni = ?, es_sobreturno = ? WHERE id = ?`,
                     [id_paciente, motivo, archivo_dni, sobreturnoBit, existe[0].id]
                 );
                 return existe[0].id;
             } else {
+                // Insertar nuevo registro (útil sobre todo para sobreturnos que no tienen hueco previo)
                 const [result] = await conn.query(
                     `INSERT INTO turnos (fecha, hora_inicio, motivo, estado, orden, id_paciente, id_agenda, archivo_dni, es_sobreturno)
-                 VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?, ?)`,
+                     VALUES (?, ?, ?, 'Reservado', 1, ?, ?, ?, ?)`,
                     [fecha, hora_inicio, motivo, id_paciente, id_agenda, archivo_dni, sobreturnoBit]
                 );
                 return result.insertId;
@@ -783,8 +871,50 @@ class Turno {
         }
     }
 
+// ============================================
+    // CONTAR SOBRETURNOS ACTUALES
+    // ============================================
+    static async contarSobreturnos(id_agenda, fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
+                SELECT COUNT(*) as total 
+                FROM turnos 
+                WHERE id_agenda = ? AND fecha = ? 
+                AND es_sobreturno = 1 
+                AND estado NOT IN ('Cancelado')
+            `, [id_agenda, fecha]);
+            return rows[0].total;
+        } catch (error) {
+            console.error("Error en contarSobreturnos:", error);
+            return 0;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
+    // ============================================
+    // VALIDAR SI HAY CUPO (BOOLEANO)
+    // ============================================
+    static async tieneCupoSobreturno(id_agenda, fecha) {
+        let conn;
+        try {
+            conn = await createConnection();
+            // 1. Obtener el límite de la agenda
+            const [agenda] = await conn.query("SELECT limite_sobreturnos FROM agendas WHERE id = ?", [id_agenda]);
+            const limiteMax = agenda[0]?.limite_sobreturnos || 0;
 
+            // 2. Contar actuales
+            const actuales = await this.contarSobreturnos(id_agenda, fecha);
+
+            return actuales < limiteMax;
+        } catch (error) {
+            return false;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
 
 

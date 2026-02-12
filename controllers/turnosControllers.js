@@ -89,13 +89,92 @@ class TurnosController {
     }
 
     // LISTAR TURNOS POR AGENDA ESPECÍFICA
+    // async get(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         if (!id || id === 'undefined') return res.redirect('/agendas');
+
+    //         const turnos = await Turno.getAll(id);
+
+    //         const turnosFormateados = turnos.map(t => ({
+    //             ...t,
+    //             fecha_formateada: formatearFecha(t.fecha),
+    //             fecha_iso: fechaISO(t.fecha),
+    //             hora_filtro: t.hora_inicio?.slice(0, 5),
+    //             dni: t.paciente_dni ?? null,
+    //             tiene_archivo: !!t.archivo_dni,
+    //             ruta_archivo: t.archivo_dni ? `/uploads/dnis/${t.archivo_dni}` : null
+    //         }));
+
+    //         res.render('turnos/index', {
+    //             turnos: turnosFormateados,
+    //             id_agenda: id
+    //         });
+    //     } catch (error) {
+    //         console.error("Error GET Turnos:", error);
+    //         res.status(500).send("Error al cargar los turnos");
+    //     }
+    // }
+
+
+
+
+    // async get(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         const usuarioLogueado = req.user; // El middleware guarda aquí los datos del token
+
+    //         // ========================================================
+    //         // VALIDACIÓN DE PRIVACIDAD
+    //         // ========================================================
+    //         // Si el usuario es un Paciente (ID 4), no puede ver el listado de una agenda
+    //         if (usuarioLogueado && usuarioLogueado.id_rol === 4) {
+    //             console.warn(`[SEGURIDAD] Paciente ID ${usuarioLogueado.id_usuario} intentó acceder a la agenda ${id}`);
+    //             return res.status(403).render('errors/403', { 
+    //                 mensaje: "No tienes permiso para ver el listado completo de turnos." 
+    //             });
+    //         }
+
+    //         if (!id || id === 'undefined') return res.redirect('/agendas');
+
+    //         const turnos = await Turno.getAll(id);
+
+    //         const turnosFormateados = turnos.map(t => ({
+    //             ...t,
+    //             fecha_formateada: formatearFecha(t.fecha),
+    //             fecha_iso: fechaISO(t.fecha),
+    //             hora_filtro: t.hora_inicio?.slice(0, 5),
+    //             dni: t.paciente_dni ?? null,
+    //             tiene_archivo: !!t.archivo_dni,
+    //             ruta_archivo: t.archivo_dni ? `/uploads/dnis/${t.archivo_dni}` : null
+    //         }));
+
+    //         res.render('turnos/index', {
+    //             turnos: turnosFormateados,
+    //             id_agenda: id
+    //         });
+    //     } catch (error) {
+    //         console.error("Error GET Turnos:", error);
+    //         res.status(500).send("Error al cargar los turnos");
+    //     }
+    // }
+
+    // LISTADO POR AGENDA (PROTEGIDO)
     async get(req, res) {
         try {
             const { id } = req.params;
+            const usuarioLogueado = req.user;
+
+            // 1. Si es Paciente, REBOTAR. No puede ver el listado general de una agenda.
+            if (usuarioLogueado && usuarioLogueado.id_rol === 4) {
+                return res.status(403).render('errors/403', { 
+                    mensaje: "No tienes permiso para ver el listado de esta agenda." 
+                });
+            }
+
             if (!id || id === 'undefined') return res.redirect('/agendas');
 
             const turnos = await Turno.getAll(id);
-
             const turnosFormateados = turnos.map(t => ({
                 ...t,
                 fecha_formateada: formatearFecha(t.fecha),
@@ -116,14 +195,57 @@ class TurnosController {
         }
     }
 
+
+
+
+
     // FORMULARIO RESERVAR
+    // async establecerForm(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         if (!id || id === 'undefined') return res.redirect('/agendas');
+
+    //         const turno = await Turno.getById(id);
+    //         if (!turno) return res.status(404).send("Turno no encontrado");
+
+    //         turno.fecha_formateada = formatearFecha(turno.fecha);
+    //         turno.fecha_input = fechaParaInput(turno.fecha);
+
+    //         res.render("turnos/reservar", { turno });
+    //     } catch (error) {
+    //         console.error("Error vista reservar:", error);
+    //         res.status(500).send("Error interno");
+    //     }
+    // }
+
     async establecerForm(req, res) {
         try {
             const { id } = req.params;
+            const usuarioLogueado = req.user; // Datos del token
+
             if (!id || id === 'undefined') return res.redirect('/agendas');
 
             const turno = await Turno.getById(id);
             if (!turno) return res.status(404).send("Turno no encontrado");
+
+            // ========================================================
+            // VALIDACIÓN DE SEGURIDAD: ¿Quién puede ver este formulario?
+            // ========================================================
+            
+            // Si el turno YA TIENE un paciente asignado:
+            if (turno.id_paciente !== null) {
+                // Si el usuario es un Paciente (Rol 4)
+                if (usuarioLogueado.id_rol === 4) {
+                    // Y no es EL DUEÑO del turno
+                    if (turno.id_paciente !== usuarioLogueado.id_usuario) {
+                        console.warn(`[SEGURIDAD] Paciente ${usuarioLogueado.id_usuario} intentó ver turno ajeno: ${id}`);
+                        return res.status(403).render('errors/403', { 
+                            mensaje: "Este turno ya está ocupado por otro paciente." 
+                        });
+                    }
+                }
+            }
+            // Si el turno está libre (id_paciente === null), el flujo sigue normal para todos
 
             turno.fecha_formateada = formatearFecha(turno.fecha);
             turno.fecha_input = fechaParaInput(turno.fecha);
@@ -135,48 +257,102 @@ class TurnosController {
         }
     }
 
+
+
+
+
+
+
+
     // GUARDAR RESERVA 
-    async reservar(req, res) {
+    // async reservar(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
+
+    //         // ========================================================
+    //         // 1. VALIDACIÓN: FECHA PASADA
+    //         // ========================================================
+    //         const hoy = new Date();
+    //         hoy.setHours(0, 0, 0, 0);
+
+    //         const [year, month, day] = fecha.split('-').map(Number);
+    //         const fechaTurno = new Date(year, month - 1, day);
+
+    //         if (fechaTurno < hoy) {
+    //             console.error(`⚠️ Error: Fecha pasada recibida (${fecha})`);
+    //             return res.status(400).send("No se pueden agendar turnos en fechas que ya pasaron.");
+    //         }
+
+    //         // ========================================================
+    //         // 2. VALIDACIÓN DE TURNO DUPLICADO EN EL DÍA
+    //         // ========================================================
+    //         // Solo validamos si es un turno nuevo (id no definido)
+    //         if (!id || id === 'undefined') {
+    //             const yaTieneTurno = await Turno.verificarTurnoDia(id_paciente, fecha);
+    //             if (yaTieneTurno) {
+    //                 console.warn(`🛑 Bloqueo de duplicado: Paciente ${id_paciente} ya tiene turno el ${fecha}`);
+    //                 return res.status(400).send(`El paciente ya tiene un turno asignado para el día ${day}/${month}/${year} a las ${yaTieneTurno.hora}. No se permiten dos
+    //                     turnos el mismo día para el mismo Medico  y misma especialidad.`);
+    //             }
+    //         }
+
+    //         // ========================================================
+    //         // 3. PROCESAMIENTO DE DATOS
+    //         // ========================================================
+    //         let agendaIdDestino = id_agenda;
+    //         if (!agendaIdDestino && id !== 'undefined') {
+    //             const tActual = await Turno.getById(id);
+    //             agendaIdDestino = tActual ? tActual.id_agenda : null;
+    //         }
+
+    //         const archivo_dni = req.file ? req.file.filename : null;
+
+    //         const datosTurno = {
+    //             fecha,
+    //             hora_inicio,
+    //             motivo,
+    //             estado: estado || 'pendiente',
+    //             id_paciente: id_paciente || null,
+    //             id_agenda: agendaIdDestino,
+    //             ...(archivo_dni && { archivo_dni })
+    //         };
+
+    //         // ========================================================
+    //         // 4. PERSISTENCIA (GUARDADO EN BD)
+    //         // ========================================================
+    //         if (id && id !== 'undefined') {
+    //             await Turno.actualizar(id, datosTurno);
+    //         } else {
+    //             await Turno.create(datosTurno);
+    //         }
+
+    //         // Redirección con éxito
+    //         res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+
+    //     } catch (error) {
+    //         console.error("Error al guardar reserva:", error);
+    //         res.status(500).send("Error al procesar la reserva");
+    //     }
+   // }
+
+
+
+   async reservar(req, res) {
         try {
             const { id } = req.params;
             const { motivo, estado, id_paciente, id_agenda, fecha, hora_inicio } = req.body;
+            const usuarioLogueado = req.user; // Obtenido del middleware
 
-            // ========================================================
-            // 1. VALIDACIÓN: FECHA PASADA
-            // ========================================================
+            // --- VALIDACIONES DE FECHA Y DUPLICADO --- (Mantén tu código actual aquí)
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
-
             const [year, month, day] = fecha.split('-').map(Number);
             const fechaTurno = new Date(year, month - 1, day);
+            if (fechaTurno < hoy) return res.status(400).send("Fecha pasada.");
 
-            if (fechaTurno < hoy) {
-                console.error(`⚠️ Error: Fecha pasada recibida (${fecha})`);
-                return res.status(400).send("No se pueden agendar turnos en fechas que ya pasaron.");
-            }
-
-            // ========================================================
-            // 2. VALIDACIÓN DE TURNO DUPLICADO EN EL DÍA
-            // ========================================================
-            // Solo validamos si es un turno nuevo (id no definido)
-            if (!id || id === 'undefined') {
-                const yaTieneTurno = await Turno.verificarTurnoDia(id_paciente, fecha);
-                if (yaTieneTurno) {
-                    console.warn(`🛑 Bloqueo de duplicado: Paciente ${id_paciente} ya tiene turno el ${fecha}`);
-                    return res.status(400).send(`El paciente ya tiene un turno asignado para el día ${day}/${month}/${year} a las ${yaTieneTurno.hora}. No se permiten dos
-                        turnos el mismo día para el mismo Medico  y misma especialidad.`);
-                }
-            }
-
-            // ========================================================
-            // 3. PROCESAMIENTO DE DATOS
-            // ========================================================
+            // --- PROCESAMIENTO ---
             let agendaIdDestino = id_agenda;
-            if (!agendaIdDestino && id !== 'undefined') {
-                const tActual = await Turno.getById(id);
-                agendaIdDestino = tActual ? tActual.id_agenda : null;
-            }
-
             const archivo_dni = req.file ? req.file.filename : null;
 
             const datosTurno = {
@@ -189,17 +365,24 @@ class TurnosController {
                 ...(archivo_dni && { archivo_dni })
             };
 
-            // ========================================================
-            // 4. PERSISTENCIA (GUARDADO EN BD)
-            // ========================================================
+            // --- GUARDADO ---
             if (id && id !== 'undefined') {
                 await Turno.actualizar(id, datosTurno);
             } else {
                 await Turno.create(datosTurno);
             }
 
-            // Redirección con éxito
-            res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+            // ========================================================
+            // REDIRECCIÓN DIFERENCIADA SEGÚN ROL
+            // ========================================================
+            if (usuarioLogueado && usuarioLogueado.id_rol === 4) {
+                // Si es paciente, lo mandamos a SU propia lista de turnos (debes tener esta ruta)
+                // O al inicio con un mensaje de éxito.
+                return res.redirect('/mis-turnos?status=success'); 
+            } else {
+                // Si es admin/secretaria, lo mandamos al listado de la agenda
+                return res.redirect(agendaIdDestino ? `/turnos/${agendaIdDestino}?status=success` : '/agendas');
+            }
 
         } catch (error) {
             console.error("Error al guardar reserva:", error);
