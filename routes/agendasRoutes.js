@@ -40,7 +40,7 @@ const { verificarAcceso } = require('../middlewares/auth');
 // PROTECCIÓN DE RUTA: Admin (1), Profesional (2) y Secretaria (3)
 // El Paciente (4) NO tiene acceso a estas rutas.
 // =========================================================================
-AgendasRouter.use(verificarAcceso([1, 2, 3]));
+AgendasRouter.use(verificarAcceso([1, 3]));
 
 // Listar todas las agendas
 AgendasRouter.get('/', AgendasController.get);

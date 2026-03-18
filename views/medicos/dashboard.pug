@@ -1,0 +1,616 @@
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- CABECERA DEL DASHBOARD
+//-     .row.mb-4.align-items-center
+//-       .col-md-8
+//-         h2.fw-bold.text-dark
+//-           i.fa-solid.fa-user-md.me-2.text-primary
+//-           | Panel del Profesional
+//-         p.text-muted Hola, Dr. #{persona.apellido}. Estos son sus compromisos para el día de hoy.
+//-       .col-md-4.text-md-end
+//-         button.btn.btn-white.shadow-sm.rounded-circle.me-2.border(type="button" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Configurar Perfil")
+//-           i.fa-solid.fa-gear.text-secondary.fa-lg
+//-         a.btn.btn-outline-danger.rounded-pill.px-4(href="/auth/logout")
+//-           i.fa-solid.fa-right-from-bracket.me-2
+//-           | Salir
+
+//-     .row.g-4
+//-       //- COLUMNA IZQUIERDA: RESUMEN Y ESTADO
+//-       .col-xl-4
+//-         .card.border-0.shadow-sm.rounded-4.mb-4
+//-           .card-header.bg-primary.text-white.py-3.rounded-top-4
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-circle-info.me-2
+//-               | Resumen del Día
+//-           .card-body.p-4
+//-             .d-flex.align-items-center.mb-3
+//-               .bg-light.p-3.rounded-circle.me-3
+//-                 i.fa-solid.fa-calendar-check.text-primary.fa-xl
+//-               div
+//-                 h6.mb-0.fw-bold Turnos para Hoy
+//-                 //- Suponiendo que pasas 'pacientesHoy' como array
+//-                 span.badge.bg-primary.rounded-pill #{pacientesHoy ? pacientesHoy.length : 0} pacientes
+            
+//-             hr
+//-             label.form-label.small.fw-bold.text-uppercase.text-muted Próximo Paciente
+//-             if pacientesHoy && pacientesHoy.length > 0
+//-               .p-3.bg-light.rounded-3.border-start.border-primary.border-4
+//-                 - const proximo = pacientesHoy[0]
+//-                 h6.fw-bold.mb-1= proximo.paciente_nombre + ' ' + proximo.paciente_apellido
+//-                 p.small.text-muted.mb-0 
+//-                   i.fa-regular.fa-clock.me-1
+//-                   | #{proximo.hora} hs
+//-             else
+//-               p.small.text-muted No hay pacientes en espera.
+
+//-       //- COLUMNA DERECHA: LISTA DE PACIENTES DEL DÍA
+//-       .col-xl-8
+//-         .card.border-0.shadow-sm.rounded-4
+//-           .card-header.bg-white.py-3.rounded-top-4.border-bottom.d-flex.justify-content-between.align-items-center
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-clipboard-list.me-2.text-success
+//-               | Pacientes Citados (Hoy)
+//-             span.badge.bg-light.text-dark.border= new Date().toLocaleDateString('es-AR')
+
+//-           .card-body
+//-             if pacientesHoy && pacientesHoy.length > 0
+//-               .table-responsive
+//-                 table.table.table-hover.align-middle
+//-                   thead.table-light
+//-                     tr
+//-                       th Hora
+//-                       th Paciente
+//-                       th Especialidad
+//-                       th Estado
+//-                   tbody
+//-                     each cita in pacientesHoy
+//-                       tr
+//-                         td: span.fw-bold= cita.hora + ' hs'
+//-                         td
+//-                           div.fw-bold= cita.paciente_nombre + ' ' + cita.paciente_apellido
+//-                           small.text-muted DNI: #{cita.paciente_dni}
+//-                         td= cita.especialidad_nombre
+//-                         td
+//-                           //- La secretaria mantiene el estado, el médico solo lo ve
+//-                           span.badge.rounded-pill(class=(cita.estado === 'pendiente' ? 'bg-warning text-dark' : 'bg-success'))= cita.estado
+//-             else
+//-               .text-center.py-5
+//-                 i.fa-solid.fa-user-clock.display-1.text-light.mb-3
+//-                 p.text-muted No hay pacientes agendados para hoy por la secretaría.
+
+//-   //- MODAL DE PERFIL DEL MÉDICO
+//-   .modal.fade#modalPerfil(tabindex="-1" aria-labelledby="modalPerfilLabel" aria-hidden="true")
+//-     .modal-dialog.modal-dialog-centered
+//-       .modal-content.border-0.shadow-lg.rounded-4
+//-         .modal-header.bg-primary.text-white.rounded-top-4
+//-           h5.modal-title#modalPerfilLabel 
+//-             i.fa-solid.fa-user-md.me-2
+//-             | Mis Datos Profesionales
+//-           button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        
+//-         form#formEditarPerfilMedico(action="/medicos/update-perfil" method="POST")
+//-           .modal-body.p-4
+//-             .row.g-3
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Nombre
+//-                 input.form-control.bg-light(type="text" name="nombre" value=persona.nombre required)
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Apellido
+//-                 input.form-control.bg-light(type="text" name="apellido" value=persona.apellido required)
+              
+//-               .col-12
+//-                 label.form-label.small.fw-bold Correo Electrónico
+//-                 input.form-control.bg-light(type="email" name="email" value=usuario.email required)
+              
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Matrícula
+//-                 input.form-control.bg-light(type="text" value=medico.matricula readonly)
+//-                 small.text-muted.x-small 
+              
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Nueva Contraseña
+//-                 input.form-control.bg-light(type="password" name="password" placeholder="Opcional")
+
+//-           .modal-footer.border-0.p-4.pt-0
+//-             button.btn.btn-light.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Cancelar
+//-             button.btn.btn-primary.rounded-pill.px-4(type="submit") Actualizar Perfil
+
+//-   style.
+//-     .card { transition: all 0.3s ease; }
+//-     .btn-white:hover { transform: rotate(30deg); transition: 0.3s; background: #f8f9fa; }
+//-     .x-small { font-size: 0.75rem; }
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const urlParams = new URLSearchParams(window.location.search);
+//-       if (urlParams.get('status') === 'success') {
+//-           Swal.fire({ title: 'Perfil Actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
+//-       }
+//-     });
+
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- CABECERA DEL DASHBOARD
+//-     .row.mb-4.align-items-center
+//-       .col-md-8
+//-         h2.fw-bold.text-dark
+//-           i.fa-solid.fa-user-md.me-2.text-primary
+//-           | Panel del Profesional
+//-         p.text-muted Hola, Dr. #{persona.apellido}. Estos son sus compromisos para el día de hoy.
+//-       .col-md-4.text-md-end
+//-         button.btn.btn-white.shadow-sm.rounded-circle.me-2.border(type="button" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Configurar Perfil")
+//-           i.fa-solid.fa-gear.text-secondary.fa-lg
+//-         a.btn.btn-outline-danger.rounded-pill.px-4(href="/auth/logout")
+//-           i.fa-solid.fa-right-from-bracket.me-2
+//-           | Salir
+
+//-     .row.g-4
+//-       //- COLUMNA IZQUIERDA: RESUMEN Y ESTADO
+//-       .col-xl-4
+//-         .card.border-0.shadow-sm.rounded-4.mb-4
+//-           .card-header.bg-primary.text-white.py-3.rounded-top-4
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-circle-info.me-2
+//-               | Resumen del Día
+//-           .card-body.p-4
+//-             .d-flex.align-items-center.mb-3
+//-               .bg-light.p-3.rounded-circle.me-3
+//-                 i.fa-solid.fa-calendar-check.text-primary.fa-xl
+//-               div
+//-                 h6.mb-0.fw-bold Turnos para Hoy
+//-                 span.badge.bg-primary.rounded-pill #{pacientesHoy ? pacientesHoy.length : 0} pacientes
+            
+//-             hr
+//-             label.form-label.small.fw-bold.text-uppercase.text-muted Próximo Paciente
+//-             if pacientesHoy && pacientesHoy.length > 0
+//-               .p-3.bg-light.rounded-3.border-start.border-primary.border-4
+//-                 - const proximo = pacientesHoy[0]
+//-                 h6.fw-bold.mb-1= proximo.paciente_nombre + ' ' + proximo.paciente_apellido
+//-                 p.small.text-muted.mb-0 
+//-                   i.fa-regular.fa-clock.me-1
+//-                   | #{proximo.hora} hs
+//-             else
+//-               p.small.text-muted No hay pacientes en espera.
+
+//-       //- COLUMNA DERECHA: LISTA DE PACIENTES DEL DÍA
+//-       .col-xl-8
+//-         .card.border-0.shadow-sm.rounded-4
+//-           .card-header.bg-white.py-3.rounded-top-4.border-bottom.d-flex.justify-content-between.align-items-center
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-clipboard-list.me-2.text-success
+//-               | Pacientes Citados (Hoy)
+//-             span.badge.bg-light.text-dark.border= new Date().toLocaleDateString('es-AR')
+
+//-           .card-body
+//-             if pacientesHoy && pacientesHoy.length > 0
+//-               .table-responsive
+//-                 table.table.table-hover.align-middle
+//-                   thead.table-light
+//-                     tr
+//-                       th Hora
+//-                       th Paciente
+//-                       th Especialidad
+//-                       th Estado
+//-                   tbody
+//-                     each cita in pacientesHoy
+//-                       tr
+//-                         td: span.fw-bold= cita.hora + ' hs'
+//-                         td
+//-                           div.fw-bold= cita.paciente_nombre + ' ' + cita.paciente_apellido
+//-                           small.text-muted DNI: #{cita.paciente_dni}
+//-                         td= cita.especialidad_nombre
+//-                         td
+//-                           span.badge.rounded-pill(class=(cita.estado === 'pendiente' ? 'bg-warning text-dark' : 'bg-success'))= cita.estado
+//-             else
+//-               .text-center.py-5
+//-                 i.fa-solid.fa-user-clock.display-1.text-light.mb-3
+//-                 p.text-muted No hay pacientes agendados para hoy por la secretaría.
+
+//-   //- MODAL DE PERFIL DEL MÉDICO
+//-   .modal.fade#modalPerfil(tabindex="-1" aria-labelledby="modalPerfilLabel" aria-hidden="true")
+//-     .modal-dialog.modal-dialog-centered
+//-       .modal-content.border-0.shadow-lg.rounded-4
+//-         .modal-header.bg-primary.text-white.rounded-top-4
+//-           h5.modal-title#modalPerfilLabel 
+//-             i.fa-solid.fa-user-md.me-2
+//-             | Mis Datos Profesionales
+//-           button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        
+//-         form#formEditarPerfilMedico(action="/medicos/update-perfil" method="POST")
+//-           //- Campo oculto para mantener la fecha de nacimiento si el modelo la requiere
+//-           input(type="hidden" name="nacimiento" value=persona.nacimiento)
+//-           .modal-body.p-4
+//-             .row.g-3
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Nombre
+//-                 input.form-control.bg-light(type="text" name="nombre" value=persona.nombre required)
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Apellido
+//-                 input.form-control.bg-light(type="text" name="apellido" value=persona.apellido required)
+              
+//-               .col-12
+//-                 label.form-label.small.fw-bold Correo Electrónico
+//-                 input.form-control.bg-light(type="email" name="email" value=usuario.email required)
+              
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Matrícula
+//-                 input.form-control.bg-light(type="text" value=medico.matricula readonly)
+              
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Nueva Contraseña
+//-                 input.form-control.bg-light(type="password" name="password" placeholder="Opcional")
+
+//-           .modal-footer.border-0.p-4.pt-0
+//-             button.btn.btn-light.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Cancelar
+//-             button.btn.btn-primary.rounded-pill.px-4(type="submit") Actualizar Perfil
+
+//-   style.
+//-     .card { transition: all 0.3s ease; }
+//-     .btn-white:hover { transform: rotate(30deg); transition: 0.3s; background: #f8f9fa; }
+//-     .x-small { font-size: 0.75rem; }
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const urlParams = new URLSearchParams(window.location.search);
+//-       if (urlParams.get('status') === 'success') {
+//-           Swal.fire({ 
+//-             title: 'Perfil Actualizado', 
+//-             text: 'Los cambios se guardaron correctamente',
+//-             icon: 'success', 
+//-             timer: 2000, 
+//-             showConfirmButton: false 
+//-           });
+//-           // Limpiar la URL después de mostrar el mensaje
+//-           window.history.replaceState({}, document.title, window.location.pathname);
+//-       }
+//-       if (urlParams.get('status') === 'error') {
+//-           Swal.fire({ 
+//-             title: 'Error', 
+//-             text: 'No se pudieron actualizar los datos',
+//-             icon: 'error', 
+//-             confirmButtonText: 'Entendido'
+//-           });
+//-       }
+//-     });
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container-fluid.py-4
+//-     //- --- LÓGICA DE TIEMPO ---
+//-     - const ahora = new Date()
+//-     - const horaActualStr = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0')
+    
+//-     //- CABECERA DEL DASHBOARD
+//-     .row.mb-4.align-items-center
+//-       .col-md-8
+//-         h2.fw-bold.text-dark
+//-           i.fa-solid.fa-user-md.me-2.text-primary
+//-           | Panel del Profesional
+//-         p.text-muted Hola, Dr. #{persona.apellido}. Estos son sus compromisos para el día de hoy.
+//-       .col-md-4.text-md-end
+//-         button.btn.btn-white.shadow-sm.rounded-circle.me-2.border(type="button" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Configurar Perfil")
+//-           i.fa-solid.fa-gear.text-secondary.fa-lg
+//-         a.btn.btn-outline-danger.rounded-pill.px-4(href="/auth/logout")
+//-           i.fa-solid.fa-right-from-bracket.me-2
+//-           | Salir
+
+//-     .row.g-4
+//-       //- COLUMNA IZQUIERDA: RESUMEN Y ESTADO
+//-       .col-xl-4
+//-         .card.border-0.shadow-sm.rounded-4.mb-4
+//-           .card-header.bg-primary.text-white.py-3.rounded-top-4
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-circle-info.me-2
+//-               | Resumen del Día
+//-           .card-body.p-4
+//-             .d-flex.align-items-center.mb-3
+//-               .bg-light.p-3.rounded-circle.me-3
+//-                 i.fa-solid.fa-calendar-check.text-primary.fa-xl
+//-               div
+//-                 h6.mb-0.fw-bold Turnos para Hoy
+//-                 span.badge.bg-primary.rounded-pill #{pacientesHoy ? pacientesHoy.length : 0} pacientes
+            
+//-             hr
+//-             label.form-label.small.fw-bold.text-uppercase.text-muted Próximo Paciente
+//-             if pacientesHoy && pacientesHoy.length > 0
+//-               //- Buscamos el primer turno que sea igual o posterior a la hora actual
+//-               - const proximo = pacientesHoy.find(p => p.hora >= horaActualStr)
+//-               if proximo
+//-                 .p-3.bg-light.rounded-3.border-start.border-primary.border-4
+//-                   h6.fw-bold.mb-1= proximo.paciente_nombre + ' ' + proximo.paciente_apellido
+//-                   p.small.text-muted.mb-0 
+//-                     i.fa-regular.fa-clock.me-1
+//-                     | #{proximo.hora} hs
+//-               else
+//-                 .p-3.bg-success.bg-opacity-10.rounded-3.border-start.border-success.border-4
+//-                   p.small.fw-bold.text-success.mb-0 
+//-                     i.fa-solid.fa-check-double.me-2
+//-                     | Agenda del día completada
+//-             else
+//-               p.small.text-muted No hay pacientes en espera.
+
+//-       //- COLUMNA DERECHA: LISTA DE PACIENTES DEL DÍA
+//-       .col-xl-8
+//-         .card.border-0.shadow-sm.rounded-4
+//-           .card-header.bg-white.py-3.rounded-top-4.border-bottom.d-flex.justify-content-between.align-items-center
+//-             h5.mb-0.fw-bold 
+//-               i.fa-solid.fa-clipboard-list.me-2.text-success
+//-               | Pacientes Citados (Hoy)
+//-             span.badge.bg-light.text-dark.border= new Date().toLocaleDateString('es-AR')
+
+//-           .card-body
+//-             if pacientesHoy && pacientesHoy.length > 0
+//-               .table-responsive
+//-                 table.table.table-hover.align-middle
+//-                   thead.table-light
+//-                     tr
+//-                       th Hora
+//-                       th Paciente
+//-                       th Especialidad
+//-                       th Estado
+//-                   tbody
+//-                     each cita in pacientesHoy
+//-                       //- Comparamos si la hora del turno ya pasó
+//-                       - const yaPaso = cita.hora < horaActualStr
+//-                       tr(class=yaPaso ? 'opacity-50' : '')
+//-                         td
+//-                           span.fw-bold= cita.hora + ' hs'
+//-                           if yaPaso
+//-                             i.fa-solid.fa-check-circle.ms-2.text-muted.small(title="Horario pasado")
+//-                         td
+//-                           div.fw-bold= cita.paciente_nombre + ' ' + cita.paciente_apellido
+//-                           small.text-muted DNI: #{cita.paciente_dni}
+//-                         td= cita.especialidad_nombre
+//-                         td
+//-                           if yaPaso && cita.estado === 'pendiente'
+//-                             span.badge.rounded-pill.bg-secondary Finalizado
+//-                           else
+//-                             span.badge.rounded-pill(class=(cita.estado === 'pendiente' ? 'bg-warning text-dark' : 'bg-success'))= cita.estado
+//-             else
+//-               .text-center.py-5
+//-                 i.fa-solid.fa-user-clock.display-1.text-light.mb-3
+//-                 p.text-muted No hay pacientes agendados para hoy.
+
+//-   //- MODAL DE PERFIL DEL MÉDICO
+//-   .modal.fade#modalPerfil(tabindex="-1" aria-labelledby="modalPerfilLabel" aria-hidden="true")
+//-     .modal-dialog.modal-dialog-centered
+//-       .modal-content.border-0.shadow-lg.rounded-4
+//-         .modal-header.bg-primary.text-white.rounded-top-4
+//-           h5.modal-title#modalPerfilLabel 
+//-             i.fa-solid.fa-user-md.me-2
+//-             | Mis Datos Profesionales
+//-           button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        
+//-         form#formEditarPerfilMedico(action="/medicos/update-perfil" method="POST")
+//-           input(type="hidden" name="nacimiento" value=persona.nacimiento)
+//-           .modal-body.p-4
+//-             .row.g-3
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Nombre
+//-                 input.form-control.bg-light(type="text" name="nombre" value=persona.nombre required)
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Apellido
+//-                 input.form-control.bg-light(type="text" name="apellido" value=persona.apellido required)
+              
+//-               .col-12
+//-                 label.form-label.small.fw-bold Correo Electrónico
+//-                 input.form-control.bg-light(type="email" name="email" value=usuario.email required)
+              
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Matrícula
+//-                 input.form-control.bg-light(type="text" value=medico.matricula readonly)
+              
+//-               .col-md-6
+//-                 label.form-label.small.fw-bold Nueva Contraseña
+//-                 input.form-control.bg-light(type="password" name="password" placeholder="Opcional")
+
+//-           .modal-footer.border-0.p-4.pt-0
+//-             button.btn.btn-light.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Cancelar
+//-             button.btn.btn-primary.rounded-pill.px-4(type="submit") Actualizar Perfil
+
+//-   style.
+//-     .card { transition: all 0.3s ease; }
+//-     .btn-white:hover { transform: rotate(30deg); transition: 0.3s; background: #f8f9fa; }
+//-     .opacity-50 { opacity: 0.5; filter: grayscale(1); }
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const urlParams = new URLSearchParams(window.location.search);
+//-       if (urlParams.get('status') === 'success') {
+//-           Swal.fire({ 
+//-             title: 'Perfil Actualizado', 
+//-             text: 'Los cambios se guardaron correctamente',
+//-             icon: 'success', 
+//-             timer: 2000, 
+//-             showConfirmButton: false 
+//-           });
+//-           window.history.replaceState({}, document.title, window.location.pathname);
+//-       }
+//-       if (urlParams.get('status') === 'error') {
+//-           Swal.fire({ 
+//-             title: 'Error', 
+//-             text: 'No se pudieron actualizar los datos',
+//-             icon: 'error', 
+//-             confirmButtonText: 'Entendido'
+//-           });
+//-       }
+//-     });
+
+
+extends ../layout
+
+block contenido
+  .container-fluid.py-4
+    //- --- LÓGICA DE TIEMPO ---
+    - const ahora = new Date()
+    - const horaActualStr = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0')
+    
+    //- CABECERA DEL DASHBOARD
+    .row.mb-4.align-items-center
+      .col-md-8
+        h2.fw-bold.text-dark
+          i.fa-solid.fa-user-md.me-2.text-primary
+          | Panel del Profesional
+        p.text-muted Hola, Dr. #{persona.apellido}. Estos son sus compromisos para el día de hoy.
+      .col-md-4.text-md-end
+        button.btn.btn-white.shadow-sm.rounded-circle.me-2.border(type="button" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Configurar Perfil")
+          i.fa-solid.fa-gear.text-secondary.fa-lg
+        a.btn.btn-outline-danger.rounded-pill.px-4(href="/auth/logout")
+          i.fa-solid.fa-right-from-bracket.me-2
+          | Salir
+
+    .row.g-4
+      //- COLUMNA IZQUIERDA: RESUMEN Y ESTADO
+      .col-xl-4
+        .card.border-0.shadow-sm.rounded-4.mb-4
+          .card-header.bg-primary.text-white.py-3.rounded-top-4
+            h5.mb-0.fw-bold 
+              i.fa-solid.fa-circle-info.me-2
+              | Resumen del Día
+          .card-body.p-4
+            .d-flex.align-items-center.mb-3
+              .bg-light.p-3.rounded-circle.me-3
+                i.fa-solid.fa-calendar-check.text-primary.fa-xl
+              div
+                h6.mb-0.fw-bold Turnos para Hoy
+                span.badge.bg-primary.rounded-pill #{pacientesHoy ? pacientesHoy.length : 0} pacientes
+            
+            hr
+            label.form-label.small.fw-bold.text-uppercase.text-muted Próximo Paciente
+            if pacientesHoy && pacientesHoy.length > 0
+              - const proximo = pacientesHoy.find(p => p.hora >= horaActualStr)
+              if proximo
+                .p-3.bg-light.rounded-3.border-start.border-primary.border-4
+                  //- Ajuste de variables por si el SQL cambió los nombres
+                  - const pNom = proximo.paciente_nombre || proximo.nombre || 'Paciente'
+                  - const pApe = proximo.paciente_apellido || proximo.apellido || ''
+                  h6.fw-bold.mb-1= pNom + ' ' + pApe
+                  p.small.text-muted.mb-0 
+                    i.fa-regular.fa-clock.me-1
+                    | #{proximo.hora} hs
+              else
+                .p-3.bg-success.bg-opacity-10.rounded-3.border-start.border-success.border-4
+                  p.small.fw-bold.text-success.mb-0 
+                    i.fa-solid.fa-check-double.me-2
+                    | Agenda del día completada
+            else
+              p.small.text-muted No hay pacientes en espera.
+
+      //- COLUMNA DERECHA: LISTA DE PACIENTES DEL DÍA
+      .col-xl-8
+        .card.border-0.shadow-sm.rounded-4
+          .card-header.bg-white.py-3.rounded-top-4.border-bottom.d-flex.justify-content-between.align-items-center
+            h5.mb-0.fw-bold 
+              i.fa-solid.fa-clipboard-list.me-2.text-success
+              | Pacientes Citados (Hoy)
+            span.badge.bg-light.text-dark.border= new Date().toLocaleDateString('es-AR')
+
+          .card-body
+            if pacientesHoy && pacientesHoy.length > 0
+              .table-responsive
+                table.table.table-hover.align-middle
+                  thead.table-light
+                    tr
+                      th Hora
+                      th Paciente
+                      th Especialidad
+                      th Estado
+                  tbody
+                    each cita in pacientesHoy
+                      - const yaPaso = cita.hora < horaActualStr
+                      //- Fallbacks para asegurar que los datos se muestren
+                      - const cNom = cita.paciente_nombre || cita.nombre || 'Paciente'
+                      - const cApe = cita.paciente_apellido || cita.apellido || ''
+                      - const cDni = cita.paciente_dni || cita.dni || 'Sin DNI'
+                      - const cEsp = cita.especialidad_nombre || cita.especialidad || 'Consultorio'
+                      
+                      tr(class=yaPaso ? 'opacity-50' : '')
+                        td
+                          span.fw-bold= cita.hora + ' hs'
+                          if yaPaso
+                            i.fa-solid.fa-check-circle.ms-2.text-muted.small(title="Horario pasado")
+                        td
+                          div.fw-bold= cNom + ' ' + cApe
+                          small.text-muted DNI: #{cDni}
+                        td= cEsp
+                        td
+                          if yaPaso && cita.estado === 'pendiente'
+                            span.badge.rounded-pill.bg-secondary Finalizado
+                          else
+                            span.badge.rounded-pill(class=(cita.estado === 'pendiente' ? 'bg-warning text-dark' : 'bg-success'))= cita.estado
+            else
+              .text-center.py-5
+                i.fa-solid.fa-user-clock.display-1.text-light.mb-3
+                p.text-muted No hay pacientes agendados para hoy.
+
+  //- MODAL DE PERFIL DEL MÉDICO
+  .modal.fade#modalPerfil(tabindex="-1" aria-labelledby="modalPerfilLabel" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+      .modal-content.border-0.shadow-lg.rounded-4
+        .modal-header.bg-primary.text-white.rounded-top-4
+          h5.modal-title#modalPerfilLabel 
+            i.fa-solid.fa-user-md.me-2
+            | Mis Datos Profesionales
+          button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        
+        form#formEditarPerfilMedico(action="/medicos/update-perfil" method="POST")
+          input(type="hidden" name="nacimiento" value=persona.nacimiento)
+          .modal-body.p-4
+            .row.g-3
+              .col-md-6
+                label.form-label.small.fw-bold Nombre
+                input.form-control.bg-light(type="text" name="nombre" value=persona.nombre required)
+              .col-md-6
+                label.form-label.small.fw-bold Apellido
+                input.form-control.bg-light(type="text" name="apellido" value=persona.apellido required)
+              .col-12
+                label.form-label.small.fw-bold Correo Electrónico
+                input.form-control.bg-light(type="email" name="email" value=usuario.email required)
+              .col-md-6
+                label.form-label.small.fw-bold Matrícula
+                input.form-control.bg-light(type="text" value=medico.matricula readonly)
+              .col-md-6
+                label.form-label.small.fw-bold Nueva Contraseña
+                input.form-control.bg-light(type="password" name="password" placeholder="Opcional")
+
+          .modal-footer.border-0.p-4.pt-0
+            button.btn.btn-light.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Cancelar
+            button.btn.btn-primary.rounded-pill.px-4(type="submit") Actualizar Perfil
+
+  style.
+    .card { transition: all 0.3s ease; }
+    .btn-white:hover { transform: rotate(30deg); transition: 0.3s; background: #f8f9fa; }
+    .opacity-50 { opacity: 0.5; filter: grayscale(1); }
+
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('status') === 'success') {
+          Swal.fire({ 
+            title: 'Perfil Actualizado', 
+            text: 'Los cambios se guardaron correctamente',
+            icon: 'success', 
+            timer: 2000, 
+            showConfirmButton: false 
+          });
+          window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      if (urlParams.get('status') === 'error') {
+          Swal.fire({ 
+            title: 'Error', 
+            text: 'No se pudieron actualizar los datos',
+            icon: 'error', 
+            confirmButtonText: 'Entendido'
+          });
+      }
+    });

@@ -1,0 +1,14 @@
+//- Mixin para los iconos circulares de las cards y secciones
+mixin iconCircle(icon, bgColor = 'primary', textColor = 'white')
+  div(class=`icon-circle bg-${bgColor} text-${textColor} mb-3 mx-auto d-flex align-items-center justify-content-center`, style="width: 50px; height: 50px; border-radius: 50%;")
+    i(class=`fa-solid fa-${icon} fs-4`)
+
+//- Mixin para las etiquetas de los formularios (Label + Estilo)
+mixin formLabel(text)
+  label.form-label.small.fw-bold.text-uppercase.text-muted= text
+
+//- Mixin para los inputs con icono
+mixin inputGroup(icon, id, placeholder, type="text", required=false)
+  .input-group
+    span.input-group-text.bg-light: i(class=`fa-solid fa-${icon} text-primary`)
+    input.form-control.bg-light(id=id, name=id, type=type, placeholder=placeholder, required=required, autocomplete="off")

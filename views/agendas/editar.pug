@@ -106,6 +106,7 @@ block contenido
                       input.form-check-input(type="checkbox" name="dias" id=`dia_${valorDiaDB}` value=valorDiaDB checked=isChecked)
                       label.form-check-label.small(for=`dia_${valorDiaDB}`) #{dia}
 
+    
           //- SECCIÓN 3: PARÁMETROS DE TURNOS
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3
@@ -124,10 +125,13 @@ block contenido
                     span.input-group-text: i.bi.bi-stopwatch
                 
                 .col-md-6
-                  label.form-label.small.fw-bold Límite de sobreturnos
+                  label.form-label.small.fw-bold Límite de sobreturnos (Máx. 10)
                   .input-group.shadow-sm
-                    input.form-control(type="number" min="0" name="limite_sobreturnos" required value=agenda.limite_sobreturnos)
+                    //- Se agregó el atributo max="10"
+                    input.form-control(type="number" min="0" max="10" name="limite_sobreturnos" required value=agenda.limite_sobreturnos)
                     span.input-group-text: i.bi.bi-person-plus
+                  .form-text Ingrese un valor entre 0 y 10.
+
 
           // ---------- ACCIONES ----------
           .d-grid.gap-2.d-md-flex.justify-content-md-end.mt-4.mb-5

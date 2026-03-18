@@ -271,7 +271,7 @@ class Turno {
                 "SELECT id_medico, id_especialidad FROM agendas WHERE id = ?",
                 [id_agenda]
             );
-            
+
             if (agendaActual.length === 0) throw new Error("La agenda seleccionada no existe.");
             const { id_medico, id_especialidad } = agendaActual[0];
 
@@ -487,7 +487,7 @@ class Turno {
     }
 
     // listarPaginado
-    static async listarPaginado(filtros, limit, offset) {
+   static async listarPaginado(filtros, limit, offset) {
         let conn;
         try {
             conn = await createConnection();
@@ -497,10 +497,12 @@ class Turno {
             const cleanProfesional = (filtros.profesional === 'null' || !filtros.profesional) ? null : filtros.profesional;
             const cleanFecha = (filtros.fecha === 'null' || !filtros.fecha) ? null : filtros.fecha;
             const cleanSucursal = (filtros.sucursal === 'null' || !filtros.sucursal) ? null : filtros.sucursal;
-
-            // CORRECCIÓN: Usamos 'filtros.especialidad' y 'filtros.status' que vienen del Controller
             const cleanEspecialidad = (filtros.especialidad === 'null' || !filtros.especialidad) ? null : filtros.especialidad;
             const cleanEstado = (filtros.status === 'null' || !filtros.status) ? null : filtros.status;
+
+            // --- NUEVOS FILTROS PARA AUSENCIAS ---
+            const cleanDesde = (filtros.fecha_desde === 'null' || !filtros.fecha_desde) ? null : filtros.fecha_desde;
+            const cleanHasta = (filtros.fecha_hasta === 'null' || !filtros.fecha_hasta) ? null : filtros.fecha_hasta;
 
             let sql = `
             SELECT 
@@ -522,31 +524,43 @@ class Turno {
 
             const params = [];
 
+            // Filtro de Paciente
             if (cleanPaciente) {
                 sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
                 params.push(`%${cleanPaciente}%`, `%${cleanPaciente}%`, `%${cleanPaciente}%`);
             }
+
+            // Filtro de Profesional (Mejorado para detectar ID o Nombre)
             if (cleanProfesional) {
-                sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
-                params.push(`%${cleanProfesional}%`, `%${cleanProfesional}%`);
+                // Si es un número (ID enviado desde el redirect de ausencia) buscamos por ID
+                if (!isNaN(cleanProfesional)) {
+                    sql += ` AND m.id_medico = ?`;
+                    params.push(cleanProfesional);
+                } else {
+                    sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
+                    params.push(`%${cleanProfesional}%`, `%${cleanProfesional}%`);
+                }
             }
-            if (cleanFecha) {
+
+            // --- LÓGICA DE FECHAS (Prioriza rango sobre fecha única) ---
+            if (cleanDesde && cleanHasta) {
+                sql += ` AND t.fecha BETWEEN ? AND ?`;
+                params.push(cleanDesde, cleanHasta);
+            } else if (cleanFecha) {
                 sql += ` AND t.fecha = ?`;
                 params.push(cleanFecha);
             }
+
             if (cleanSucursal) {
                 sql += ` AND s.nombre = ?`;
                 params.push(cleanSucursal);
             }
 
-            // Filtro de Especialidad: Si tu select envía el NOMBRE, usamos e.nombre. 
-            // Si envía el ID, deberías cambiar a a.id_especialidad = ?
             if (cleanEspecialidad) {
                 sql += ` AND e.nombre = ?`;
                 params.push(cleanEspecialidad);
             }
 
-            // Filtro de Estado (Status)
             if (cleanEstado) {
                 sql += ` AND t.estado = ?`;
                 params.push(cleanEstado);
@@ -557,6 +571,7 @@ class Turno {
 
             const [rows] = await conn.query(sql, params);
             return rows;
+
         } catch (error) {
             console.error("Error en listarPaginado:", error);
             throw error;
@@ -564,6 +579,7 @@ class Turno {
             if (conn) conn.end();
         }
     }
+
 
 
 
@@ -578,10 +594,12 @@ class Turno {
             const cleanProfesional = (filtros.profesional === 'null' || !filtros.profesional) ? null : filtros.profesional;
             const cleanFecha = (filtros.fecha === 'null' || !filtros.fecha) ? null : filtros.fecha;
             const cleanSucursal = (filtros.sucursal === 'null' || !filtros.sucursal) ? null : filtros.sucursal;
-
-            // CORRECCIÓN: Usamos 'especialidad' y 'status' para coincidir con el controlador
             const cleanEspecialidad = (filtros.especialidad === 'null' || !filtros.especialidad) ? null : filtros.especialidad;
             const cleanEstado = (filtros.status === 'null' || !filtros.status) ? null : filtros.status;
+
+            // --- NUEVOS FILTROS PARA RANGO DE AUSENCIA ---
+            const cleanDesde = (filtros.fecha_desde === 'null' || !filtros.fecha_desde) ? null : filtros.fecha_desde;
+            const cleanHasta = (filtros.fecha_hasta === 'null' || !filtros.fecha_hasta) ? null : filtros.fecha_hasta;
 
             let sql = `
             SELECT COUNT(*) as total 
@@ -602,22 +620,37 @@ class Turno {
                 sql += ` AND (p_per.nombre LIKE ? OR p_per.apellido LIKE ? OR p_per.dni LIKE ?)`;
                 params.push(`%${cleanPaciente}%`, `%${cleanPaciente}%`, `%${cleanPaciente}%`);
             }
+
             if (cleanProfesional) {
-                sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
-                params.push(`%${cleanProfesional}%`, `%${cleanProfesional}%`);
+                // Lógica dual: ID numérico (de ausencia) o Nombre/Apellido (de búsqueda manual)
+                if (!isNaN(cleanProfesional)) {
+                    sql += ` AND m.id_medico = ?`;
+                    params.push(cleanProfesional);
+                } else {
+                    sql += ` AND (m_per.nombre LIKE ? OR m_per.apellido LIKE ?)`;
+                    params.push(`%${cleanProfesional}%`, `%${cleanProfesional}%`);
+                }
             }
-            if (cleanFecha) {
+
+            // --- LÓGICA DE FECHAS (Prioriza rango sobre fecha única) ---
+            if (cleanDesde && cleanHasta) {
+                sql += ` AND t.fecha BETWEEN ? AND ?`;
+                params.push(cleanDesde, cleanHasta);
+            } else if (cleanFecha) {
                 sql += ` AND t.fecha = ?`;
                 params.push(cleanFecha);
             }
+
             if (cleanSucursal) {
                 sql += ` AND s.nombre = ?`;
                 params.push(cleanSucursal);
             }
+
             if (cleanEspecialidad) {
                 sql += ` AND e.nombre = ?`;
                 params.push(cleanEspecialidad);
             }
+
             if (cleanEstado) {
                 sql += ` AND t.estado = ?`;
                 params.push(cleanEstado);
@@ -625,6 +658,7 @@ class Turno {
 
             const [rows] = await conn.query(sql, params);
             return rows[0].total;
+
         } catch (error) {
             console.error("Error en contarTurnos:", error);
             throw error;
@@ -830,6 +864,52 @@ class Turno {
         }
     }
 
+    // ============================================
+    // OBTENER TURNOS AFECTADOS POR AUSENCIAS
+    // ============================================
+
+    static async listarTurnosAfectadosPorAusencia() {
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+           SELECT 
+                t.id, t.fecha, DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, t.estado,
+                p_per.nombre AS paciente_nombre, p_per.apellido AS paciente_apellido, p_per.telefono AS paciente_telefono,
+                m_per.nombre AS medico_nombre, m_per.apellido AS medico_apellido,
+                e.nombre AS especialidad_nombre,
+                s.nombre AS sucursal_nombre,
+                a_med.tipo as motivo_urgencia,
+                a_med.descripcion as detalle_ausencia,
+                1 as medicoAusente,
+                1 as es_ausencia
+            FROM turnos t
+            INNER JOIN agendas a ON t.id_agenda = a.id
+            INNER JOIN medicos m ON a.id_medico = m.id_medico
+            INNER JOIN personas m_per ON m.id_persona = m_per.id
+            INNER JOIN pacientes p ON t.id_paciente = p.id
+            INNER JOIN personas p_per ON p.id_persona = p_per.id
+            INNER JOIN especialidades e ON a.id_especialidad = e.id
+            INNER JOIN sucursales s ON a.id_sucursal = s.id
+            INNER JOIN ausencias a_med ON a.id_medico = a_med.id_medico 
+                AND t.fecha BETWEEN a_med.fecha_inicio AND a_med.fecha_fin
+            WHERE t.fecha >= CURDATE()
+            AND t.estado NOT IN ('Cancelado', 'Atendido')
+            ORDER BY t.fecha ASC, t.hora_inicio ASC
+                `;
+            const [rows] = await conn.query(sql);
+            return rows;
+        } catch (error) {
+            console.error("Error en listarTurnosAfectadosPorAusencia:", error);
+            return [];
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+
+
+
 
     // Validar si el paciente ya tiene un turno con el mismo médico el mismo día
     static async verificarTurnoMedicoDia(id_paciente, fecha, id_agenda) {
@@ -871,7 +951,7 @@ class Turno {
         }
     }
 
-// ============================================
+    // ============================================
     // CONTAR SOBRETURNOS ACTUALES
     // ============================================
     static async contarSobreturnos(id_agenda, fecha) {
@@ -917,7 +997,93 @@ class Turno {
     }
 
 
+    // ============================================
+    // OBTENER TURNOS PARA TRASLADO MASIVO
+    // ============================================
+    static async obtenerTurnosParaTrasladoMasivo(id_medico, fecha_inicio, fecha_fin) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const query = `
+                SELECT 
+                    t.id, 
+                    t.fecha, 
+                    DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora_inicio, 
+                    t.observaciones,
+                    t.id_agenda
+                FROM turnos t
+                INNER JOIN agendas a ON t.id_agenda = a.id
+                WHERE a.id_medico = ? 
+                  AND t.fecha BETWEEN ? AND ? 
+                  AND t.estado IN ('Reservado', 'Confirmado', 'Pendiente')
+                ORDER BY t.fecha ASC, t.hora_inicio ASC
+            `;
 
+            // Usamos los estados lógicos que querrías trasladar (no solo Reservado)
+            const [rows] = await conn.query(query, [id_medico, fecha_inicio, fecha_fin]);
+            return rows;
+        } catch (error) {
+            console.error("Error en obtenerTurnosParaTrasladoMasivo:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+    // ============================================
+    // OBTENER TURNOS CON MÉDICOS AUSENTES (GLOBAL)
+    // // ============================================
+    static async getTurnosConMedicosAusentesGlobal() {
+        let conn;
+        try {
+            conn = await createConnection();
+            const sql = `
+            SELECT 
+                t.id, 
+                t.fecha, 
+                DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+                t.estado,
+                p_per.nombre AS paciente_nombre, 
+                p_per.apellido AS paciente_apellido, 
+                tel.numero AS paciente_telefono,
+                m_per.nombre AS medico_nombre, 
+                m_per.apellido AS medico_apellido,
+                e.nombre AS especialidad_nombre,
+                s.nombre AS sucursal_nombre,
+                CONCAT('Ausencia: ', IFNULL(aus.tipo, 'Médica')) AS motivo_reubicacion,
+                aus.descripcion AS detalle_ausencia,
+                1 AS medicoAusente,
+                1 AS es_ausencia
+            FROM turnos t
+            INNER JOIN agendas a ON t.id_agenda = a.id
+            INNER JOIN medicos m ON a.id_medico = m.id_medico
+            INNER JOIN personas m_per ON m.id_persona = m_per.id
+            INNER JOIN pacientes p ON t.id_paciente = p.id
+            INNER JOIN personas p_per ON p.id_persona = p_per.id
+            -- Traemos el teléfono del paciente
+            LEFT JOIN (
+                SELECT id_persona, MIN(numero) as numero 
+                FROM telefonos 
+                GROUP BY id_persona
+            ) tel ON p_per.id = tel.id_persona
+            -- Importante: Traemos la especialidad del turno actual
+            INNER JOIN especialidades e ON a.id_especialidad = e.id
+            INNER JOIN sucursales s ON a.id_sucursal = s.id
+            -- El JOIN con ausencias debe ser solo por id_medico y fecha
+            INNER JOIN ausencias aus ON m.id_medico = aus.id_medico 
+                AND t.fecha BETWEEN aus.fecha_inicio AND aus.fecha_fin
+            WHERE t.fecha >= CURDATE()
+              AND t.estado IN ('Reservado', 'Confirmado', 'Pendiente')
+            ORDER BY t.fecha ASC, t.hora_inicio ASC
+        `;
+            const [rows] = await conn.query(sql);
+            return rows;
+        } catch (error) {
+            console.error("Error en getTurnosConMedicosAusentesGlobal:", error);
+            return [];
+        } finally {
+            if (conn) conn.end();
+        }
+    }
 
 }
 

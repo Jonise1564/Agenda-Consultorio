@@ -1,3 +1,124 @@
+//- extends ../layout
+
+//- block contenido
+//-   style.
+//-     :root {
+//-       --primary: #0a3d62;
+//-       --accent: #5ba4d5;
+//-       --glass: rgba(255, 255, 255, 0.95);
+//-     }
+//-     body { background-color: #f0f4f8; font-family: 'Inter', sans-serif; }
+//-     .main-wrapper { display: flex; min-height: 100vh; width: 100%; }
+//-     .brand-section {
+//-       flex: 1.2;
+//-       background: linear-gradient(135deg, rgba(10, 61, 98, 0.92) 0%, rgba(13, 71, 112, 0.8) 100%), 
+//-                   url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80');
+//-       background-size: cover; display: none; flex-direction: column; justify-content: space-between; padding: 5rem; color: white;
+//-     }
+//-     .form-section { flex: 0.8; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #f8fafc; }
+//-     .auth-card { width: 100%; max-width: 520px; background: var(--glass); border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); padding: 2.5rem; border: 1px solid white; }
+//-     .nav-tabs-custom { border: none; background: #edf2f7; border-radius: 16px; padding: 5px; margin-bottom: 2rem; }
+//-     .nav-tabs-custom .nav-link { border: none; border-radius: 12px; color: #64748b; font-weight: 600; padding: 10px; transition: 0.4s; }
+//-     .nav-tabs-custom .nav-link.active { background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+//-     .input-group-custom { position: relative; margin-bottom: 1.2rem; }
+//-     .input-group-custom i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 10; }
+//-     .form-control-custom { width: 100%; padding: 12px 12px 12px 45px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc; transition: 0.3s; }
+//-     .form-control-custom:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1); }
+//-     .btn-submit { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; width: 100%; box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3); transition: 0.3s; }
+//-     @media (min-width: 992px) { .brand-section { display: flex; } }
+
+//-   .main-wrapper
+//-     .brand-section
+//-       .top-logo: img(src="/images/logo.png" style="width: 60px; filter: brightness(0) invert(1);")
+//-       .brand-content
+//-         span.text-uppercase.fw-bold.small.text-info.mb-2 Portal de consultorio Medico
+//-         h1.fw-bold Gestión de Turnos
+//-         p.lead.text-white-50 Registrate y accede a una atención médica ágil.
+//-       .bottom-info: p.small.text-white-50 © 2026 Consultorio Médico.
+
+//-     .form-section
+//-       .auth-card
+//-         .text-center.mb-4
+//-           img(src="/images/logo.png" alt="Logo" style="width: 60px;")
+//-           h4.fw-bold.mt-3.text-dark ¡Bienvenido!
+
+//-         ul.nav.nav-pills.nav-justified.nav-tabs-custom#pills-tab(role="tablist")
+//-           li.nav-item: button#pills-login-tab.nav-link(class=(error ? 'active' : 'active') data-bs-toggle="pill" data-bs-target="#pills-login" type="button") Iniciar Sesión
+//-           li.nav-item: button#pills-register-tab.nav-link(data-bs-toggle="pill" data-bs-target="#pills-register" type="button") Registrarse
+
+//-         .tab-content
+//-           //- LOGIN
+//-           .tab-pane.fade.show.active#pills-login
+//-             if error
+//-               .alert.alert-danger.small.py-2: i.bi.bi-exclamation-circle.me-2 #{error}
+//-             if success
+//-               .alert.alert-success.small.py-2: i.bi.bi-check-circle.me-2 #{success}
+            
+//-             form(action="/auth/login" method="POST")
+//-               .input-group-custom
+//-                 i.bi.bi-envelope-at
+//-                 input.form-control-custom(type="email" name="email" placeholder="Correo electrónico" required)
+//-               .input-group-custom
+//-                 i.bi.bi-key
+//-                 input.form-control-custom(type="password" name="password" placeholder="Contraseña" required)
+//-               button.btn-submit(type="submit") Acceder
+
+//-           //- REGISTRO
+//-           .tab-pane.fade#pills-register
+//-             form#formRegistro(action="/auth/registro-paciente" method="POST" enctype="multipart/form-data")
+//-               .row.g-2
+//-                 .col-12: label.small.fw-bold.text-muted Datos Personales
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="text" name="nombre" placeholder="Nombre/s" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="text" name="apellido" placeholder="Apellido/s" required)
+                
+//-                 .col-12
+//-                   label.small.fw-bold.text-muted Fecha de Nacimiento
+//-                   input.form-control-custom.ps-3(type="date" name="nacimiento" required)
+                
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="email" name="email" placeholder="Email" required)
+//-                 .col-md-6
+//-                   input.form-control-custom.ps-3(type="number" name="dni" placeholder="DNI" required)
+                
+//-                 .col-12.mt-2
+//-                   label.small.fw-bold.text-muted Validación DNI (Foto frontal)
+//-                   .input-group-custom
+//-                     i.bi.bi-camera(style="left: 15px;")
+//-                     input.form-control-custom(type="file" name="archivo_dni" accept="image/*" required style="padding-top: 10px;")
+
+//-                 .col-12: label.small.fw-bold.text-muted Seguridad
+//-                 .col-md-6
+//-                   input#regPassword.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
+//-                 .col-md-6
+//-                   input#regConfirm.form-control-custom.ps-3(type="password" name="repeatPassword" placeholder="Confirmar" required)
+              
+//-               button.btn-submit.mt-4(type="submit") Registrarme y Entrar
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       // 1. Validación de contraseñas coincidentes
+//-       const formReg = document.getElementById('formRegistro');
+//-       formReg.addEventListener('submit', (e) => {
+//-         const pass = document.getElementById('regPassword').value;
+//-         const confirm = document.getElementById('regConfirm').value;
+//-         if (pass !== confirm) {
+//-           e.preventDefault();
+//-           alert('Las contraseñas no coinciden.');
+//-         }
+//-       });
+
+//-       // 2. Notificación de registro exitoso (si rediriges con query string)
+//-       const urlParams = new URLSearchParams(window.location.search);
+//-       if (urlParams.get('registro_exitoso')) {
+   
+//-         alert('¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
+//-         // Limpiar URL
+//-         window.history.replaceState({}, document.title, window.location.pathname);
+//-       }
+//-     });
+
 
 extends ../layout
 
@@ -26,6 +147,7 @@ block contenido
     .form-control-custom { width: 100%; padding: 12px 12px 12px 45px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc; transition: 0.3s; }
     .form-control-custom:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(91, 164, 213, 0.1); }
     .btn-submit { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; width: 100%; box-shadow: 0 10px 15px -3px rgba(10, 61, 98, 0.3); transition: 0.3s; }
+    .error-msg { font-size: 0.75rem; color: #e74c3c; margin-top: -10px; margin-bottom: 10px; display: block; font-weight: 500; }
     @media (min-width: 992px) { .brand-section { display: flex; } }
 
   .main-wrapper
@@ -79,9 +201,11 @@ block contenido
                   input.form-control-custom.ps-3(type="date" name="nacimiento" required)
                 
                 .col-md-6
-                  input.form-control-custom.ps-3(type="email" name="email" placeholder="Email" required)
+                  input#regEmail.form-control-custom.ps-3(type="email" name="email" placeholder="Email" required)
+                  small#errorEmail.error-msg.d-none Correo ya registrado.
                 .col-md-6
-                  input.form-control-custom.ps-3(type="number" name="dni" placeholder="DNI" required)
+                  input#regDni.form-control-custom.ps-3(type="number" name="dni" placeholder="DNI" required)
+                  small#errorDni.error-msg.d-none DNI ya registrado.
                 
                 .col-12.mt-2
                   label.small.fw-bold.text-muted Validación DNI (Foto frontal)
@@ -94,28 +218,88 @@ block contenido
                   input#regPassword.form-control-custom.ps-3(type="password" name="password" placeholder="Contraseña" required)
                 .col-md-6
                   input#regConfirm.form-control-custom.ps-3(type="password" name="repeatPassword" placeholder="Confirmar" required)
+                  small#errorPass.error-msg.d-none No coinciden.
               
-              button.btn-submit.mt-4(type="submit") Registrarme y Entrar
+              button#btnSubmitRegistro.btn-submit.mt-4(type="submit" disabled style="opacity: 0.5; cursor: not-allowed;") Registrarme y Entrar
 
   script.
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Validación de contraseñas coincidentes
-      const formReg = document.getElementById('formRegistro');
-      formReg.addEventListener('submit', (e) => {
-        const pass = document.getElementById('regPassword').value;
-        const confirm = document.getElementById('regConfirm').value;
-        if (pass !== confirm) {
-          e.preventDefault();
-          alert('Las contraseñas no coinciden.');
+      const btnSubmit = document.getElementById('btnSubmitRegistro');
+      const inputEmail = document.getElementById('regEmail');
+      const inputDni = document.getElementById('regDni');
+      const inputPass = document.getElementById('regPassword');
+      const inputConfirm = document.getElementById('regConfirm');
+
+      let emailOk = false;
+      let dniOk = false;
+
+      const validarTodo = () => {
+        const passOk = inputPass.value === inputConfirm.value && inputPass.value !== '';
+        
+        // Error visual de password
+        const errorPass = document.getElementById('errorPass');
+        if (inputConfirm.value !== '' && !passOk) {
+          errorPass.classList.remove('d-none');
+        } else {
+          errorPass.classList.add('d-none');
         }
+
+        if (emailOk && dniOk && passOk) {
+          btnSubmit.disabled = false;
+          btnSubmit.style.opacity = "1";
+          btnSubmit.style.cursor = "pointer";
+        } else {
+          btnSubmit.disabled = true;
+          btnSubmit.style.opacity = "0.5";
+          btnSubmit.style.cursor = "not-allowed";
+        }
+      };
+
+      // Verificar Email
+      inputEmail.addEventListener('blur', async () => {
+        const val = inputEmail.value.trim();
+        if (val === '') return;
+        try {
+          const res = await fetch(`/pacientes/verificar-email/${encodeURIComponent(val)}`);
+          const data = await res.json();
+          const errorElem = document.getElementById('errorEmail');
+          if (data.existe) {
+            errorElem.classList.remove('d-none');
+            emailOk = false;
+          } else {
+            errorElem.classList.add('d-none');
+            emailOk = true;
+          }
+        } catch (e) { console.error("Error validando email"); }
+        validarTodo();
       });
 
-      // 2. Notificación de registro exitoso (si rediriges con query string)
+      // Verificar DNI
+      inputDni.addEventListener('blur', async () => {
+        const val = inputDni.value.trim();
+        if (val === '') return;
+        try {
+          const res = await fetch(`/pacientes/verificar-persona/${val}`);
+          const data = await res.json();
+          const errorElem = document.getElementById('errorDni');
+          if (data.existe) {
+            errorElem.classList.remove('d-none');
+            dniOk = false;
+          } else {
+            errorElem.classList.add('d-none');
+            dniOk = true;
+          }
+        } catch (e) { console.error("Error validando DNI"); }
+        validarTodo();
+      });
+
+      inputPass.addEventListener('input', validarTodo);
+      inputConfirm.addEventListener('input', validarTodo);
+
+      // Notificación de éxito
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('registro_exitoso')) {
-   
         alert('¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
-        // Limpiar URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     });

@@ -211,7 +211,6 @@ class Agenda {
     // 6. BUSCAR AGENDA ESPECÍFICA (Para el Panel de Turnos)
     // =====================================================
     static async obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha) {
-        // Obtenemos el día de la semana (1-7)
         const partes = fecha.split('-');
         const fechaLocal = new Date(partes[0], partes[1] - 1, partes[2]);
         const jsDay = fechaLocal.getDay();
@@ -220,27 +219,27 @@ class Agenda {
         let conn;
         try {
             conn = await createConnection();
-
-            // Agregamos a.activo = 1 para que no se puedan dar turnos en agendas "borradas"
             let sql = `
             SELECT a.*
             FROM agendas a
             JOIN agenda_dias ad ON a.id = ad.id_agenda
             WHERE a.id_medico = ?
-              AND a.activo = 1  -- <--- SEGURIDAD: Solo agendas vigentes
+              AND a.activo = 1
               AND DATE(?) BETWEEN DATE(a.fecha_creacion) AND DATE(a.fecha_fin)
               AND ad.id_dia = ?
         `;
 
             const params = [id_medico, fecha, idDia];
-
             if (id_especialidad) {
                 sql += ` AND a.id_especialidad = ?`;
                 params.push(id_especialidad);
             }
 
+            // Agregamos esto para que la mañana aparezca antes que la tarde
+            sql += ` ORDER BY a.hora_inicio ASC`;
+
             const [rows] = await conn.query(sql, params);
-            return rows;
+            return rows; // Retorna un ARRAY de agendas (ej. mañana y tarde)
         } catch (error) {
             console.error('Error obtenerAgendaPorMedicoYFecha:', error);
             throw error;
@@ -248,6 +247,8 @@ class Agenda {
             if (conn) conn.end();
         }
     }
+
+
 
 
     // =====================================================

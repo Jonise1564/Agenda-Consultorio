@@ -1,8 +1,543 @@
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4.mb-5
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-vcard-fill.me-2
+//-             | Editar Paciente
+//-           p.text-muted Actualice la información personal y cobertura médica.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     // Botones de Estado (Alta/Baja)
+//-     .row.mb-3
+//-       .col-12.d-flex.justify-content-end
+//-         if paciente.estado == 1
+//-           form(method="POST" action=`/pacientes/inactivar/${paciente.id_paciente}`)
+//-             button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-x.me-1
+//-               | Inactivar Paciente
+//-         else
+//-           form(method="POST" action=`/pacientes/activar/${paciente.id_paciente}`)
+//-             button.btn.btn-success.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-check.me-1
+//-               | Reactivar Paciente
+
+//-     // Formulario Principal
+//-     form.needs-validation(
+//-       action=`/pacientes/update/${paciente.id_paciente}`
+//-       method="POST"
+//-       id="formPaciente"
+//-       novalidate
+//-     )
+//-       // Flags para detectar cambios (similar a médico)
+//-       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+
+//-       .row
+//-         // Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           // SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-3
+//-                   label.form-label.fw-bold ID Paciente
+//-                   input.form-control.bg-light(type="number" value=paciente.id_paciente readonly)
+                
+//-                 .col-md-3
+//-                   label.form-label.fw-bold DNI
+//-                   input.form-control.bg-light(type="number" value=paciente.dni readonly)
+
+//-                 .col-md-3
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" value=paciente.nombre required)
+//-                   .invalid-feedback El nombre es requerido.
+                
+//-                 .col-md-3
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" value=paciente.apellido required)
+//-                   .invalid-feedback El apellido es requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(
+//-                     type="date"
+//-                     name="nacimiento"
+//-                     value=paciente.nacimiento ? (typeof paciente.nacimiento === 'string' ? paciente.nacimiento.split('T')[0] : paciente.nacimiento.toISOString().split('T')[0]) : ''
+//-                     required
+//-                   )
+
+//-           // SECCIÓN 2: USUARIO Y ACCESO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .form-check.form-switch.mb-3
+//-                 input.form-check-input#editar_usuario(type="checkbox")
+//-                 label.form-check-label.fw-bold(for="editar_usuario") Habilitar edición de cuenta
+              
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Email
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control#email(
+//-                       type="email"
+//-                       name="email"
+//-                       value=(paciente.email || '')
+//-                       disabled
+//-                       required
+//-                     )
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Nueva Contraseña
+//-                   input.form-control#password(
+//-                     type="password"
+//-                     name="password"
+//-                     placeholder="Solo si desea cambiarla"
+//-                     disabled
+//-                   )
+//-                   small.text-muted Solo complete si desea actualizar la clave.
+
+//-         // Columna Derecha: Obra Social y Teléfonos
+//-         .col-lg-4
+//-           // SECCIÓN 3: OBRA SOCIAL
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-hospital.me-2
+//-                 | Cobertura Médica
+//-             .card-body
+//-               label.form-label.small.fw-bold Obra Social Seleccionada
+//-               select.form-select.form-select-sm(name="id_obra_social")
+//-                 option(value="") Sin obra social
+//-                 each os in obrasSociales
+//-                   option(
+//-                     value=os.id
+//-                     selected=(Number(os.id) === Number(paciente.id_obra_social))
+//-                   )= os.nombre
+
+//-           // SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success#btnAddTelefono(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonosContainer
+//-                 // Lógica de teléfonos dinámica igual a la de médicos
+//-                 if telefonos && telefonos.length
+//-                   each numero in telefonos
+//-                     .input-group.mb-2.telefono-row
+//-                       input.form-control.form-control-sm.telefono-input(
+//-                         type="text"
+//-                         name="telefonos"
+//-                         value=numero
+//-                         maxlength="15"
+//-                         oninput="marcarTelefonosModificados()"
+//-                       )
+//-                       button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                         i.bi.bi-trash
+//-                 else
+//-                   .input-group.mb-2.telefono-row
+//-                     input.form-control.form-control-sm.telefono-input(
+//-                       type="text"
+//-                       name="telefonos"
+//-                       placeholder="Número de teléfono"
+//-                       maxlength="15"
+//-                       oninput="marcarTelefonosModificados()"
+//-                     )
+//-                     button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                       i.bi.bi-trash
+
+//-       // Botones de Acción Final
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/pacientes") Cancelar
+//-           button.btn.btn-primary.px-5.shadow(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Cambios
+
+//-   script.
+//-     function marcarTelefonosModificados() {
+//-       const telMod = document.getElementById('tel-mod');
+//-       if(telMod) telMod.value = '1';
+//-     }
+
+//-     function agregarTelefono() {
+//-       marcarTelefonosModificados();
+//-       const container = document.getElementById('telefonosContainer');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 telefono-row animate__animated animate__fadeIn';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15">
+//-         <button class="btn btn-outline-danger btn-sm" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         const rows = document.querySelectorAll('.telefono-row');
+//-         if (rows.length === 1) {
+//-           alert('Debe tener al menos un teléfono de contacto');
+//-           return;
+//-         }
+//-         marcarTelefonosModificados();
+//-         div.remove();
+//-       };
+//-       // Forzar solo números en el nuevo input
+//-       div.querySelector('input').oninput = (e) => {
+//-         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+//-         marcarTelefonosModificados();
+//-       };
+//-       container.appendChild(div);
+//-     }
+
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       // Toggle de Usuario
+//-       const check = document.getElementById('editar_usuario');
+//-       const emailInput = document.getElementById('email');
+//-       const passInput = document.getElementById('password');
+
+//-       if(check) {
+//-         check.addEventListener('change', () => {
+//-           emailInput.disabled = !check.checked;
+//-           passInput.disabled = !check.checked;
+//-           if (!check.checked) passInput.value = '';
+//-         });
+//-       }
+
+//-       // Validación de Bootstrap y Duplicados
+//-       const forms = document.querySelectorAll('.needs-validation');
+//-       Array.prototype.slice.call(forms).forEach(form => {
+//-         form.addEventListener('submit', event => {
+//-           const valores = [...document.querySelectorAll('.telefono-input')]
+//-             .map(i => i.value.trim())
+//-             .filter(Boolean);
+//-           const set = new Set(valores);
+          
+//-           if (set.size !== valores.length) {
+//-             event.preventDefault();
+//-             alert('No se permiten teléfonos duplicados');
+//-             return;
+//-           }
+
+//-           if (!form.checkValidity()) {
+//-             event.preventDefault();
+//-             event.stopPropagation();
+//-           }
+//-           form.classList.add('was-validated');
+//-         }, false);
+//-       });
+//-     });
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4.mb-5
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-vcard-fill.me-2
+//-             | Editar Paciente
+//-           p.text-muted Actualice la información personal y cobertura médica.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/pacientes")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     // Botones de Estado (Alta/Baja)
+//-     .row.mb-3
+//-       .col-12.d-flex.justify-content-end
+//-         if paciente.estado == 1
+//-           form(method="POST" action=`/pacientes/inactivar/${paciente.id_paciente}`)
+//-             button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-x.me-1
+//-               | Inactivar Paciente
+//-         else
+//-           form(method="POST" action=`/pacientes/activar/${paciente.id_paciente}`)
+//-             button.btn.btn-success.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-check.me-1
+//-               | Reactivar Paciente
+
+//-     // Formulario Principal
+//-     form.needs-validation(
+//-       action=`/pacientes/update/${paciente.id_paciente}`
+//-       method="POST"
+//-       id="formPaciente"
+//-       novalidate
+//-     )
+//-       // Flags para detectar cambios
+//-       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+
+//-       .row
+//-         // Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           // SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-3
+//-                   label.form-label.fw-bold ID Paciente
+//-                   input.form-control.bg-light(type="number" value=paciente.id_paciente readonly)
+                
+//-                 .col-md-3
+//-                   label.form-label.fw-bold DNI
+//-                   input.form-control.bg-light(type="number" value=paciente.dni readonly)
+
+//-                 .col-md-3
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" value=paciente.nombre required)
+//-                   .invalid-feedback El nombre es requerido.
+                
+//-                 .col-md-3
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" value=paciente.apellido required)
+//-                   .invalid-feedback El apellido es requerido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(
+//-                     type="date"
+//-                     name="nacimiento"
+//-                     value=paciente.nacimiento ? (typeof paciente.nacimiento === 'string' ? paciente.nacimiento.split('T')[0] : paciente.nacimiento.toISOString().split('T')[0]) : ''
+//-                     required
+//-                   )
+
+//-           // SECCIÓN 2: USUARIO Y ACCESO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .form-check.form-switch.mb-3
+//-                 input.form-check-input#editar_usuario(type="checkbox")
+//-                 label.form-check-label.fw-bold(for="editar_usuario") Habilitar edición de cuenta
+              
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Email
+//-                   .input-group.has-validation
+//-                     span.input-group-text @
+//-                     input.form-control#email(
+//-                       type="email"
+//-                       name="email"
+//-                       value=(paciente.email || '')
+//-                       disabled
+//-                       required
+//-                     )
+//-                     #email-error-msg.invalid-feedback Este correo electrónico ya se encuentra registrado por otro usuario.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Nueva Contraseña
+//-                   input.form-control#password(
+//-                     type="password"
+//-                     name="password"
+//-                     placeholder="Solo si desea cambiarla"
+//-                     disabled
+//-                   )
+//-                   small.text-muted Solo complete si desea actualizar la clave.
+
+//-         // Columna Derecha: Obra Social y Teléfonos
+//-         .col-lg-4
+//-           // SECCIÓN 3: OBRA SOCIAL
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-hospital.me-2
+//-                 | Cobertura Médica
+//-             .card-body
+//-               label.form-label.small.fw-bold Obra Social Seleccionada
+//-               select.form-select.form-select-sm(name="id_obra_social")
+//-                 option(value="") Sin obra social
+//-                 each os in obrasSociales
+//-                   option(
+//-                     value=os.id
+//-                     selected=(Number(os.id) === Number(paciente.id_obra_social))
+//-                   )= os.nombre
+
+//-           // SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success#btnAddTelefono(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonosContainer
+//-                 if telefonos && telefonos.length
+//-                   each numero in telefonos
+//-                     .input-group.mb-2.telefono-row
+//-                       input.form-control.form-control-sm.telefono-input(
+//-                         type="text"
+//-                         name="telefonos"
+//-                         value=numero
+//-                         maxlength="15"
+//-                         oninput="marcarTelefonosModificados()"
+//-                       )
+//-                       button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                         i.bi.bi-trash
+//-                 else
+//-                   .input-group.mb-2.telefono-row
+//-                     input.form-control.form-control-sm.telefono-input(
+//-                       type="text"
+//-                       name="telefonos"
+//-                       placeholder="Número de teléfono"
+//-                       maxlength="15"
+//-                       oninput="marcarTelefonosModificados()"
+//-                     )
+//-                     button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                       i.bi.bi-trash
+
+//-       // Botones de Acción Final
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/pacientes") Cancelar
+//-           button.btn.btn-primary.px-5.shadow#btnGuardar(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Cambios
+
+//-   script.
+//-     function marcarTelefonosModificados() {
+//-       const telMod = document.getElementById('tel-mod');
+//-       if(telMod) telMod.value = '1';
+//-     }
+
+//-     function agregarTelefono() {
+//-       marcarTelefonosModificados();
+//-       const container = document.getElementById('telefonosContainer');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 telefono-row animate__animated animate__fadeIn';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15">
+//-         <button class="btn btn-outline-danger btn-sm" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         const rows = document.querySelectorAll('.telefono-row');
+//-         if (rows.length === 1) {
+//-           alert('Debe tener al menos un teléfono de contacto');
+//-           return;
+//-         }
+//-         marcarTelefonosModificados();
+//-         div.remove();
+//-       };
+//-       div.querySelector('input').oninput = (e) => {
+//-         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+//-         marcarTelefonosModificados();
+//-       };
+//-       container.appendChild(div);
+//-     }
+
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const check = document.getElementById('editar_usuario');
+//-       const emailInput = document.getElementById('email');
+//-       const passInput = document.getElementById('password');
+//-       const emailOriginal = emailInput.value.trim();
+
+//-       if(check) {
+//-         check.addEventListener('change', () => {
+//-           emailInput.disabled = !check.checked;
+//-           passInput.disabled = !check.checked;
+//-           if (!check.checked) {
+//-             passInput.value = '';
+//-             emailInput.value = emailOriginal;
+//-             emailInput.classList.remove('is-invalid');
+//-           }
+//-         });
+//-       }
+
+//-       // Validación AJAX de Email duplicado
+//-       emailInput.addEventListener('blur', async () => {
+//-         const emailActual = emailInput.value.trim();
+        
+//-         // Si no cambió o está vacío, no validar
+//-         if (emailActual === emailOriginal || emailActual === "") {
+//-           emailInput.classList.remove('is-invalid');
+//-           return;
+//-         }
+
+//-         try {
+//-           const response = await fetch(`/pacientes/verificar-email/${encodeURIComponent(emailActual)}`);
+//-           const data = await response.json();
+          
+//-           if (data.existe) {
+//-             emailInput.setCustomValidity("Email duplicado");
+//-             emailInput.classList.add('is-invalid');
+//-           } else {
+//-             emailInput.setCustomValidity("");
+//-             emailInput.classList.remove('is-invalid');
+//-           }
+//-         } catch (error) {
+//-           console.error("Error al validar email:", error);
+//-         }
+//-       });
+
+//-       // Validación de Bootstrap y Duplicados
+//-       const form = document.getElementById('formPaciente');
+//-       form.addEventListener('submit', event => {
+//-         // Verificar teléfonos duplicados
+//-         const valores = [...document.querySelectorAll('.telefono-input')]
+//-           .map(i => i.value.trim())
+//-           .filter(Boolean);
+//-         const set = new Set(valores);
+        
+//-         if (set.size !== valores.length) {
+//-           event.preventDefault();
+//-           alert('No se permiten teléfonos duplicados');
+//-           return;
+//-         }
+
+//-         // Verificar si el email quedó marcado como inválido por el AJAX
+//-         if (emailInput.classList.contains('is-invalid')) {
+//-           event.preventDefault();
+//-           emailInput.focus();
+//-           return;
+//-         }
+
+//-         if (!form.checkValidity()) {
+//-           event.preventDefault();
+//-           event.stopPropagation();
+//-         }
+//-         form.classList.add('was-validated');
+//-       }, false);
+//-     });
+
+
+
+
+
 extends ../layout
 
 block contenido
+  //- Librerías necesarias
+  link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+  
   .container.mt-4.mb-5
-    // Encabezado
+    //- Encabezado
     .row.mb-4
       .col-12.d-flex.justify-content-between.align-items-center
         div
@@ -14,34 +549,36 @@ block contenido
           i.bi.bi-arrow-left.me-1
           | Volver al listado
 
-    // Botones de Estado (Alta/Baja)
+    //- Botones de Estado (Alta/Baja)
     .row.mb-3
       .col-12.d-flex.justify-content-end
         if paciente.estado == 1
-          form(method="POST" action=`/pacientes/inactivar/${paciente.id_paciente}`)
-            button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="submit")
+          form#formInactivar(method="POST" action=`/pacientes/inactivar/${paciente.id_paciente}`)
+            button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="button" onclick="confirmarEstado('inactivar')")
               i.bi.bi-person-x.me-1
               | Inactivar Paciente
         else
-          form(method="POST" action=`/pacientes/activar/${paciente.id_paciente}`)
-            button.btn.btn-success.btn-sm.px-3.shadow-sm(type="submit")
+          form#formActivar(method="POST" action=`/pacientes/activar/${paciente.id_paciente}`)
+            button.btn.btn-success.btn-sm.px-3.shadow-sm(type="button" onclick="confirmarEstado('activar')")
               i.bi.bi-person-check.me-1
               | Reactivar Paciente
 
-    // Formulario Principal
+    //- Formulario Principal
     form.needs-validation(
       action=`/pacientes/update/${paciente.id_paciente}`
       method="POST"
       id="formPaciente"
       novalidate
+      autocomplete="off"
     )
-      // Flags para detectar cambios (similar a médico)
+      //- Flags y Datos Ocultos
       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+      input(type="hidden" id="email-original" value=(paciente.email || ''))
 
       .row
-        // Columna Izquierda: Datos Personales y Usuario
+        //- Columna Izquierda: Datos Personales y Usuario
         .col-lg-8
-          // SECCIÓN 1: DATOS PERSONALES
+          //- SECCIÓN 1: DATOS PERSONALES
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3
               h5.card-title.mb-0.text-primary
@@ -60,23 +597,27 @@ block contenido
                 .col-md-3
                   label.form-label.fw-bold Nombre
                   input.form-control(type="text" name="nombre" value=paciente.nombre required)
-                  .invalid-feedback El nombre es requerido.
+                  .invalid-feedback Requerido.
                 
                 .col-md-3
                   label.form-label.fw-bold Apellido
                   input.form-control(type="text" name="apellido" value=paciente.apellido required)
-                  .invalid-feedback El apellido es requerido.
+                  .invalid-feedback Requerido.
 
                 .col-md-6
                   label.form-label.fw-bold Fecha de Nacimiento
+                  - const ayer = new Date(Date.now() - 86400000).toISOString().split('T')[0]
                   input.form-control(
                     type="date"
                     name="nacimiento"
+                    id="nacimiento"
+                    max=ayer
                     value=paciente.nacimiento ? (typeof paciente.nacimiento === 'string' ? paciente.nacimiento.split('T')[0] : paciente.nacimiento.toISOString().split('T')[0]) : ''
                     required
                   )
+                  .invalid-feedback#nacimiento-feedback Seleccione una fecha válida.
 
-          // SECCIÓN 2: USUARIO Y ACCESO
+          //- SECCIÓN 2: USUARIO Y ACCESO
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3
               h5.card-title.mb-0.text-primary
@@ -88,9 +629,9 @@ block contenido
                 label.form-check-label.fw-bold(for="editar_usuario") Habilitar edición de cuenta
               
               .row.g-3
-                .col-md-6
+                .col-md-12
                   label.form-label.fw-bold Email
-                  .input-group
+                  .input-group.has-validation
                     span.input-group-text @
                     input.form-control#email(
                       type="email"
@@ -99,20 +640,30 @@ block contenido
                       disabled
                       required
                     )
+                    .invalid-feedback#email-feedback Ingrese un email válido.
                 
                 .col-md-6
                   label.form-label.fw-bold Nueva Contraseña
                   input.form-control#password(
                     type="password"
                     name="password"
-                    placeholder="Solo si desea cambiarla"
+                    placeholder="Solo para cambiarla"
                     disabled
                   )
-                  small.text-muted Solo complete si desea actualizar la clave.
+                
+                .col-md-6
+                  label.form-label.fw-bold Confirmar Contraseña
+                  input.form-control#repeatPassword(
+                    type="password"
+                    name="repeatPassword"
+                    placeholder="Repita la nueva clave"
+                    disabled
+                  )
+                  .invalid-feedback#repeat-feedback Las contraseñas no coinciden.
 
-        // Columna Derecha: Obra Social y Teléfonos
+        //- Columna Derecha: Obra Social y Teléfonos
         .col-lg-4
-          // SECCIÓN 3: OBRA SOCIAL
+          //- SECCIÓN 3: OBRA SOCIAL
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3
               h5.card-title.mb-0.text-primary
@@ -128,7 +679,7 @@ block contenido
                     selected=(Number(os.id) === Number(paciente.id_obra_social))
                   )= os.nombre
 
-          // SECCIÓN 4: TELÉFONOS
+          //- SECCIÓN 4: TELÉFONOS
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
               h5.card-title.mb-0.text-primary
@@ -138,7 +689,6 @@ block contenido
                 i.bi.bi-plus-lg
             .card-body
               #telefonosContainer
-                // Lógica de teléfonos dinámica igual a la de médicos
                 if telefonos && telefonos.length
                   each numero in telefonos
                     .input-group.mb-2.telefono-row
@@ -148,8 +698,9 @@ block contenido
                         value=numero
                         maxlength="15"
                         oninput="marcarTelefonosModificados()"
+                        required
                       )
-                      button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+                      button.btn.btn-outline-danger.btn-sm(type="button" onclick="eliminarTelefono(this)")
                         i.bi.bi-trash
                 else
                   .input-group.mb-2.telefono-row
@@ -159,86 +710,177 @@ block contenido
                       placeholder="Número de teléfono"
                       maxlength="15"
                       oninput="marcarTelefonosModificados()"
+                      required
                     )
-                    button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+                    button.btn.btn-outline-danger.btn-sm(type="button" onclick="eliminarTelefono(this)")
                       i.bi.bi-trash
 
-      // Botones de Acción Final
+      //- Botones de Acción Final
       .row.mt-3
         .col-12.d-flex.justify-content-end.gap-2
           a.btn.btn-light.px-4(href="/pacientes") Cancelar
-          button.btn.btn-primary.px-5.shadow(type="submit")
+          button.btn.btn-primary.px-5.shadow.fw-bold#btnGuardar(type="submit")
             i.bi.bi-check-lg.me-1
             | Guardar Cambios
 
+  style.
+    .is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important; }
+    .is-valid { border-color: #198754 !important; }
+
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
+    let emailDuplicado = false;
+    let fechaInvalida = false;
+
+    const btnGuardar = document.getElementById('btnGuardar');
+    const emailInput = document.getElementById('email');
+    const emailOriginal = document.getElementById('email-original').value.trim();
+    const checkUser = document.getElementById('editar_usuario');
+    const password = document.getElementById('password');
+    const repeatPassword = document.getElementById('repeatPassword');
+    const nacimientoInput = document.getElementById('nacimiento');
+
+    function validarFormulario() {
+        let passMatch = true;
+        if (checkUser.checked && (password.value !== "" || repeatPassword.value !== "")) {
+            passMatch = (password.value === repeatPassword.value);
+            if (!passMatch) {
+                repeatPassword.classList.add('is-invalid');
+            } else {
+                repeatPassword.classList.remove('is-invalid');
+                repeatPassword.classList.add('is-valid');
+            }
+        }
+        btnGuardar.disabled = emailDuplicado || fechaInvalida || !passMatch;
+    }
+
+    // --- Manejo del Switch de Usuario ---
+    checkUser.addEventListener('change', () => {
+        emailInput.disabled = !checkUser.checked;
+        password.disabled = !checkUser.checked;
+        repeatPassword.disabled = !checkUser.checked;
+        if (!checkUser.checked) {
+            password.value = '';
+            repeatPassword.value = '';
+            emailInput.value = emailOriginal;
+            emailInput.classList.remove('is-invalid', 'is-valid');
+            emailDuplicado = false;
+        }
+        validarFormulario();
+    });
+
+    // --- Validación de Fecha ---
+    nacimientoInput.addEventListener('input', function() {
+        const fechaNac = new Date(this.value);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const m = hoy.getMonth() - fechaNac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) edad--;
+
+        const feedback = document.getElementById('nacimiento-feedback');
+        if (this.value === "" || fechaNac >= hoy || edad > 110) {
+            fechaInvalida = true;
+            this.classList.add('is-invalid');
+            feedback.textContent = edad > 110 ? "Máximo 110 años." : "Fecha no válida.";
+        } else {
+            fechaInvalida = false;
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+        validarFormulario();
+    });
+
+    // --- Gestión de Teléfonos ---
     function marcarTelefonosModificados() {
-      const telMod = document.getElementById('tel-mod');
-      if(telMod) telMod.value = '1';
+        document.getElementById('tel-mod').value = '1';
     }
 
     function agregarTelefono() {
-      marcarTelefonosModificados();
-      const container = document.getElementById('telefonosContainer');
-      const div = document.createElement('div');
-      div.className = 'input-group mb-2 telefono-row animate__animated animate__fadeIn';
-      div.innerHTML = `
-        <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15">
-        <button class="btn btn-outline-danger btn-sm" type="button">
-          <i class="bi bi-trash"></i>
-        </button>
-      `;
-      div.querySelector('button').onclick = () => {
-        const rows = document.querySelectorAll('.telefono-row');
-        if (rows.length === 1) {
-          alert('Debe tener al menos un teléfono de contacto');
-          return;
-        }
         marcarTelefonosModificados();
-        div.remove();
-      };
-      // Forzar solo números en el nuevo input
-      div.querySelector('input').oninput = (e) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        marcarTelefonosModificados();
-      };
-      container.appendChild(div);
+        const container = document.getElementById('telefonosContainer');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2 telefono-row animate__animated animate__fadeIn';
+        div.innerHTML = `
+            <input class="form-control form-control-sm telefono-input" type="text" name="telefonos" placeholder="Número" maxlength="15" required>
+            <button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarTelefono(this)">
+                <i class="bi bi-trash"></i>
+            </button>`;
+        div.querySelector('input').oninput = (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            marcarTelefonosModificados();
+        };
+        container.appendChild(div);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      // Toggle de Usuario
-      const check = document.getElementById('editar_usuario');
-      const emailInput = document.getElementById('email');
-      const passInput = document.getElementById('password');
+    function eliminarTelefono(btn) {
+        if (document.querySelectorAll('.telefono-row').length === 1) {
+            alert('Debe tener al menos un teléfono');
+            return;
+        }
+        marcarTelefonosModificados();
+        btn.closest('.telefono-row').remove();
+    }
 
-      if(check) {
-        check.addEventListener('change', () => {
-          emailInput.disabled = !check.checked;
-          passInput.disabled = !check.checked;
-          if (!check.checked) passInput.value = '';
+    // --- Validación Email AJAX ---
+    emailInput.addEventListener('blur', async () => {
+        const emailActual = emailInput.value.trim();
+        if (emailActual === emailOriginal || emailActual === "") {
+            emailInput.classList.remove('is-invalid');
+            emailDuplicado = false;
+            validarFormulario();
+            return;
+        }
+        try {
+            const res = await fetch(`/pacientes/verificar-email/${encodeURIComponent(emailActual)}`);
+            const data = await res.json();
+            emailDuplicado = data.existe;
+            emailInput.classList.toggle('is-invalid', data.existe);
+            emailInput.classList.toggle('is-valid', !data.existe);
+            validarFormulario();
+        } catch (e) { console.error(e); }
+    });
+
+    password.addEventListener('input', validarFormulario);
+    repeatPassword.addEventListener('input', validarFormulario);
+
+    // --- Confirmación de Estado (Activar/Inactivar) ---
+    function confirmarEstado(accion) {
+        Swal.fire({
+            title: `¿Confirma ${accion} al paciente?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: accion === 'inactivar' ? '#dc3545' : '#198754',
+            confirmButtonText: 'Sí, confirmar'
+        }).then((result) => {
+            if (result.isConfirmed) document.getElementById(accion === 'inactivar' ? 'formInactivar' : 'formActivar').submit();
         });
-      }
+    }
 
-      // Validación de Bootstrap y Duplicados
-      const forms = document.querySelectorAll('.needs-validation');
-      Array.prototype.slice.call(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-          const valores = [...document.querySelectorAll('.telefono-input')]
-            .map(i => i.value.trim())
-            .filter(Boolean);
-          const set = new Set(valores);
-          
-          if (set.size !== valores.length) {
-            event.preventDefault();
+    // --- Envío de Formulario ---
+    document.getElementById('formPaciente').onsubmit = function(e) {
+        e.preventDefault();
+        const tels = [...document.querySelectorAll('.telefono-input')].map(i => i.value.trim()).filter(Boolean);
+        if (new Set(tels).size !== tels.length) {
             alert('No se permiten teléfonos duplicados');
             return;
-          }
+        }
 
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add('was-validated');
-        }, false);
-      });
-    });
+        if (!this.checkValidity() || emailDuplicado || fechaInvalida) {
+            this.classList.add('was-validated');
+            return;
+        }
+
+        Swal.fire({
+            title: '¿Guardar cambios?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0d6efd',
+            confirmButtonText: 'Sí, guardar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+                this.submit();
+            }
+        });
+    };

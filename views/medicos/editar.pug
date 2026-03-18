@@ -1,6 +1,841 @@
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4.mb-5
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-badge-fill.me-2
+//-             | Editar Médico
+//-           p.text-muted Actualice la información del profesional y sus credenciales.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/medicos")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     // Botones de Estado (Alta/Baja)
+//-     .row.mb-3
+//-       .col-12.d-flex.justify-content-end
+//-         if medico.estado == 1
+//-           form(method="POST" action=`/medicos/inactivar/${medico.id_medico}`)
+//-             button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-x.me-1
+//-               | Dar de Baja al Médico
+//-         else
+//-           form(method="POST" action=`/medicos/activar/${medico.id_medico}`)
+//-             button.btn.btn-success.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-check.me-1
+//-               | Reactivar Médico
+
+//-     // Formulario Principal
+//-     form.needs-validation(
+//-       action=`/medicos/update/${medico.id_medico}`
+//-       method="POST"
+//-       novalidate
+//-       autocomplete="off"
+//-     )
+//-       // ID y Flags ocultos - Usando usuarioMedico para evitar conflicto con sesión
+//-       input(type="hidden" name="id_persona" value=persona.id)
+//-       input(type="hidden" name="id_usuario" value=(usuarioMedico ? usuarioMedico.id : ''))
+//-       input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
+//-       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+
+//-       .row
+//-         // Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           // SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" value=persona.nombre required)
+//-                   .invalid-feedback Ingrese el nombre.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" value=persona.apellido required)
+//-                   .invalid-feedback Ingrese el apellido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(
+//-                     type="date"
+//-                     name="nacimiento"
+//-                     value=persona.nacimiento ? persona.nacimiento.toISOString().split('T')[0] : ''
+//-                     required
+//-                   )
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Matrícula Profesional
+//-                   input.form-control(type="text" name="matricula" value=medico.matricula required)
+//-                   .invalid-feedback La matrícula es obligatoria.
+
+//-           // SECCIÓN 2: USUARIO Y ACCESO (CORREGIDO)
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     //- Se usa usuarioMedico para mostrar el correo del médico, no del admin
+//-                     input.form-control(
+//-                       type="email" 
+//-                       name="email" 
+//-                       value=(usuarioMedico ? usuarioMedico.email : '') 
+//-                       required
+//-                       autocomplete="one-time-code"
+//-                     )
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Cambiar Contraseña
+//-                   input.form-control(
+//-                     type="password"
+//-                     name="password"
+//-                     placeholder="Dejar en blanco para no cambiar"
+//-                     autocomplete="new-password"
+//-                   )
+//-                   small.text-muted Solo complete si desea actualizar la clave.
+
+//-         // Columna Derecha: Especialidades y Teléfonos
+//-         .col-lg-4
+//-           // SECCIÓN 3: ESPECIALIDADES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-stethoscope.me-2
+//-                 | Especialidades
+//-             .card-body
+//-               #especialidades-container.mb-3
+//-                 each esp in especialidadesAsignadas
+//-                   .badge.bg-light.text-dark.border.d-flex.justify-content-between.align-items-center.p-2.mb-2.w-100(style="font-size: 0.9rem;")
+//-                     span= esp.nombre
+//-                     input(type="hidden" name="especialidades" value=esp.id_especialidad)
+//-                     button.btn-close(type="button" onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()")
+              
+//-               hr
+//-               label.form-label.small.fw-bold Agregar Nueva
+//-               .input-group
+//-                 select.form-select.form-select-sm#select-especialidad
+//-                   option(value="") Seleccionar...
+//-                   each esp in especialidades
+//-                     option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+//-                 button.btn.btn-primary.btn-sm(type="button" onclick="agregarEspecialidad()") 
+//-                   i.bi.bi-plus-lg
+
+//-           // SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonos-container
+//-                 if medico.telefonos
+//-                   each tel in medico.telefonos.split(', ')
+//-                     if tel.trim()
+//-                       .input-group.mb-2
+//-                         input.form-control.form-control-sm(
+//-                           type="text"
+//-                           name="telefonos"
+//-                           value=tel.trim()
+//-                           oninput="marcarTelefonosModificados()"
+//-                         )
+//-                         button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                           i.bi.bi-trash
+
+//-       // Botones de Acción
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/medicos") Cancelar
+//-           button.btn.btn-primary.px-5.shadow(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Cambios
+
+//-   // Script de funcionalidad
+//-   script.
+//-     function marcarEspecialidadesModificadas() {
+//-       document.getElementById('esp-mod').value = '1';
+//-     }
+
+//-     function marcarTelefonosModificados() {
+//-       document.getElementById('tel-mod').value = '1';
+//-     }
+
+//-     function agregarTelefono() {
+//-       marcarTelefonosModificados();
+//-       const cont = document.getElementById('telefonos-container');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2 animate__animated animate__fadeIn';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm" type="text" name="telefonos" placeholder="Número">
+//-         <button class="btn btn-outline-danger btn-sm" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         marcarTelefonosModificados();
+//-         div.remove();
+//-       };
+//-       cont.appendChild(div);
+//-     }
+
+//-     function agregarEspecialidad() {
+//-       const select = document.getElementById('select-especialidad');
+//-       const id = select.value;
+//-       if (!id) return;
+
+//-       marcarEspecialidadesModificadas();
+//-       const nombre = select.options[select.selectedIndex].dataset.nombre;
+//-       const cont = document.getElementById('especialidades-container');
+
+//-       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) {
+//-         alert('Esta especialidad ya ha sido agregada.');
+//-         return;
+//-       }
+
+//-       const div = document.createElement('div');
+//-       div.className = 'badge bg-light text-dark border d-flex justify-content-between align-items-center p-2 mb-2 w-100 animate__animated animate__fadeIn';
+//-       div.style.fontSize = '0.9rem';
+//-       div.innerHTML = `
+//-         <span>${nombre}</span>
+//-         <input type="hidden" name="especialidades" value="${id}">
+//-         <button class="btn-close" type="button"></button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         marcarEspecialidadesModificadas();
+//-         div.remove();
+//-       };
+//-       cont.appendChild(div);
+//-       select.value = '';
+//-     }
+
+//-     (function () {
+//-       'use strict'
+//-       var forms = document.querySelectorAll('.needs-validation')
+//-       Array.prototype.slice.call(forms).forEach(function (form) {
+//-         form.addEventListener('submit', function (event) {
+//-           if (!form.checkValidity()) {
+//-             event.preventDefault()
+//-             event.stopPropagation()
+//-           }
+//-           form.classList.add('was-validated')
+//-         }, false)
+//-       })
+//-     })()
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4.mb-5
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-badge-fill.me-2
+//-             | Editar Médico
+//-           p.text-muted Actualice la información del profesional y sus credenciales.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/medicos")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     // Botones de Estado (Alta/Baja)
+//-     .row.mb-3
+//-       .col-12.d-flex.justify-content-end
+//-         if medico.estado == 1
+//-           form(method="POST" action=`/medicos/inactivar/${medico.id_medico}`)
+//-             button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-x.me-1
+//-               | Dar de Baja al Médico
+//-         else
+//-           form(method="POST" action=`/medicos/activar/${medico.id_medico}`)
+//-             button.btn.btn-success.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-check.me-1
+//-               | Reactivar Médico
+
+//-     // Formulario Principal
+//-     form#formEditarMedico.needs-validation(
+//-       action=`/medicos/update/${medico.id_medico}`
+//-       method="POST"
+//-       novalidate
+//-       autocomplete="off"
+//-     )
+//-       // ID y Flags ocultos
+//-       input(type="hidden" name="id_persona" value=persona.id)
+//-       input(type="hidden" name="id_usuario" value=(usuarioMedico ? usuarioMedico.id : ''))
+//-       input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
+//-       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+//-       // Guardamos el email original para no validar si no cambia
+//-       input(type="hidden" id="original-email" value=(usuarioMedico ? usuarioMedico.email : ''))
+
+//-       .row
+//-         // Columna Izquierda: Datos Personales y Usuario
+//-         .col-lg-8
+//-           // SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" value=persona.nombre required)
+//-                   .invalid-feedback Ingrese el nombre.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" value=persona.apellido required)
+//-                   .invalid-feedback Ingrese el apellido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(
+//-                     type="date"
+//-                     name="nacimiento"
+//-                     value=persona.nacimiento ? persona.nacimiento.toISOString().split('T')[0] : ''
+//-                     required
+//-                   )
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Matrícula Profesional
+//-                   input.form-control(type="text" name="matricula" value=medico.matricula required)
+//-                   .invalid-feedback La matrícula es obligatoria.
+
+//-           // SECCIÓN 2: USUARIO Y ACCESO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control#email(
+//-                       type="email" 
+//-                       name="email" 
+//-                       value=(usuarioMedico ? usuarioMedico.email : '') 
+//-                       required
+//-                       autocomplete="off"
+//-                     )
+//-                     .invalid-feedback#email-feedback Ingrese un email válido.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Cambiar Contraseña
+//-                   input.form-control(
+//-                     type="password"
+//-                     name="password"
+//-                     placeholder="Dejar en blanco para no cambiar"
+//-                     autocomplete="new-password"
+//-                   )
+//-                   small.text-muted Solo complete si desea actualizar la clave.
+
+//-         // Columna Derecha: Especialidades y Teléfonos
+//-         .col-lg-4
+//-           // SECCIÓN 3: ESPECIALIDADES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-stethoscope.me-2
+//-                 | Especialidades
+//-             .card-body
+//-               #especialidades-container.mb-3
+//-                 each esp in especialidadesAsignadas
+//-                   .badge.bg-light.text-dark.border.d-flex.justify-content-between.align-items-center.p-2.mb-2.w-100(style="font-size: 0.9rem;")
+//-                     span= esp.nombre
+//-                     input(type="hidden" name="especialidades" value=esp.id_especialidad)
+//-                     button.btn-close(type="button" onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()")
+              
+//-               hr
+//-               label.form-label.small.fw-bold Agregar Nueva
+//-               .input-group
+//-                 select.form-select.form-select-sm#select-especialidad
+//-                   option(value="") Seleccionar...
+//-                   each esp in especialidades
+//-                     option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+//-                 button.btn.btn-primary.btn-sm(type="button" onclick="agregarEspecialidad()") 
+//-                   i.bi.bi-plus-lg
+
+//-           // SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonos-container
+//-                 if medico.telefonos
+//-                   each tel in medico.telefonos.split(', ')
+//-                     if tel.trim()
+//-                       .input-group.mb-2
+//-                         input.form-control.form-control-sm(
+//-                           type="text"
+//-                           name="telefonos"
+//-                           value=tel.trim()
+//-                           oninput="marcarTelefonosModificados()"
+//-                         )
+//-                         button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                           i.bi.bi-trash
+
+//-       // Botones de Acción
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/medicos") Cancelar
+//-           button.btn.btn-primary.px-5.shadow(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Cambios
+
+//-   script.
+//-     let emailDuplicado = false;
+
+//-     // --- VALIDACIÓN DE EMAIL DUPLICADO ---
+//-     document.getElementById('email').addEventListener('blur', async function() {
+//-         const email = this.value.trim();
+//-         const emailOriginal = document.getElementById('original-email').value;
+//-         const feedback = document.getElementById('email-feedback');
+        
+//-         // Si no cambió el email o está vacío, no validar
+//-         if (!email || email === emailOriginal || !this.checkValidity()) {
+//-             this.classList.remove('is-invalid');
+//-             emailDuplicado = false;
+//-             return;
+//-         }
+
+//-         try {
+//-             const res = await fetch(`/medicos/verificar-email/${encodeURIComponent(email)}`);
+//-             if (res.ok) {
+//-                 const data = await res.json();
+//-                 if (data.existe) {
+//-                     emailDuplicado = true;
+//-                     this.classList.add('is-invalid');
+//-                     feedback.textContent = "Este correo ya está en uso por otro usuario.";
+//-                 } else {
+//-                     emailDuplicado = false;
+//-                     this.classList.remove('is-invalid');
+//-                 }
+//-             }
+//-         } catch (e) { console.error("Error validando email"); }
+//-     });
+
+//-     function marcarEspecialidadesModificadas() {
+//-       document.getElementById('esp-mod').value = '1';
+//-     }
+
+//-     function marcarTelefonosModificados() {
+//-       document.getElementById('tel-mod').value = '1';
+//-     }
+
+//-     function agregarTelefono() {
+//-       marcarTelefonosModificados();
+//-       const cont = document.getElementById('telefonos-container');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm" type="text" name="telefonos" placeholder="Número">
+//-         <button class="btn btn-outline-danger btn-sm" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         marcarTelefonosModificados();
+//-         div.remove();
+//-       };
+//-       cont.appendChild(div);
+//-     }
+
+//-     function agregarEspecialidad() {
+//-       const select = document.getElementById('select-especialidad');
+//-       const id = select.value;
+//-       if (!id) return;
+//-       marcarEspecialidadesModificadas();
+//-       const nombre = select.options[select.selectedIndex].dataset.nombre;
+//-       const cont = document.getElementById('especialidades-container');
+//-       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
+
+//-       const div = document.createElement('div');
+//-       div.className = 'badge bg-light text-dark border d-flex justify-content-between align-items-center p-2 mb-2 w-100';
+//-       div.style.fontSize = '0.9rem';
+//-       div.innerHTML = `
+//-         <span>${nombre}</span>
+//-         <input type="hidden" name="especialidades" value="${id}">
+//-         <button class="btn-close" type="button"></button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         marcarEspecialidadesModificadas();
+//-         div.remove();
+//-       };
+//-       cont.appendChild(div);
+//-       select.value = '';
+//-     }
+
+//-     // Validación Bootstrap y Bloqueo si hay duplicado
+//-     (function () {
+//-       'use strict'
+//-       var form = document.getElementById('formEditarMedico')
+//-       form.addEventListener('submit', function (event) {
+//-         if (!form.checkValidity() || emailDuplicado) {
+//-           event.preventDefault()
+//-           event.stopPropagation()
+//-           if(emailDuplicado) document.getElementById('email').focus();
+//-         }
+//-         form.classList.add('was-validated')
+//-       }, false)
+//-     })()
+
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   .container.mt-4.mb-5
+//-     // Encabezado
+//-     .row.mb-4
+//-       .col-12.d-flex.justify-content-between.align-items-center
+//-         div
+//-           h2.fw-bold.text-primary 
+//-             i.bi.bi-person-badge-fill.me-2
+//-             | Editar Médico
+//-           p.text-muted Actualice la información del profesional y sus credenciales.
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/medicos")
+//-           i.bi.bi-arrow-left.me-1
+//-           | Volver al listado
+
+//-     // Botones de Estado (Alta/Baja)
+//-     .row.mb-3
+//-       .col-12.d-flex.justify-content-end
+//-         if medico.estado == 1
+//-           form(method="POST" action=`/medicos/inactivar/${medico.id_medico}`)
+//-             button.btn.btn-danger.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-x.me-1
+//-               | Dar de Baja al Médico
+//-         else
+//-           form(method="POST" action=`/medicos/activar/${medico.id_medico}`)
+//-             button.btn.btn-success.btn-sm.px-3.shadow-sm(type="submit")
+//-               i.bi.bi-person-check.me-1
+//-               | Reactivar Médico
+
+//-     // Formulario Principal
+//-     form#formEditarMedico.needs-validation(
+//-       action=`/medicos/update/${medico.id_medico}`
+//-       method="POST"
+//-       novalidate
+//-       autocomplete="off"
+//-     )
+//-       // ID y Flags ocultos
+//-       input(type="hidden" name="id_persona" value=persona.id)
+//-       input(type="hidden" name="id_usuario" value=(usuarioMedico ? usuarioMedico.id : ''))
+//-       input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
+//-       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+//-       input(type="hidden" id="original-email" value=(usuarioMedico ? usuarioMedico.email : ''))
+
+//-       .row
+//-         .col-lg-8
+//-           // SECCIÓN 1: DATOS PERSONALES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-person-lines-fill.me-2
+//-                 | Información Personal
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Nombre
+//-                   input.form-control(type="text" name="nombre" value=persona.nombre required)
+//-                   .invalid-feedback Ingrese el nombre.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Apellido
+//-                   input.form-control(type="text" name="apellido" value=persona.apellido required)
+//-                   .invalid-feedback Ingrese el apellido.
+
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Fecha de Nacimiento
+//-                   input.form-control(
+//-                     type="date"
+//-                     name="nacimiento"
+//-                     value=persona.nacimiento ? persona.nacimiento.toISOString().split('T')[0] : ''
+//-                     required
+//-                   )
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Matrícula Profesional
+//-                   input.form-control(type="text" name="matricula" value=medico.matricula required)
+//-                   .invalid-feedback La matrícula es obligatoria.
+
+//-           // SECCIÓN 2: USUARIO Y ACCESO
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-shield-lock-fill.me-2
+//-                 | Credenciales de Acceso
+//-             .card-body
+//-               .row.g-3
+//-                 .col-md-12
+//-                   label.form-label.fw-bold Correo Electrónico
+//-                   .input-group
+//-                     span.input-group-text @
+//-                     input.form-control#email(
+//-                       type="email" 
+//-                       name="email" 
+//-                       value=(usuarioMedico ? usuarioMedico.email : '') 
+//-                       required
+//-                       autocomplete="off"
+//-                     )
+//-                     .invalid-feedback#email-feedback Ingrese un email válido.
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Cambiar Contraseña
+//-                   input.form-control#password(
+//-                     type="password"
+//-                     name="password"
+//-                     placeholder="Dejar en blanco para no cambiar"
+//-                     autocomplete="new-password"
+//-                   )
+                
+//-                 .col-md-6
+//-                   label.form-label.fw-bold Confirmar Contraseña
+//-                   input.form-control#repeatPassword(
+//-                     type="password"
+//-                     name="repeatPassword"
+//-                     placeholder="Repita la nueva contraseña"
+//-                   )
+//-                   .invalid-feedback#repeat-feedback Las contraseñas no coinciden.
+//-                 .col-12
+//-                   small.text-muted Solo complete si desea actualizar la clave.
+
+//-         .col-lg-4
+//-           // SECCIÓN 3: ESPECIALIDADES
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-stethoscope.me-2
+//-                 | Especialidades
+//-             .card-body
+//-               #especialidades-container.mb-3
+//-                 each esp in especialidadesAsignadas
+//-                   .badge.bg-light.text-dark.border.d-flex.justify-content-between.align-items-center.p-2.mb-2.w-100(style="font-size: 0.9rem;")
+//-                     span= esp.nombre
+//-                     input(type="hidden" name="especialidades" value=esp.id_especialidad)
+//-                     button.btn-close(type="button" onclick="marcarEspecialidadesModificadas(); this.parentElement.remove()")
+              
+//-               hr
+//-               label.form-label.small.fw-bold Agregar Nueva
+//-               .input-group
+//-                 select.form-select.form-select-sm#select-especialidad
+//-                   option(value="") Seleccionar...
+//-                   each esp in especialidades
+//-                     option(value=esp.id data-nombre=esp.nombre)= esp.nombre
+//-                 button.btn.btn-primary.btn-sm(type="button" onclick="agregarEspecialidad()") 
+//-                   i.bi.bi-plus-lg
+
+//-           // SECCIÓN 4: TELÉFONOS
+//-           .card.border-0.shadow-sm.mb-4
+//-             .card-header.bg-white.py-3.d-flex.justify-content-between.align-items-center
+//-               h5.card-title.mb-0.text-primary
+//-                 i.bi.bi-telephone-fill.me-2
+//-                 | Contactos
+//-               button.btn.btn-sm.btn-outline-success(type="button" onclick="agregarTelefono()")
+//-                 i.bi.bi-plus-lg
+//-             .card-body
+//-               #telefonos-container
+//-                 if medico.telefonos
+//-                   each tel in medico.telefonos.split(', ')
+//-                     if tel.trim()
+//-                       .input-group.mb-2
+//-                         input.form-control.form-control-sm(
+//-                           type="text"
+//-                           name="telefonos"
+//-                           value=tel.trim()
+//-                           oninput="marcarTelefonosModificados()"
+//-                         )
+//-                         button.btn.btn-outline-danger.btn-sm(type="button" onclick="marcarTelefonosModificados(); this.parentElement.remove()")
+//-                           i.bi.bi-trash
+
+//-       // Botones de Acción
+//-       .row.mt-3
+//-         .col-12.d-flex.justify-content-end.gap-2
+//-           a.btn.btn-light.px-4(href="/medicos") Cancelar
+//-           button#btnGuardar.btn.btn-primary.px-5.shadow(type="submit")
+//-             i.bi.bi-check-lg.me-1
+//-             | Guardar Cambios
+
+//-   script.
+//-     let emailDuplicado = false;
+//-     const btnGuardar = document.getElementById('btnGuardar');
+//-     const pass = document.getElementById('password');
+//-     const repeat = document.getElementById('repeatPassword');
+//-     const emailInput = document.getElementById('email');
+
+//-     // --- FUNCIÓN UNIFICADA DE VALIDACIÓN ---
+//-     function checkValidity() {
+//-         let passError = false;
+
+//-         // Si escribió algo en la contraseña, debe coincidir
+//-         if (pass.value.length > 0 || repeat.value.length > 0) {
+//-             if (pass.value !== repeat.value) {
+//-                 repeat.classList.add('is-invalid');
+//-                 passError = true;
+//-             } else {
+//-                 repeat.classList.remove('is-invalid');
+//-                 repeat.classList.add('is-valid');
+//-             }
+//-         } else {
+//-             // Si están vacíos, no hay error (no se cambia la clave)
+//-             repeat.classList.remove('is-invalid');
+//-             repeat.classList.remove('is-valid');
+//-         }
+
+//-         // Bloquear botón si hay email duplicado o error en passwords
+//-         btnGuardar.disabled = emailDuplicado || passError;
+//-     }
+
+//-     // Escuchar inputs en tiempo real
+//-     pass.addEventListener('input', checkValidity);
+//-     repeat.addEventListener('input', checkValidity);
+
+//-     // --- VALIDACIÓN DE EMAIL DUPLICADO ---
+//-     emailInput.addEventListener('blur', async function() {
+//-         const email = this.value.trim();
+//-         const emailOriginal = document.getElementById('original-email').value;
+//-         const feedback = document.getElementById('email-feedback');
+        
+//-         if (!email || email === emailOriginal || !this.checkValidity()) {
+//-             this.classList.remove('is-invalid');
+//-             emailDuplicado = false;
+//-             checkValidity();
+//-             return;
+//-         }
+
+//-         try {
+//-             const res = await fetch(`/medicos/verificar-email/${encodeURIComponent(email)}`);
+//-             const data = await res.json();
+//-             if (data.existe) {
+//-                 emailDuplicado = true;
+//-                 this.classList.add('is-invalid');
+//-                 feedback.textContent = "Este correo ya está en uso por otro usuario.";
+//-             } else {
+//-                 emailDuplicado = false;
+//-                 this.classList.remove('is-invalid');
+//-                 this.classList.add('is-valid');
+//-             }
+//-             checkValidity();
+//-         } catch (e) { console.error("Error validando email"); }
+//-     });
+
+//-     function marcarEspecialidadesModificadas() {
+//-       document.getElementById('esp-mod').value = '1';
+//-     }
+
+//-     function marcarTelefonosModificados() {
+//-       document.getElementById('tel-mod').value = '1';
+//-     }
+
+//-     function agregarTelefono() {
+//-       marcarTelefonosModificados();
+//-       const cont = document.getElementById('telefonos-container');
+//-       const div = document.createElement('div');
+//-       div.className = 'input-group mb-2';
+//-       div.innerHTML = `
+//-         <input class="form-control form-control-sm" type="text" name="telefonos" placeholder="Número">
+//-         <button class="btn btn-outline-danger btn-sm" type="button">
+//-           <i class="bi bi-trash"></i>
+//-         </button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         marcarTelefonosModificados();
+//-         div.remove();
+//-       };
+//-       cont.appendChild(div);
+//-     }
+
+//-     function agregarEspecialidad() {
+//-       const select = document.getElementById('select-especialidad');
+//-       const id = select.value;
+//-       if (!id) return;
+//-       marcarEspecialidadesModificadas();
+//-       const nombre = select.options[select.selectedIndex].dataset.nombre;
+//-       const cont = document.getElementById('especialidades-container');
+//-       if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
+
+//-       const div = document.createElement('div');
+//-       div.className = 'badge bg-light text-dark border d-flex justify-content-between align-items-center p-2 mb-2 w-100';
+//-       div.style.fontSize = '0.9rem';
+//-       div.innerHTML = `
+//-         <span>${nombre}</span>
+//-         <input type="hidden" name="especialidades" value="${id}">
+//-         <button class="btn-close" type="button"></button>
+//-       `;
+//-       div.querySelector('button').onclick = () => {
+//-         marcarEspecialidadesModificadas();
+//-         div.remove();
+//-       };
+//-       cont.appendChild(div);
+//-       select.value = '';
+//-     }
+
+//-     // Validación final al enviar
+//-     document.getElementById('formEditarMedico').addEventListener('submit', function (event) {
+//-       if (!this.checkValidity() || emailDuplicado || (pass.value !== repeatPassword.value)) {
+//-         event.preventDefault();
+//-         event.stopPropagation();
+//-       }
+//-       this.classList.add('was-validated');
+//-     }, false);
+
+
+
+
+
 extends ../layout
 
 block contenido
+  style.
+    .page-header { border-bottom: 2px solid #e9ecef; padding-bottom: 1rem; }
+    .card-custom {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .form-label { font-weight: 600; color: #495057; font-size: 0.85rem; margin-bottom: 4px; }
+    .section-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+    .btn-primary-custom {
+      background-color: #3498db;
+      color: white; border: none; padding: 10px 25px;
+      border-radius: 6px; font-weight: bold;
+      transition: all 0.3s;
+    }
+    .btn-primary-custom:hover { background-color: #2980b9; }
+    .btn-primary-custom:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+    .is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important; }
+    .is-valid { border-color: #198754 !important; }
+
   .container.mt-4.mb-5
     // Encabezado
     .row.mb-4
@@ -29,20 +864,21 @@ block contenido
               | Reactivar Médico
 
     // Formulario Principal
-    form.needs-validation(
+    form#formEditarMedico(
       action=`/medicos/update/${medico.id_medico}`
       method="POST"
       novalidate
       autocomplete="off"
     )
-      // ID y Flags ocultos - Usando usuarioMedico para evitar conflicto con sesión
+      // ID y Flags ocultos
       input(type="hidden" name="id_persona" value=persona.id)
       input(type="hidden" name="id_usuario" value=(usuarioMedico ? usuarioMedico.id : ''))
       input(type="hidden" name="especialidades_modificadas" value="0" id="esp-mod")
       input(type="hidden" name="telefonos_modificados" value="0" id="tel-mod")
+      input(type="hidden" id="original-email" value=(usuarioMedico ? usuarioMedico.email : ''))
+      input(type="hidden" id="original-matricula" value=medico.matricula)
 
       .row
-        // Columna Izquierda: Datos Personales y Usuario
         .col-lg-8
           // SECCIÓN 1: DATOS PERSONALES
           .card.border-0.shadow-sm.mb-4
@@ -64,19 +900,22 @@ block contenido
 
                 .col-md-6
                   label.form-label.fw-bold Fecha de Nacimiento
-                  input.form-control(
+                  - const today = new Date().toISOString().split('T')[0]
+                  input.form-control#nacimiento(
                     type="date"
                     name="nacimiento"
                     value=persona.nacimiento ? persona.nacimiento.toISOString().split('T')[0] : ''
+                    max=today
                     required
                   )
+                  .invalid-feedback#nacimiento-feedback Seleccione una fecha válida (mínimo 22 años).
                 
                 .col-md-6
                   label.form-label.fw-bold Matrícula Profesional
-                  input.form-control(type="text" name="matricula" value=medico.matricula required)
-                  .invalid-feedback La matrícula es obligatoria.
+                  input.form-control#matricula(type="text" name="matricula" value=medico.matricula required)
+                  .invalid-feedback#matricula-feedback Ingrese la matrícula.
 
-          // SECCIÓN 2: USUARIO Y ACCESO (CORREGIDO)
+          // SECCIÓN 2: USUARIO Y ACCESO
           .card.border-0.shadow-sm.mb-4
             .card-header.bg-white.py-3
               h5.card-title.mb-0.text-primary
@@ -84,30 +923,37 @@ block contenido
                 | Credenciales de Acceso
             .card-body
               .row.g-3
-                .col-md-6
+                .col-md-12
                   label.form-label.fw-bold Correo Electrónico
                   .input-group
                     span.input-group-text @
-                    //- Se usa usuarioMedico para mostrar el correo del médico, no del admin
-                    input.form-control(
+                    input.form-control#email(
                       type="email" 
                       name="email" 
                       value=(usuarioMedico ? usuarioMedico.email : '') 
                       required
-                      autocomplete="one-time-code"
                     )
+                    .invalid-feedback#email-feedback Ingrese un email válido.
                 
                 .col-md-6
                   label.form-label.fw-bold Cambiar Contraseña
-                  input.form-control(
+                  input.form-control#password(
                     type="password"
                     name="password"
                     placeholder="Dejar en blanco para no cambiar"
-                    autocomplete="new-password"
                   )
+                
+                .col-md-6
+                  label.form-label.fw-bold Confirmar Contraseña
+                  input.form-control#repeatPassword(
+                    type="password"
+                    name="repeatPassword"
+                    placeholder="Repita la nueva contraseña"
+                  )
+                  .invalid-feedback#repeat-feedback Las contraseñas no coinciden.
+                .col-12
                   small.text-muted Solo complete si desea actualizar la clave.
 
-        // Columna Derecha: Especialidades y Teléfonos
         .col-lg-4
           // SECCIÓN 3: ESPECIALIDADES
           .card.border-0.shadow-sm.mb-4
@@ -132,6 +978,7 @@ block contenido
                     option(value=esp.id data-nombre=esp.nombre)= esp.nombre
                 button.btn.btn-primary.btn-sm(type="button" onclick="agregarEspecialidad()") 
                   i.bi.bi-plus-lg
+              #especialidad-error-msg.text-danger.small.mt-1.d-none Debe agregar al menos una especialidad.
 
           // SECCIÓN 4: TELÉFONOS
           .card.border-0.shadow-sm.mb-4
@@ -160,35 +1007,141 @@ block contenido
       .row.mt-3
         .col-12.d-flex.justify-content-end.gap-2
           a.btn.btn-light.px-4(href="/medicos") Cancelar
-          button.btn.btn-primary.px-5.shadow(type="submit")
+          button#btnGuardar.btn.btn-primary.px-5.shadow(type="submit")
             i.bi.bi-check-lg.me-1
             | Guardar Cambios
 
-  // Script de funcionalidad
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
-    function marcarEspecialidadesModificadas() {
-      document.getElementById('esp-mod').value = '1';
+    let emailDuplicado = false;
+    let matriculaDuplicada = false;
+    let fechaInvalida = false;
+
+    const btnGuardar = document.getElementById('btnGuardar');
+    const pass = document.getElementById('password');
+    const repeat = document.getElementById('repeatPassword');
+    const emailInput = document.getElementById('email');
+    const matriculaInput = document.getElementById('matricula');
+    const nacimientoInput = document.getElementById('nacimiento');
+
+    function checkFormValidity() {
+        let passError = false;
+
+        if (pass.value.length > 0 || repeat.value.length > 0) {
+            if (pass.value !== repeat.value) {
+                repeat.classList.add('is-invalid');
+                passError = true;
+            } else {
+                repeat.classList.remove('is-invalid');
+                repeat.classList.add('is-valid');
+            }
+        } else {
+            repeat.classList.remove('is-invalid');
+            repeat.classList.remove('is-valid');
+        }
+
+        btnGuardar.disabled = emailDuplicado || matriculaDuplicada || fechaInvalida || passError;
     }
 
-    function marcarTelefonosModificados() {
-      document.getElementById('tel-mod').value = '1';
-    }
+    // --- VALIDACIÓN DE FECHA (Mínimo 22 años) ---
+    nacimientoInput.addEventListener('change', function() {
+        const fechaNac = new Date(this.value);
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const m = hoy.getMonth() - fechaNac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) { edad--; }
+
+        const feedback = document.getElementById('nacimiento-feedback');
+        
+        if (fechaNac > hoy) {
+            fechaInvalida = true;
+            this.classList.add('is-invalid');
+            feedback.textContent = "La fecha no puede ser futura.";
+        } else if (edad < 22) {
+            fechaInvalida = true;
+            this.classList.add('is-invalid');
+            feedback.textContent = "Ingrese una fecha valida, la edad minima es de 22 años";
+        } else {
+            fechaInvalida = false;
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+        checkFormValidity();
+    });
+
+    // --- VALIDACIÓN MATRÍCULA DUPLICADA ---
+    matriculaInput.addEventListener('blur', async function() {
+        const valor = this.value.trim();
+        const original = document.getElementById('original-matricula').value;
+        const feedback = document.getElementById('matricula-feedback');
+
+        if (!valor || valor === original) {
+            matriculaDuplicada = false;
+            this.classList.remove('is-invalid');
+            checkFormValidity();
+            return;
+        }
+
+        try {
+            const res = await fetch(`/medicos/verificar-matricula/${encodeURIComponent(valor)}`);
+            const data = await res.json();
+            if (data.existe) {
+                matriculaDuplicada = true;
+                this.classList.add('is-invalid');
+                feedback.textContent = "Esta matrícula ya está registrada.";
+            } else {
+                matriculaDuplicada = false;
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+            checkFormValidity();
+        } catch (e) { console.error("Error matrícula"); }
+    });
+
+    // --- VALIDACIÓN EMAIL DUPLICADO ---
+    emailInput.addEventListener('blur', async function() {
+        const email = this.value.trim();
+        const emailOriginal = document.getElementById('original-email').value;
+        const feedback = document.getElementById('email-feedback');
+        
+        if (!email || email === emailOriginal || !this.checkValidity()) {
+            emailDuplicado = false;
+            this.classList.remove('is-invalid');
+            checkFormValidity();
+            return;
+        }
+
+        try {
+            const res = await fetch(`/medicos/verificar-email/${encodeURIComponent(email)}`);
+            const data = await res.json();
+            if (data.existe) {
+                emailDuplicado = true;
+                this.classList.add('is-invalid');
+                feedback.textContent = "Correo ya registrado.";
+            } else {
+                emailDuplicado = false;
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+            checkFormValidity();
+        } catch (e) { console.error("Error email"); }
+    });
+
+    pass.addEventListener('input', checkFormValidity);
+    repeat.addEventListener('input', checkFormValidity);
+
+    function marcarEspecialidadesModificadas() { document.getElementById('esp-mod').value = '1'; }
+    function marcarTelefonosModificados() { document.getElementById('tel-mod').value = '1'; }
 
     function agregarTelefono() {
       marcarTelefonosModificados();
       const cont = document.getElementById('telefonos-container');
       const div = document.createElement('div');
-      div.className = 'input-group mb-2 animate__animated animate__fadeIn';
+      div.className = 'input-group mb-2';
       div.innerHTML = `
         <input class="form-control form-control-sm" type="text" name="telefonos" placeholder="Número">
-        <button class="btn btn-outline-danger btn-sm" type="button">
-          <i class="bi bi-trash"></i>
-        </button>
-      `;
-      div.querySelector('button').onclick = () => {
-        marcarTelefonosModificados();
-        div.remove();
-      };
+        <button class="btn btn-outline-danger btn-sm" type="button"><i class="bi bi-trash"></i></button>`;
+      div.querySelector('button').onclick = () => { marcarTelefonosModificados(); div.remove(); };
       cont.appendChild(div);
     }
 
@@ -196,42 +1149,43 @@ block contenido
       const select = document.getElementById('select-especialidad');
       const id = select.value;
       if (!id) return;
-
       marcarEspecialidadesModificadas();
       const nombre = select.options[select.selectedIndex].dataset.nombre;
       const cont = document.getElementById('especialidades-container');
-
-      if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) {
-        alert('Esta especialidad ya ha sido agregada.');
-        return;
-      }
+      if ([...cont.querySelectorAll('input[type="hidden"]')].some(i => i.value === id)) return;
 
       const div = document.createElement('div');
-      div.className = 'badge bg-light text-dark border d-flex justify-content-between align-items-center p-2 mb-2 w-100 animate__animated animate__fadeIn';
+      div.className = 'badge bg-light text-dark border d-flex justify-content-between align-items-center p-2 mb-2 w-100';
       div.style.fontSize = '0.9rem';
-      div.innerHTML = `
-        <span>${nombre}</span>
-        <input type="hidden" name="especialidades" value="${id}">
-        <button class="btn-close" type="button"></button>
-      `;
-      div.querySelector('button').onclick = () => {
-        marcarEspecialidadesModificadas();
-        div.remove();
-      };
+      div.innerHTML = `<span>${nombre}</span><input type="hidden" name="especialidades" value="${id}"><button class="btn-close" type="button"></button>`;
+      div.querySelector('button').onclick = () => { marcarEspecialidadesModificadas(); div.remove(); };
       cont.appendChild(div);
+      document.getElementById('especialidad-error-msg').classList.add('d-none');
       select.value = '';
     }
 
-    (function () {
-      'use strict'
-      var forms = document.querySelectorAll('.needs-validation')
-      Array.prototype.slice.call(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-          if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-          }
-          form.classList.add('was-validated')
-        }, false)
-      })
-    })()
+    document.getElementById('formEditarMedico').onsubmit = function(e) {
+      e.preventDefault();
+      const form = this;
+      
+      const tieneEspecialidad = document.querySelectorAll('input[name="especialidades"]').length > 0;
+      if (!tieneEspecialidad) {
+        document.getElementById('especialidad-error-msg').classList.remove('d-none');
+        return;
+      }
+
+      Swal.fire({
+        title: '¿Guardar cambios?',
+        text: "Se actualizará la información del profesional.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3498db',
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+          form.submit();
+        }
+      });
+    };

@@ -1,37 +1,37 @@
-extends ../layout
+//- extends ../layout
 
-block contenido
-    h3 Agendar turno
+//- block contenido
+//-     h3 Agendar turno
 
-    p Fecha: #{turno.fecha}
-    p Hora: #{turno.hora_inicio}
+//-     p Fecha: #{turno.fecha}
+//-     p Hora: #{turno.hora_inicio}
 
-    form(method="POST")
-        label DNI del paciente
-        input#dni.form-control(type="text")
+//-     form(method="POST")
+//-         label DNI del paciente
+//-         input#dni.form-control(type="text")
 
-        button.btn.btn-secondary.mt-2(type="button" onclick="buscarPaciente()")
-            Buscar
+//-         button.btn.btn-secondary.mt-2(type="button" onclick="buscarPaciente()")
+//-             Buscar
 
-        input(type="hidden" name="id_paciente" id="id_paciente")
+//-         input(type="hidden" name="id_paciente" id="id_paciente")
 
-        div#resultado.mt-3
+//-         div#resultado.mt-3
 
-        button.btn.btn-success.mt-3(type="submit") Confirmar turno
+//-         button.btn.btn-success.mt-3(type="submit") Confirmar turno
 
-    script.
-        function buscarPaciente() {
-            const dni = document.getElementById('dni').value;
+//-     script.
+//-         function buscarPaciente() {
+//-             const dni = document.getElementById('dni').value;
 
-            fetch(`/secretaria/pacientes/buscar?dni=${dni}`)
-                .then(res => res.json())
-                .then(p => {
-                    if (!p) {
-                        document.getElementById('resultado').innerHTML = 'No encontrado';
-                        return;
-                    }
-                    document.getElementById('id_paciente').value = p.id_paciente;
-                    document.getElementById('resultado').innerHTML =
-                        p.apellido + ' ' + p.nombre;
-                });
-        }
+//-             fetch(`/secretaria/pacientes/buscar?dni=${dni}`)
+//-                 .then(res => res.json())
+//-                 .then(p => {
+//-                     if (!p) {
+//-                         document.getElementById('resultado').innerHTML = 'No encontrado';
+//-                         return;
+//-                     }
+//-                     document.getElementById('id_paciente').value = p.id_paciente;
+//-                     document.getElementById('resultado').innerHTML =
+//-                         p.apellido + ' ' + p.nombre;
+//-                 });
+//-         }

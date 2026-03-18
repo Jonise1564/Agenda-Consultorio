@@ -29,184 +29,7 @@ class SecretariaController {
         } catch (error) { next(error); }
     }
 
-    // Consulta de slots horarios (RETORNA JSON)
-    // async disponibilidad(req, res, next) {
-    //     try {
-    //         const { id_medico, id_especialidad, fecha } = req.query;
-
-    //         if (!id_medico || !id_especialidad || !fecha) {
-    //             return res.status(400).json({ error: 'Faltan datos para la consulta' });
-    //         }
-
-    //         const feriadoDesc = await Agenda.esFeriado(fecha);
-    //         if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
-
-    //         const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
-    //         if (ausencia) {
-    //             return res.json({
-    //                 status: 'ausencia',
-    //                 tipo: ausencia.tipo,
-    //                 descripcion: ausencia.descripcion
-    //             });
-    //         }
-
-    //         const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
-    //         if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
-
-    //         const agenda = agendas[0];
-    //         const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
-
-    //         let horarios = [];
-    //         let [h, m] = agenda.hora_inicio.split(':');
-    //         let actual = new Date(2000, 0, 1, h, m);
-    //         let [hFin, mFin] = agenda.hora_fin.split(':');
-    //         let fin = new Date(2000, 0, 1, hFin, mFin);
-
-    //         while (actual < fin) {
-    //             const horaStr = actual.toTimeString().slice(0, 5);
-    //             horarios.push({
-    //                 hora: horaStr,
-    //                 ocupado: ocupados.includes(horaStr),
-    //                 id_agenda: agenda.id
-    //             });
-    //             actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
-    //         }
-
-    //         return res.json({ status: 'success', horarios });
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.status(500).json({ error: 'Error al cargar disponibilidad' });
-    //     }
-    // }
-
-
-    //     async disponibilidad(req, res, next) {
-    //     try {
-    //         const { id_medico, id_especialidad, fecha } = req.query;
-
-    //         if (!id_medico || !id_especialidad || !fecha) {
-    //             return res.status(400).json({ error: 'Faltan datos para la consulta' });
-    //         }
-
-    //         // 1. Verificación de Feriados y Ausencias
-    //         const feriadoDesc = await Agenda.esFeriado(fecha);
-    //         if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
-
-    //         const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
-    //         if (ausencia) {
-    //             return res.json({ status: 'ausencia', tipo: ausencia.tipo, descripcion: ausencia.descripcion });
-    //         }
-
-    //         // 2. Obtener Agenda y Turnos Ocupados
-    //         const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
-    //         if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
-
-    //         const agenda = agendas[0];
-    //         const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
-
-    //         // 3. Lógica de límites de Sobreturno
-    //         // Contamos cuántos sobreturnos totales hay en esta agenda/fecha
-    //         const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha); 
-    //         const limiteMax = agenda.limite_sobreturnos || 0;
-    //         const puedeMasSobreturnos = sobreturnosActuales < limiteMax;
-
-    //         let horarios = [];
-    //         let [h, m] = agenda.hora_inicio.split(':');
-    //         let actual = new Date(2000, 0, 1, h, m);
-    //         let [hFin, mFin] = agenda.hora_fin.split(':');
-    //         let fin = new Date(2000, 0, 1, hFin, mFin);
-
-    //         while (actual < fin) {
-    //             const horaStr = actual.toTimeString().slice(0, 5);
-    //             horarios.push({
-    //                 hora: horaStr,
-    //                 ocupado: ocupados.includes(horaStr),
-    //                 id_agenda: agenda.id,
-    //                 // Enviamos al front si este slot permitiría un sobreturno
-    //                 permitirSobre: puedeMasSobreturnos 
-    //             });
-    //             actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
-    //         }
-
-    //         return res.json({ 
-    //             status: 'success', 
-    //             horarios, 
-    //             limite_sobreturnos: limiteMax, 
-    //             sobreturnos_actuales: sobreturnosActuales 
-    //         });
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.status(500).json({ error: 'Error al cargar disponibilidad' });
-    //     }
-    // }
-
-
-    // async disponibilidad(req, res, next) {
-    //     try {
-    //         const { id_medico, id_especialidad, fecha } = req.query;
-
-    //         if (!id_medico || !id_especialidad || !fecha) {
-    //             return res.status(400).json({ error: 'Faltan datos para la consulta' });
-    //         }
-
-    //         // 1. Verificación de Feriados y Ausencias
-    //         const feriadoDesc = await Agenda.esFeriado(fecha);
-    //         if (feriadoDesc) return res.json({ status: 'feriado', motivo: feriadoDesc });
-
-    //         const ausencia = await Agenda.obtenerAusencia(id_medico, fecha);
-    //         if (ausencia) {
-    //             return res.json({ status: 'ausencia', tipo: ausencia.tipo, descripcion: ausencia.descripcion });
-    //         }
-
-    //         // 2. Obtener Agenda y Turnos Ocupados
-    //         const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
-    //         if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
-
-    //         const agenda = agendas[0];
-    //         const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
-
-    //         // 3. Lógica de límites de Sobretorno
-    //         // Obtenemos cuántos sobreturnos ya se asignaron para esta agenda y fecha específica
-    //         const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha); 
-    //         const limiteMax = agenda.limite_sobreturnos || 0;
-
-    //         // La posibilidad de dar más sobreturnos depende de no haber superado el límite diario
-    //         const cupoDisponibleParaSobre = sobreturnosActuales < limiteMax;
-
-    //         let horarios = [];
-    //         let [h, m] = agenda.hora_inicio.split(':');
-    //         let actual = new Date(2000, 0, 1, h, m);
-    //         let [hFin, mFin] = agenda.hora_fin.split(':');
-    //         let fin = new Date(2000, 0, 1, hFin, mFin);
-
-    //         while (actual < fin) {
-    //             const horaStr = actual.toTimeString().slice(0, 5);
-    //             const estaOcupado = ocupados.includes(horaStr);
-
-    //             horarios.push({
-    //                 hora: horaStr,
-    //                 ocupado: estaOcupado,
-    //                 id_agenda: agenda.id,
-    //                 // REGLA: Permitir sobreturno solo si el slot está ocupado 
-    //                 // Y todavía queda cupo en el límite diario del médico
-    //                 permitirSobre: estaOcupado && cupoDisponibleParaSobre 
-    //             });
-    //             actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
-    //         }
-
-    //         return res.json({ 
-    //             status: 'success', 
-    //             horarios, 
-    //             limite_sobreturnos: limiteMax, 
-    //             sobreturnos_actuales: sobreturnosActuales,
-    //             total_disponible_sobre: Math.max(0, limiteMax - sobreturnosActuales)
-    //         });
-    //     } catch (error) {
-    //         console.error("Error en disponibilidad:", error);
-    //         res.status(500).json({ error: 'Error al cargar disponibilidad' });
-    //     }
-    // }
-
+    // Consulta para armar slots horarios
     async disponibilidad(req, res, next) {
         try {
             const { id_medico, id_especialidad, fecha } = req.query;
@@ -224,46 +47,55 @@ class SecretariaController {
                 return res.json({ status: 'ausencia', tipo: ausencia.tipo, descripcion: ausencia.descripcion });
             }
 
-            // 2. Obtener Agenda y Turnos Ocupados
+            // 2. Obtener TODAS las Agendas del médico para ese día
             const agendas = await Agenda.obtenerAgendaPorMedicoYFecha(id_medico, id_especialidad, fecha);
             if (!agendas || agendas.length === 0) return res.json({ status: 'sin_agenda' });
 
-            const agenda = agendas[0];
-            const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
+            let horariosFinales = [];
+            let totalSobreDisponibles = 0;
+            let totalSobreActuales = 0;
 
-            // 3. Lógica de límites de Sobreturno
-            const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha);
-            const limiteMax = agenda.limite_sobreturnos || 0;
-            const hayCupoParaSobre = sobreturnosActuales < limiteMax;
+            // 3. Iterar sobre cada bloque de agenda (Mañana, Tarde, etc.)
+            for (const agenda of agendas) {
+                const ocupados = await Turno.obtenerHorariosOcupados(agenda.id, fecha);
+                const sobreturnosActuales = await Turno.contarSobreturnos(agenda.id, fecha);
+                const limiteMax = agenda.limite_sobreturnos || 0;
 
-            let horarios = [];
-            let [h, m] = agenda.hora_inicio.split(':');
-            let actual = new Date(2000, 0, 1, h, m);
-            let [hFin, mFin] = agenda.hora_fin.split(':');
-            let fin = new Date(2000, 0, 1, hFin, mFin);
+                // Datos para el resumen final
+                totalSobreDisponibles += Math.max(0, limiteMax - sobreturnosActuales);
+                totalSobreActuales += sobreturnosActuales;
 
-            while (actual < fin) {
-                const horaStr = actual.toTimeString().slice(0, 5);
-                const estaOcupado = ocupados.includes(horaStr);
+                const hayCupoParaSobre = sobreturnosActuales < limiteMax;
 
-                horarios.push({
-                    hora: horaStr,
-                    ocupado: estaOcupado,
-                    id_agenda: agenda.id,
-                    // Solo permitimos marcarlo como sobreturno si el horario está lleno
-                    // y el médico todavía no superó su límite diario.
-                    permitirSobre: estaOcupado && hayCupoParaSobre
-                });
-                actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
+                let [h, m] = agenda.hora_inicio.split(':');
+                let actual = new Date(2000, 0, 1, h, m);
+                let [hFin, mFin] = agenda.hora_fin.split(':');
+                let fin = new Date(2000, 0, 1, hFin, mFin);
+
+                while (actual < fin) {
+                    const horaStr = actual.toTimeString().slice(0, 5);
+                    const estaOcupado = ocupados.includes(horaStr);
+
+                    horariosFinales.push({
+                        hora: horaStr,
+                        ocupado: estaOcupado,
+                        id_agenda: agenda.id,
+                        // Regla de sobreturno aplicada a ESTA agenda específica
+                        permitirSobre: estaOcupado && hayCupoParaSobre
+                    });
+
+                    actual.setMinutes(actual.getMinutes() + agenda.duracion_turnos);
+                }
             }
 
+            // 4. Retornar todos los bloques unidos
             return res.json({
                 status: 'success',
-                horarios,
-                limite_sobreturnos: limiteMax,
-                sobreturnos_actuales: sobreturnosActuales,
-                disponibles_sobre: Math.max(0, limiteMax - sobreturnosActuales)
+                horarios: horariosFinales,
+                sobreturnos_actuales: totalSobreActuales,
+                disponibles_sobre: totalSobreDisponibles
             });
+
         } catch (error) {
             console.error("Error en disponibilidad:", error);
             res.status(500).json({ error: 'Error al cargar disponibilidad' });
@@ -271,96 +103,97 @@ class SecretariaController {
     }
 
 
+async verListaTurnos(req, res, next) {
+    try {
+        let {
+            paciente, profesional, fecha, status,
+            sucursal, especialidad,
+            fecha_inicio, fecha_fin
+        } = req.query;
 
-    async verListaTurnos(req, res, next) {
-        try {
-            // 1. CAPTURAR TODOS LOS FILTROS DESDE LA QUERY
-            let { paciente, profesional, fecha, status, sucursal, especialidad } = req.query;
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const offset = (page - 1) * limit;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
 
-            // --- LIMPIEZA DE FILTROS (Anti-"null" y vacíos) ---
-            const limpiar = (val) => (val === 'null' || !val) ? "" : val;
+        const limpiar = (val) => (val === 'null' || !val) ? "" : val;
 
-            const filtros = {
-                paciente: limpiar(paciente),
-                profesional: limpiar(profesional),
-                fecha: limpiar(fecha),
-                sucursal: limpiar(sucursal),
-                especialidad: limpiar(especialidad),
-                status: limpiar(status)
-            };
+        const filtros = {
+            paciente: limpiar(paciente),
+            profesional: limpiar(profesional),
+            fecha: limpiar(fecha),
+            fecha_inicio: limpiar(fecha_inicio),
+            fecha_fin: limpiar(fecha_fin),
+            sucursal: limpiar(sucursal),
+            especialidad: limpiar(especialidad),
+            status: limpiar(status)
+        };
 
-            // 2. PREPARAR FILTROS PARA EL MODELO (Si está vacío, mandamos null)
-            const filtrosDB = {
-                paciente: filtros.paciente || null,
-                profesional: filtros.profesional || null,
-                fecha: filtros.fecha || null,
-                sucursal: filtros.sucursal || null,
-                especialidad: filtros.especialidad || null,
-                status: filtros.status || null
-            };
+        const filtrosDB = {
+            ...filtros,
+            paciente: filtros.paciente || null,
+            profesional: filtros.profesional || null,
+            fecha: filtros.fecha || null,
+            fecha_inicio: filtros.fecha_inicio || null,
+            fecha_fin: filtros.fecha_fin || null,
+            sucursal: filtros.sucursal || null,
+            especialidad: filtros.especialidad || null,
+            status: filtros.status || null
+        };
 
-            // 3. CONSULTA DE TURNOS ACTIVOS PAGINADOS
-            // Nota: Asegúrate que Turno.listarPaginado use filtrosDB.status y filtrosDB.especialidad
-            const turnos = await Turno.listarPaginado(filtrosDB, limit, offset);
-            const totalTurnos = await Turno.contarTurnos(filtrosDB);
-            const totalPages = Math.ceil(totalTurnos / limit);
+        // 1. Obtener turnos filtrados para la tabla principal
+        const turnos = await Turno.listarPaginado(filtrosDB, limit, offset);
+        const totalTurnos = await Turno.contarTurnos(filtrosDB);
+        const totalPages = Math.ceil(totalTurnos / limit);
 
-            // 4. VERIFICACIÓN DE AUSENCIAS MÉDICAS PARA CADA TURNO
-            const turnosConEstado = await Promise.all(
-                turnos.map(async (t) => {
-                    let medicoAusente = false;
-                    let motivoAusencia = null;
-
-                    try {
-                        if (t.id_medico && t.fecha) {
-                            const fechaObj = new Date(t.fecha);
-                            if (!isNaN(fechaObj)) {
-                                const fechaSql = fechaObj.toISOString().split('T')[0];
-                                const ausencia = await Agenda.obtenerAusencia(t.id_medico, fechaSql);
-                                if (ausencia) {
-                                    medicoAusente = true;
-                                    motivoAusencia = ausencia.tipo;
-                                }
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Error al verificar ausencia:", err);
+        // 2. Identificar ausencias en los turnos de la vista actual (para pintar de rojo la fila)
+        const turnosConEstado = await Promise.all(
+            turnos.map(async (t) => {
+                let medicoAusente = false;
+                let motivoAusencia = null;
+                if (t.id_medico && t.fecha) {
+                    const fechaSql = new Date(t.fecha).toISOString().split('T')[0];
+                    const ausencia = await Agenda.obtenerAusencia(t.id_medico, fechaSql);
+                    if (ausencia) {
+                        medicoAusente = true;
+                        motivoAusencia = ausencia.tipo;
                     }
+                }
+                return { ...t, medicoAusente, motivoAusencia };
+            })
+        );
 
-                    return { ...t, medicoAusente, motivoAusencia };
-                })
-            );
+        // 3. CENTRAL DE REUBICACIÓN GLOBAL 
+        // A. Obtenemos turnos de agendas dadas de baja
+        const agendasInactivas = await Turno.getTurnosAgendasNoActivas();
+        
+        // B. Obtenemos TODOS los turnos futuros que tienen una ausencia médica cargada
+        // Debes crear este método en tu modelo Turno o usar una consulta que cruce turnos con la tabla ausencias
+        const afectadosPorAusencia = await Turno.getTurnosConMedicosAusentesGlobal();
 
-            // 5. TURNOS QUE REQUIEREN REUBICACIÓN (Agendas dadas de baja)
-            const turnosUrgentes = await Turno.getTurnosAgendasNoActivas();
+        // C. Unificamos ambas listas para la solapa de reubicación
+        const turnosUrgentes = [...agendasInactivas, ...afectadosPorAusencia];
 
-            // 6. CARGA DE DATOS PARA LOS SELECTS DEL FORMULARIO
-            const medicos = await Medico.listar();
-            const especialidades = await Especialidad.getAll();
+        const medicos = await Medico.listar();
+        const especialidades = await Especialidad.getAll();
 
-            // 7. RENDERIZADO DE LA VISTA
-            res.render('secretaria/lista_turnos', {
-                turnos: turnosConEstado,
-                turnosUrgentes,
-                medicos,
-                especialidades,
-                status: status || null, // Para mensajes de éxito/error de la URL
-                currentPage: page,
-                totalPages,
-                totalTurnos,
-                limit,
-                filtros // Enviamos el objeto completo para persistencia en los inputs
-            });
+        res.render('secretaria/lista_turnos', {
+            turnos: turnosConEstado,
+            turnosUrgentes, 
+            medicos,
+            especialidades,
+            status: status || null,
+            currentPage: page,
+            totalPages,
+            totalTurnos,
+            filtros,
+            currentUrl: req.originalUrl
+        });
 
-        } catch (error) {
-            console.error("Error en verListaTurnos:", error);
-            next(error);
-        }
+    } catch (error) {
+        console.error("Error en verListaTurnos:", error);
+        next(error);
     }
-
+}
 
     async verificarTurnoPaciente(req, res) {
         try {
@@ -384,67 +217,7 @@ class SecretariaController {
 
 
 
-    // Proceso de agendar con Lógica de Sobreturnos   
-    // async agendar(req, res, next) {
-    //     try {
-    //         const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
-    //         const archivo_dni = req.file ? req.file.filename : null;
-
-    //         if (!id_paciente || !fecha || !hora_inicio || !id_agenda) {
-    //             return res.redirect('/secretaria?status=error_datos');
-    //         }
-
-    //         // 3. Obtener detalles de la agenda PRIMERO para saber qué médico es
-    //         const detallesAgenda = await Agenda.getAgendaById(id_agenda);
-    //         if (!detallesAgenda) {
-    //             return res.redirect('/secretaria?status=error_no_agenda');
-    //         }
-
-    //         const id_medico_nuevo = detallesAgenda.id_medico;
-
-    //         // --- VALIDACIÓN CORREGIDA ---
-
-    //         // A. Verificar si ya tiene turno con ESTE médico específico ese día
-    //         const tieneTurnoConMedico = await Turno.verificarTurnoMedicoDia(id_paciente, fecha, id_medico_nuevo);
-    //         if (tieneTurnoConMedico) {
-    //             return res.redirect('/secretaria?status=error_duplicado_medico');
-    //         }
-
-    //         // B. Verificar si el paciente ya tiene OTRO turno exactamente a la misma hora
-    //         const tieneTurnoMismaHora = await Turno.verificarTurnoHora(id_paciente, fecha, hora_inicio);
-    //         if (tieneTurnoMismaHora) {
-    //             return res.redirect('/secretaria?status=error_hora_ocupada');
-    //         }
-
-    //         // --- CONTINÚA LÓGICA DE SOBRETURNOS ---
-    //         const horariosOcupados = await Turno.obtenerHorariosOcupados(id_agenda, fecha);
-    //         const cantidadActualEnEsaHora = horariosOcupados.filter(h => h === hora_inicio).length;
-    //         const esSobretorno = cantidadActualEnEsaHora > 0;
-
-    //         if (esSobretorno && cantidadActualEnEsaHora > (detallesAgenda.limite_sobreturnos || 0)) {
-    //             return res.redirect('/secretaria?status=error_sobreturno_agotado');
-    //         }
-
-    //         await Turno.agendarTurnoVirtual({
-    //             fecha,
-    //             hora_inicio,
-    //             id_agenda,
-    //             id_paciente,
-    //             motivo: motivo || (esSobretorno ? 'SOBRETURNO' : 'Turno solicitado en secretaría'),
-    //             archivo_dni,
-    //             es_sobreturno: esSobretorno
-    //         });
-
-    //         this.enviarNotificacionSilenciosa(id_paciente, fecha, hora_inicio, detallesAgenda, motivo, esSobretorno);
-    //         res.redirect('/secretaria?status=success');
-
-    //     } catch (error) {
-    //         console.error("Error al agendar:", error);
-    //         res.redirect('/secretaria?status=error_server');
-    //     }
-    // }
-
-
+    // Proceso de agendar con Lógica de Sobreturnos      
     async agendar(req, res, next) {
         try {
             const { id_paciente, motivo, fecha, hora_inicio, id_agenda } = req.body;
@@ -567,7 +340,7 @@ class SecretariaController {
         } catch (error) { next(error); }
     }
 
-    // Métodos de apoyo (Se mantienen igual)
+    // Métodos de apoyo 
     async buscarPacientePorDNI(req, res, next) {
         try { const r = await Paciente.buscar(req.query.q); res.json(r); } catch (e) { res.json([]); }
     }
@@ -576,14 +349,41 @@ class SecretariaController {
         try { const r = await Medico.buscar(req.query.q); res.json(r); } catch (e) { res.json([]); }
     }
 
+    // async registrarAusencia(req, res, next) {
+    //     try {
+    //         const { id_medico, fecha_inicio, fecha_fin, tipo, descripcion } = req.body;
+    //         if (new Date(fecha_fin) < new Date(fecha_inicio)) return res.status(400).send("Fecha fin errónea.");
+    //         await Agenda.registrarAusencia({ id_medico, fecha_inicio, fecha_fin, tipo, descripcion: descripcion || '' });
+    //         res.redirect('/secretaria/ausencias?status=success');
+    //     } catch (e) { next(e); }
+    // }
+
+
     async registrarAusencia(req, res, next) {
         try {
             const { id_medico, fecha_inicio, fecha_fin, tipo, descripcion } = req.body;
-            if (new Date(fecha_fin) < new Date(fecha_inicio)) return res.status(400).send("Fecha fin errónea.");
-            await Agenda.registrarAusencia({ id_medico, fecha_inicio, fecha_fin, tipo, descripcion: descripcion || '' });
-            res.redirect('/secretaria/ausencias?status=success');
+
+            if (new Date(fecha_fin) < new Date(fecha_inicio)) {
+                return res.status(400).send("Fecha fin errónea.");
+            }
+
+            // 1. Registro normal
+            await Agenda.registrarAusencia({
+                id_medico,
+                fecha_inicio,
+                fecha_fin,
+                tipo,
+                descripcion: descripcion || ''
+            });
+
+            // 2. Redirección estratégica: 
+            // Enviamos al médico y el rango de fechas como filtros de búsqueda
+            res.redirect(`/secretaria/turnos?profesional=${id_medico}&fecha_desde=${fecha_inicio}&fecha_hasta=${fecha_fin}&status=ausencia_registrada`);
+
         } catch (e) { next(e); }
     }
+
+
 
     async eliminarAusencia(req, res, next) {
         try { await Agenda.eliminarAusencia(req.params.id); res.redirect('/secretaria/ausencias?status=deleted'); } catch (e) { next(e); }
@@ -642,13 +442,38 @@ class SecretariaController {
         } catch (e) { next(e); }
     }
 
+
+
     async actualizarEstadoTurno(req, res, next) {
         try {
-            const { id_turno, estado, observaciones } = req.body;
-            await Turno.actualizar(id_turno, { estado, observaciones: observaciones || '' });
-            res.redirect('/secretaria/turnos?status=edit_success');
-        } catch (e) { res.redirect('/secretaria/turnos?status=error'); }
+            // 1. Extraemos returnUrl del body (lo que envió el PUG)
+            const { id_turno, estado, observaciones, returnUrl } = req.body;
+
+            await Turno.actualizar(id_turno, {
+                estado,
+                observaciones: observaciones || ''
+            });
+
+            // 2. Si returnUrl existe, lo usamos. 
+            // Si no existe (está vacío), recién ahí va a la base.
+            let destino = (returnUrl && returnUrl !== '') ? returnUrl : '/secretaria/turnos';
+
+            // 3. Pegamos el cartelito de éxito
+            const separador = destino.includes('?') ? '&' : '?';
+            if (!destino.includes('status=')) {
+                destino += `${separador}status=edit_success`;
+            }
+
+            console.log("Redirigiendo a:", destino); // <--- Agrega este log para debuguear
+            res.redirect(destino);
+
+        } catch (e) {
+            console.error(e);
+            res.redirect('/secretaria/turnos?status=error');
+        }
     }
+
+
 
     async agregarAListaEspera(req, res, next) {
         try {
@@ -689,6 +514,57 @@ class SecretariaController {
         }
     }
 
+
+    // Método auxiliar para consolidar turnos que requieren atención inmediata
+    async obtenerTurnosParaReubicar() {
+        try {
+            // 1. Turnos de agendas que fueron dadas de baja (Lo que ya tenías)
+            const inactivos = await Turno.getTurnosAgendasNoActivas();
+
+            // 2. Turnos de médicos ausentes para los próximos 30 días
+            // Buscamos turnos que coincidan con la tabla de ausencias
+            // Nota: Aquí podrías crear un método específico en el modelo Turno para mayor performance
+            const turnosAusentes = await Turno.listarTurnosAfectadosPorAusencia();
+
+            // 3. Consolidamos y etiquetamos el motivo
+            const urgentes = [
+                ...inactivos.map(t => ({ ...t, motivo_urgencia: 'Agenda Eliminada' })),
+                ...turnosAusentes.map(t => ({ ...t, motivo_urgencia: 'Profesional Ausente' }))
+            ];
+
+            // Ordenamos por fecha más próxima
+            return urgentes.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        } catch (error) {
+            console.error("Error al obtener turnos urgentes:", error);
+            return [];
+        }
+    }
+
+
+    async verListaTurnosUrgentes(req, res) {
+    try {
+        // Ejecutamos ambas búsquedas en paralelo para mayor velocidad
+        const [porAgendasInactivas, porAusencias] = await Promise.all([
+            Turno.getTurnosAgendasNoActivas(),
+            Turno.listarTurnosAfectadosPorAusencia()
+        ]);
+
+        // Unimos los arrays
+        const todosLosUrgentes = [...porAgendasInactivas, ...porAusencias];
+
+        // Ordenamos por fecha y hora
+        todosLosUrgentes.sort((a, b) => {
+            const fechaA = new Date(`${a.fecha} ${a.hora}`);
+            const fechaB = new Date(`${b.fecha} ${b.hora}`);
+            return fechaA - fechaB;
+        });
+
+        return todosLosUrgentes;
+    } catch (error) {
+        console.error("Error al consolidar turnos urgentes:", error);
+        return [];
+    }
+}
 
 
 

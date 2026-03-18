@@ -227,6 +227,226 @@ class Medico {
             if (conn) conn.end();
         }
     }
+
+
+    // ============================================================
+    // OBTENER PERFIL COMPLETO POR ID DE USUARIO (Para Dashboard)
+    // ============================================================
+    static async obtenerPorUsuario(id_usuario) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [rows] = await conn.query(`
+            SELECT 
+                m.id_medico, m.matricula, m.estado,
+                p.nombre, p.apellido, p.nacimiento, p.dni,
+                u.email
+            FROM medicos m
+            INNER JOIN usuarios u ON m.id_usuario = u.id
+            INNER JOIN personas p ON m.id_persona = p.id
+            WHERE m.id_usuario = ?
+        `, [id_usuario]);
+
+            return rows[0]; // Retorna el objeto del médico o undefined
+        } catch (error) {
+            console.error("Error en Medico.obtenerPorUsuario:", error);
+            throw error;
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
+//     static async obtenerTurnosDelDia(id_medico) {
+//     let conn;
+//     try {
+//         conn = await createConnection();
+//         // Buscamos turnos para la fecha actual (CURDATE())
+//         const [rows] = await conn.query(`
+//             SELECT 
+//                 t.id_turno,
+//                 t.hora,
+//                 p.nombre AS paciente_nombre,
+//                 p.apellido AS paciente_apellido,
+//                 t.motivo,
+//                 t.estado
+//             FROM turnos t
+//             INNER JOIN pacientes pac ON t.id_paciente = pac.id_paciente
+//             INNER JOIN personas p ON pac.id_persona = p.id
+//             WHERE t.id_medico = ? AND t.fecha = CURDATE()
+//             ORDER BY t.hora ASC
+//         `, [id_medico]);
+//         return rows;
+//     } finally {
+//         if (conn) conn.end();
+//     }
+// }
+// static async obtenerTurnosDelDia(id_medico) {
+//     let conn;
+//     try {
+//         conn = await createConnection();
+//         // Usamos t.id y t.hora_inicio según tus modelos confirmados
+//         const query = `
+//             SELECT 
+//                 t.id, 
+//                 DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+//                 p.nombre AS paciente_nombre, 
+//                 p.apellido AS paciente_apellido, 
+//                 t.motivo, 
+//                 t.estado 
+//             FROM turnos t 
+//             INNER JOIN pacientes pac ON t.id_paciente = pac.id 
+//             INNER JOIN personas p ON pac.id_persona = p.id 
+//             INNER JOIN agendas a ON t.id_agenda = a.id 
+//             WHERE a.id_medico = ? 
+//               AND t.fecha = CURDATE() 
+//               AND t.estado NOT IN ('Cancelado') 
+//             ORDER BY t.hora_inicio ASC 
+//             LIMIT 0, 25
+//         `;
+
+//         const [rows] = await conn.query(query, [id_medico]);
+//         return rows;
+//     } catch (error) {
+//         console.error("Error en obtenerTurnosDelDia para ID Médico " + id_medico + ":", error);
+//         throw error;
+//     } finally {
+//         if (conn) conn.end();
+//     }
+// }
+
+
+
+static async obtenerTurnosDelDia(id_medico) {
+    let conn;
+    try {
+        conn = await createConnection();
+        const query = `
+            SELECT 
+                t.id, 
+                DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+                p.nombre AS paciente_nombre, 
+                p.apellido AS paciente_apellido, 
+                p.dni AS paciente_dni, 
+                e.nombre AS especialidad_nombre, -- Ahora vendrá desde la agenda
+                t.motivo, 
+                t.estado 
+            FROM turnos t 
+            INNER JOIN pacientes pac ON t.id_paciente = pac.id 
+            INNER JOIN personas p ON pac.id_persona = p.id 
+            INNER JOIN agendas a ON t.id_agenda = a.id 
+            INNER JOIN especialidades e ON a.id_especialidad = e.id -- CAMBIO AQUÍ: de a.id_especialidad
+            WHERE a.id_medico = ? 
+              AND t.fecha = CURDATE() 
+              AND t.estado NOT IN ('Cancelado') 
+            ORDER BY t.hora_inicio ASC 
+            LIMIT 0, 25
+        `;
+
+        const [rows] = await conn.query(query, [id_medico]);
+        return rows;
+    } catch (error) {
+        console.error("Error en obtenerTurnosDelDia para ID Médico " + id_medico + ":", error);
+        throw error;
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
+
+
+// ============================================================
+// OBTENER TURNOS DEL DÍA 
+// ============================================================
+static async getTurnosDelDia(id_medico) {
+    let conn;
+    try {
+        conn = await createConnection();
+        // Usamos t.id y t.hora_inicio según tu modelo de Turnos
+        const [rows] = await conn.query(`
+            SELECT 
+                t.id,
+                DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora, 
+                p.nombre AS paciente_nombre,
+                p.apellido AS paciente_apellido,
+                t.motivo,
+                t.estado
+            FROM turnos t
+            INNER JOIN pacientes pac ON t.id_paciente = pac.id
+            INNER JOIN personas p ON pac.id_persona = p.id
+            INNER JOIN agendas a ON t.id_agenda = a.id
+            WHERE a.id_medico = ? 
+              AND t.fecha = CURDATE()
+              AND t.estado NOT IN ('Cancelado')
+            ORDER BY t.hora_inicio ASC
+        `, [id_medico]);
+        return rows;
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+// ============================================================
+// OBTENER ESPECIALIDADES (La que faltaba)
+// ============================================================
+static async obtenerEspecialidades(id_medico) {
+    let conn;
+    try {
+        conn = await createConnection();
+        const [rows] = await conn.query(`
+            SELECT e.nombre
+            FROM especialidades e
+            INNER JOIN medico_especialidad me ON e.id = me.id_especialidad
+            WHERE me.id_medico = ? AND me.estado = 1
+        `, [id_medico]);
+        
+        // Devolvemos solo un array de nombres: ["Pediatría", "Cardiología"]
+        return rows.map(r => r.nombre);
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
+
+
+static async verificarPropiedadAgenda(id_medico, id_agenda) {
+    let conn;
+    try {
+        conn = await createConnection();
+        const [rows] = await conn.query(
+            "SELECT id FROM agendas WHERE id = ? AND id_medico = ?",
+            [id_agenda, id_medico]
+        );
+        return rows.length > 0; // Retorna true si la agenda es de ese médico
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
+// ============================================================
+// VERIFICAR EXISTENCIA DE MATRÍCULA
+// ============================================================
+static async buscarPorMatricula(matricula) {
+    let conn;
+    try {
+        conn = await createConnection();
+        const [rows] = await conn.query(
+            'SELECT id_medico FROM medicos WHERE matricula = ?',
+            [matricula]
+        );
+        return rows[0]; // Retorna el médico si existe, o undefined si no
+    } catch (error) {
+        console.error("Error en Medico.buscarPorMatricula:", error);
+        throw error;
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
+
+
 }
 
 module.exports = Medico;

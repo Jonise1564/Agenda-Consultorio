@@ -1,5 +1,41 @@
 
 
+//- extends ../layout
+
+//- block contenido
+//-   .container.text-center(style="margin-top: 100px;")
+//-     .row.justify-content-center
+//-       .col-md-6
+//-         .card.shadow-lg.border-0(style="border-radius: 20px;")
+//-           .card-body.p-5
+//-             //- Encabezado visual
+//-             h1.display-1.fw-bold.text-primary 404
+//-             i.bi.bi-exclamation-triangle-fill.text-warning(style="font-size: 4rem;")
+            
+//-             h2.fw-bold.mt-3 Página no encontrada
+            
+//-             if usuario
+//-               p.text-muted Hola #{usuario.nombre}, la sección que buscas no existe o ha sido movida temporalmente.
+//-             else
+//-               p.text-muted La sección que buscas no existe o debes iniciar sesión para continuar.
+            
+//-             hr
+            
+//-             //- Lógica de redirección basada en roles
+//-             //- Si no hay usuario (null/undefined), mandamos al login
+//-             - var urlDestino = "/"
+//-             if usuario
+//-               if usuario.id_rol === 4
+//-                 - urlDestino = "/pacientes/dashboard"
+//-               else if usuario.id_rol === 1 || usuario.id_rol === 3
+//-                 - urlDestino = "/secretaria"
+
+//-             a.btn.btn-primary.px-4.py-2(href=urlDestino style="border-radius: 10px;") 
+//-               i.bi.bi-house-fill.me-2
+//-               | Volver al Inicio
+
+
+
 extends ../layout
 
 block contenido
@@ -22,13 +58,16 @@ block contenido
             hr
             
             //- Lógica de redirección basada en roles
-            //- Si no hay usuario (null/undefined), mandamos al login
             - var urlDestino = "/"
             if usuario
-              if usuario.id_rol === 4
-                - urlDestino = "/pacientes/dashboard"
-              else if usuario.id_rol === 1 || usuario.id_rol === 3
+              if usuario.id_rol === 1
+                - urlDestino = "/"
+              else if usuario.id_rol === 2
+                - urlDestino = "/medicos/dashboard"
+              else if usuario.id_rol === 3
                 - urlDestino = "/secretaria"
+              else if usuario.id_rol === 4
+                - urlDestino = "/pacientes/dashboard"
 
             a.btn.btn-primary.px-4.py-2(href=urlDestino style="border-radius: 10px;") 
               i.bi.bi-house-fill.me-2

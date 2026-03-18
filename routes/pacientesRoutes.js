@@ -8,6 +8,11 @@ const { verificarAcceso } = require('../middlewares/auth');
 // ============================================================
 // 1. RUTAS PARA EL PACIENTE Y VERIFICACIONES ASINCRÓNICAS
 // ============================================================
+// VERIFICACIÓN DE DNI (Ya la tenías, asegúrate que esté antes del .use de restricción)
+PacientesRouter.get('/verificar-persona/:dni', PersonasControllers.verificarDni);
+
+// VERIFICACIÓN DE EMAIL (Agrégala aquí llamando a tu controlador de pacientes o auth)
+PacientesRouter.get('/verificar-email/:email', PacientesControllers.verificarEmail);
 
 // Vista principal del dashboard
 PacientesRouter.get('/dashboard', verificarAcceso([1, 4]), panelPacienteController.getInicio);

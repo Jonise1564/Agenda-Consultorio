@@ -160,12 +160,49 @@ class TurnosController {
     // }
 
     // LISTADO POR AGENDA (PROTEGIDO)
+    // async get(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         const usuarioLogueado = req.user;
+
+    //         // 1. Si es Paciente, REBOTAR. No puede ver el listado general de una agenda.
+    //         if (usuarioLogueado && usuarioLogueado.id_rol === 4) {
+    //             return res.status(403).render('errors/403', { 
+    //                 mensaje: "No tienes permiso para ver el listado de esta agenda." 
+    //             });
+    //         }
+
+    //         if (!id || id === 'undefined') return res.redirect('/agendas');
+
+    //         const turnos = await Turno.getAll(id);
+    //         const turnosFormateados = turnos.map(t => ({
+    //             ...t,
+    //             fecha_formateada: formatearFecha(t.fecha),
+    //             fecha_iso: fechaISO(t.fecha),
+    //             hora_filtro: t.hora_inicio?.slice(0, 5),
+    //             dni: t.paciente_dni ?? null,
+    //             tiene_archivo: !!t.archivo_dni,
+    //             ruta_archivo: t.archivo_dni ? `/uploads/dnis/${t.archivo_dni}` : null
+    //         }));
+
+    //         res.render('turnos/index', {
+    //             turnos: turnosFormateados,
+    //             id_agenda: id
+    //         });
+    //     } catch (error) {
+    //         console.error("Error GET Turnos:", error);
+    //         res.status(500).send("Error al cargar los turnos");
+    //     }
+    // }
+
+
+
     async get(req, res) {
         try {
-            const { id } = req.params;
+            const { id } = req.params; // Este es el id_agenda
             const usuarioLogueado = req.user;
 
-            // 1. Si es Paciente, REBOTAR. No puede ver el listado general de una agenda.
+            // 1. Si es Paciente (Rol 4), REBOTAR.
             if (usuarioLogueado && usuarioLogueado.id_rol === 4) {
                 return res.status(403).render('errors/403', { 
                     mensaje: "No tienes permiso para ver el listado de esta agenda." 
@@ -173,6 +210,23 @@ class TurnosController {
             }
 
             if (!id || id === 'undefined') return res.redirect('/agendas');
+
+            // ========================================================
+            // NUEVA VALIDACIÓN PARA MÉDICOS (Rol 2)
+            // ========================================================
+            if (usuarioLogueado && usuarioLogueado.id_rol === 2) {
+                // Debemos verificar si la agenda (id) pertenece al médico logueado
+                // Asumiendo que en tu modelo Medico tienes una función para esto:
+                const esSuAgenda = await Medico.verificarPropiedadAgenda(usuarioLogueado.id_medico, id);
+                
+                if (!esSuAgenda) {
+                    console.warn(`[SEGURIDAD] Médico ID ${usuarioLogueado.id_medico} intentó acceder a agenda ajena ID ${id}`);
+                    return res.status(403).render('errors/403', { 
+                        mensaje: "Acceso denegado: Esta agenda pertenece a otro profesional." 
+                    });
+                }
+            }
+            // ========================================================
 
             const turnos = await Turno.getAll(id);
             const turnosFormateados = turnos.map(t => ({
@@ -218,45 +272,93 @@ class TurnosController {
     //     }
     // }
 
-    async establecerForm(req, res) {
-        try {
-            const { id } = req.params;
-            const usuarioLogueado = req.user; // Datos del token
+    // async establecerForm(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         const usuarioLogueado = req.user; // Datos del token
 
-            if (!id || id === 'undefined') return res.redirect('/agendas');
+    //         if (!id || id === 'undefined') return res.redirect('/agendas');
 
-            const turno = await Turno.getById(id);
-            if (!turno) return res.status(404).send("Turno no encontrado");
+    //         const turno = await Turno.getById(id);
+    //         if (!turno) return res.status(404).send("Turno no encontrado");
 
-            // ========================================================
-            // VALIDACIÓN DE SEGURIDAD: ¿Quién puede ver este formulario?
-            // ========================================================
+    //         // ========================================================
+    //         // VALIDACIÓN DE SEGURIDAD: ¿Quién puede ver este formulario?
+    //         // ========================================================
             
-            // Si el turno YA TIENE un paciente asignado:
-            if (turno.id_paciente !== null) {
-                // Si el usuario es un Paciente (Rol 4)
-                if (usuarioLogueado.id_rol === 4) {
-                    // Y no es EL DUEÑO del turno
-                    if (turno.id_paciente !== usuarioLogueado.id_usuario) {
-                        console.warn(`[SEGURIDAD] Paciente ${usuarioLogueado.id_usuario} intentó ver turno ajeno: ${id}`);
-                        return res.status(403).render('errors/403', { 
-                            mensaje: "Este turno ya está ocupado por otro paciente." 
-                        });
-                    }
-                }
+    //         // Si el turno YA TIENE un paciente asignado:
+    //         if (turno.id_paciente !== null) {
+    //             // Si el usuario es un Paciente (Rol 4)
+    //             if (usuarioLogueado.id_rol === 4) {
+    //                 // Y no es EL DUEÑO del turno
+    //                 if (turno.id_paciente !== usuarioLogueado.id_usuario) {
+    //                     console.warn(`[SEGURIDAD] Paciente ${usuarioLogueado.id_usuario} intentó ver turno ajeno: ${id}`);
+    //                     return res.status(403).render('errors/403', { 
+    //                         mensaje: "Este turno ya está ocupado por otro paciente." 
+    //                     });
+    //                 }
+    //             }
+    //         }
+    //         // Si el turno está libre (id_paciente === null), el flujo sigue normal para todos
+
+    //         turno.fecha_formateada = formatearFecha(turno.fecha);
+    //         turno.fecha_input = fechaParaInput(turno.fecha);
+
+    //         res.render("turnos/reservar", { turno });
+    //     } catch (error) {
+    //         console.error("Error vista reservar:", error);
+    //         res.status(500).send("Error interno");
+    //     }
+    // }
+
+
+
+    async establecerForm(req, res) {
+    try {
+        const { id } = req.params;
+        const usuarioLogueado = req.user; // Datos del token
+
+        if (!id || id === 'undefined') return res.redirect('/agendas');
+
+        // IMPORTANTE: Turno.getById(id) debe traer el campo id_medico (vía JOIN con agendas)
+        const turno = await Turno.getById(id);
+        if (!turno) return res.status(404).send("Turno no encontrado");
+
+        // ========================================================
+        // 1. BLOQUEO PARA MÉDICOS (Rol 2)
+        // ========================================================
+        if (usuarioLogueado.id_rol === 2) {
+            // Si el ID del médico del turno no coincide con el del médico logueado
+            if (turno.id_medico !== usuarioLogueado.id_medico) {
+                console.warn(`[SEGURIDAD] Médico ${usuarioLogueado.id_medico} intentó acceder a turno ajeno: ${id}`);
+                return res.status(403).render('errors/403', { 
+                    mensaje: "No tienes permiso para gestionar turnos de otros profesionales." 
+                });
             }
-            // Si el turno está libre (id_paciente === null), el flujo sigue normal para todos
-
-            turno.fecha_formateada = formatearFecha(turno.fecha);
-            turno.fecha_input = fechaParaInput(turno.fecha);
-
-            res.render("turnos/reservar", { turno });
-        } catch (error) {
-            console.error("Error vista reservar:", error);
-            res.status(500).send("Error interno");
         }
-    }
 
+        // ========================================================
+        // 2. BLOQUEO PARA PACIENTES (Rol 4) - Tu lógica existente
+        // ========================================================
+        if (turno.id_paciente !== null && usuarioLogueado.id_rol === 4) {
+            if (turno.id_paciente !== usuarioLogueado.id_usuario) {
+                console.warn(`[SEGURIDAD] Paciente ${usuarioLogueado.id_usuario} intentó ver turno ajeno: ${id}`);
+                return res.status(403).render('errors/403', { 
+                    mensaje: "Este turno ya está ocupado por otro paciente." 
+                });
+            }
+        }
+
+        // --- Continuación normal del flujo ---
+        turno.fecha_formateada = formatearFecha(turno.fecha);
+        turno.fecha_input = fechaParaInput(turno.fecha);
+
+        res.render("turnos/reservar", { turno });
+    } catch (error) {
+        console.error("Error vista reservar:", error);
+        res.status(500).send("Error interno");
+    }
+}
 
 
 

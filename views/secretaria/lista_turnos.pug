@@ -1,3 +1,5 @@
+
+
 extends ../layout
 
 block contenido
@@ -22,7 +24,8 @@ block contenido
       transform: scale(1.02);
     }
     .fila-ausencia {
-      border-left: 5px solid #ffc107 !important;
+      border-left: 5px solid #dc3545 !important;
+      background-color: #fff8f8 !important;
     }
     .fila-sobreturno {
       background-color: #f8f9fa !important;
@@ -37,10 +40,13 @@ block contenido
     .nav-tabs .nav-link {
       color: #6c757d;
       font-weight: bold;
+      border: none;
+      padding: 12px 20px;
     }
     .nav-tabs .nav-link.active {
       color: #0d6efd;
       border-bottom: 3px solid #0d6efd;
+      background: none;
     }
 
   .container-fluid.py-4
@@ -71,8 +77,8 @@ block contenido
           strong ¡Éxito! El turno ha sido movido correctamente.
           button.btn-close(type="button" data-bs-dismiss="alert")
       if status === 'edit_success'
-        .alert.alert-info.alert-dismissible.fade.show.shadow-sm(role="alert")
-          i.fa-solid.fa-user-pen.me-2
+        .alert.alert-success.alert-dismissible.fade.show.shadow-sm(role="alert")
+          i.fa-solid.fa-check-double.me-2
           strong ¡Actualizado! El estado del turno se guardó correctamente.
           button.btn-close(type="button" data-bs-dismiss="alert")
       if status === 'error'
@@ -109,7 +115,6 @@ block contenido
                 option(value=sede selected=(filtros.sucursal === sede))= sede
           .col-md-2
             label.form-label.small.fw-bold Estado
-            //- CAMBIO: name="estado" por name="status" para coincidir con el controlador
             select.form-select(name="status")
               option(value="") Todos
               each est in ['Reservado', 'Confirmado', 'Atendido', 'Cancelado', 'Ausente']
@@ -135,12 +140,14 @@ block contenido
       li.nav-item(role="presentation")
         button.nav-link.position-relative(data-bs-toggle="tab" data-bs-target="#tab-reubicacion" type="button" role="tab")
           i.fa-solid.fa-triangle-exclamation.me-2.text-danger
-          | Necesitan Reubicación
-          if turnosUrgentes && turnosUrgentes.length > 0
+          | Central de Reubicación
+          - const totalReubicaciones = turnosUrgentes ? turnosUrgentes.length : 0
+          if totalReubicaciones > 0
             span.position-absolute.top-0.start-100.translate-middle.badge.rounded-pill.bg-danger
-              | #{turnosUrgentes.length}
+              | #{totalReubicaciones}
 
     .tab-content
+      //- --- TAB: ACTIVOS ---
       .tab-pane.fade.show.active#tab-activos(role="tabpanel")
         .card.border-0.shadow-sm(style="border-top-left-radius: 0;")
           .table-responsive
@@ -158,7 +165,7 @@ block contenido
               tbody
                 if turnos && turnos.length > 0
                   each turno in turnos
-                    tr(class=(turno.medicoAusente ? 'table-warning fila-ausencia' : (turno.es_sobreturno ? 'fila-sobreturno' : (turno.estado === 'Reservado' ? 'table-warning' : ''))))
+                    tr(class=(turno.medicoAusente ? 'table-danger fila-ausencia' : (turno.es_sobreturno ? 'fila-sobreturno' : (turno.estado === 'Reservado' ? 'table-warning' : ''))))
                       td
                         .fw-bold.text-uppercase #{turno.paciente_apellido}, #{turno.paciente_nombre}
                         div.d-flex.align-items-center.gap-2
@@ -166,11 +173,11 @@ block contenido
                           if turno.es_sobreturno
                             span.badge.badge-sobreturno
                               i.fa-solid.fa-plus.me-1
-                              | SOBRETURNO
+                              | SOBRE
                       td 
                         | #{turno.medico_apellido}, #{turno.medico_nombre}
                         if turno.medicoAusente
-                          span.badge.bg-danger.ms-2(title=`Motivo: ${turno.motivoAusencia || 'No especificado'}`)
+                          span.badge.bg-danger.ms-2(title=`Motivo: ${turno.motivoAusencia || 'Ausencia registrada'}`)
                             i.fa-solid.fa-user-slash.me-1
                             | AUSENTE
                       td: span.badge.bg-light.text-dark.border #{turno.especialidad_nombre}
@@ -186,7 +193,7 @@ block contenido
                         .d-flex.flex-column.gap-1
                           button.btn.btn-sm.btn-warning.shadow-sm(onclick=`abrirModalEditarTurno(${JSON.stringify(turno)})`)
                             i.fa-solid.fa-pen-to-square.me-1
-                            | Editar
+                            | Estado
                           button.btn.btn-sm(class=turno.medicoAusente ? 'btn-danger shadow-sm' : 'btn-primary' onclick=`abrirModalTraslado('${turno.id}', '${turno.paciente_nombre} ${turno.paciente_apellido}')`) 
                             i.fa-solid.fa-arrow-right-arrow-left.me-1
                             | Trasladar
@@ -198,7 +205,6 @@ block contenido
 
           .card-footer.bg-white.d-print-none
             if totalPages > 1
-              //- CAMBIO: Se usa status en lugar de estado en la query string
               - const queryParams = `&paciente=${filtros.paciente || ''}&profesional=${filtros.profesional || ''}&fecha=${filtros.fecha || ''}&sucursal=${filtros.sucursal || ''}&especialidad=${filtros.especialidad || ''}&status=${filtros.status || ''}`
               nav(aria-label="Paginación")
                 ul.pagination.justify-content-center.mb-0
@@ -232,47 +238,54 @@ block contenido
             .text-center.mt-2.small.text-muted
               | Mostrando página #{currentPage} de #{totalPages} (Total: #{totalTurnos} turnos)
 
+      //- --- TAB: REUBICACIÓN ---
       .tab-pane.fade#tab-reubicacion(role="tabpanel")
         .card.border-0.shadow-sm(style="border-top-left-radius: 0;")
-          .alert.alert-danger.m-3.mb-0.d-flex.align-items-center
-            i.fa-solid.fa-circle-exclamation.fa-2xl.me-3
+          .alert.alert-warning.m-3.mb-0.d-flex.align-items-center
+            i.fa-solid.fa-triangle-exclamation.fa-2xl.me-3
             div
               strong Atención: 
-              | Estos turnos pertenecen a agendas que han sido desactivadas. Debe contactar al paciente para reprogramar.
+              | Estos pacientes requieren nueva fecha/hora debido a ausencias médicas o cierres de agendas.
           
           .table-responsive.p-3
             table.table.table-hover.align-middle
               thead.table-dark
                 tr
                   th Paciente
-                  th Contacto
-                  th Médico Original
+                  th Motivo
+                  th Profesional / Especialidad
                   th Sucursal
-                  th Fecha / Hora
+                  th Fecha / Hora Original
                   th.text-center Acciones
               tbody
                 if turnosUrgentes && turnosUrgentes.length > 0
                   each tUrge in turnosUrgentes
                     tr
-                      td.fw-bold.text-uppercase #{tUrge.paciente_apellido}, #{tUrge.paciente_nombre}
                       td
+                        .fw-bold.text-uppercase #{tUrge.paciente_apellido}, #{tUrge.paciente_nombre}
                         if tUrge.paciente_telefono
-                          a.btn.btn-sm.btn-outline-success(href=`https://wa.me/${tUrge.paciente_telefono.replace(/\D/g,'')}` target="_blank")
+                          a.btn.btn-sm.btn-outline-success.py-0.mt-1(href=`https://wa.me/${tUrge.paciente_telefono.replace(/\D/g,'')}` target="_blank" style="font-size: 0.7rem;")
                             i.fa-brands.fa-whatsapp.me-1
                             | WhatsApp
+                      td
+                        if tUrge.es_ausencia
+                          span.badge.bg-danger(title=tUrge.detalle_ausencia) #{tUrge.motivo_urgencia}
                         else
-                          span.text-muted Sin tel.
-                      td Dr. #{tUrge.medico_apellido}
-                      td: small.text-muted= tUrge.sucursal_nombre
+                          span.badge.bg-secondary Agenda Inactiva
+                      td 
+                        | Dr. #{tUrge.medico_apellido}
+                        br
+                        small.text-muted #{tUrge.especialidad_nombre}
+                      td: small.text-muted= tUrge.sucursal_nombre || 'N/A'
                       td
                         span.d-block #{new Date(tUrge.fecha).toLocaleDateString('es-AR')}
                         small.fw-bold #{tUrge.hora} hs
                       td.text-center
-                        button.btn.btn-sm.btn-primary(onclick=`abrirModalTraslado('${tUrge.id}', '${tUrge.paciente_nombre} ${tUrge.paciente_apellido}')`)
+                        button.btn.btn-sm.btn-primary.shadow-sm(onclick=`abrirModalTraslado('${tUrge.id}', '${tUrge.paciente_nombre} ${tUrge.paciente_apellido}')`)
                           i.fa-solid.fa-calendar-plus.me-1
                           | Reubicar Ahora
                 else
-                  tr: td.text-center.py-5.text-muted(colspan="6") No hay turnos pendientes.
+                  tr: td.text-center.py-5.text-muted(colspan="6") No hay turnos pendientes de reubicación en la vista actual.
 
   //- --- MODALES ---
   #modalEditarTurno.modal.fade(tabindex="-1")
@@ -281,13 +294,14 @@ block contenido
         .modal-header.bg-warning.text-dark
           h5.modal-title 
             i.fa-solid.fa-pen-to-square.me-2
-            | Editar Estado
+            | Actualizar Turno
           button.btn-close(data-bs-dismiss="modal")
         .modal-body
           form(action="/secretaria/actualizar-estado-turno" method="POST")
             input#editTurnoId(type="hidden" name="id_turno")
+            input#returnUrlEdit(type="hidden" name="returnUrl")
             .mb-3
-              label.form-label.fw-bold Estado
+              label.form-label.fw-bold Nuevo Estado
               select.form-select.form-select-lg(name="estado" id="editEstado")
                 option(value="Reservado") Reservado
                 option(value="Confirmado") Confirmado
@@ -295,10 +309,10 @@ block contenido
                 option(value="Atendido") Atendido
                 option(value="Ausente") Ausente
             .mb-3
-              label.form-label.fw-bold Observaciones
-              textarea.form-control(name="observaciones" id="editObservaciones" rows="3")
+              label.form-label.fw-bold Observaciones / Notas
+              textarea.form-control(name="observaciones" id="editObservaciones" rows="3" placeholder="Ej: El paciente llegó tarde...")
             .mt-4.d-grid
-              button.btn.btn-warning.fw-bold(type="submit") Actualizar
+              button.btn.btn-warning.fw-bold(type="submit") Guardar Cambios
 
   #modalTrasladoIndividual.modal.fade(tabindex="-1")
     .modal-dialog.modal-dialog-centered
@@ -309,6 +323,7 @@ block contenido
         .modal-body
           form(action="/secretaria/trasladar-turno" method="POST")
             input#trasladoTurnoId(type="hidden" name="id_turno")
+            input#returnUrlTraslado(type="hidden" name="returnUrl")
             p.mb-3 Moviendo a: 
               strong#nombrePacienteTraslado -
             .mb-3
@@ -349,7 +364,7 @@ block contenido
             h6.fw-bold Foto DNI
             a#linkFotoDni(target="_blank")
               img#fotoDniPreview.img-fluid.rounded.shadow-sm(style="max-height: 350px; display:none;")
-            #sinFotoDni.alert.alert-light.border No hay foto.
+            #sinFotoDni.alert.alert-light.border No hay foto cargada.
         .modal-footer
           button.btn.btn-secondary(data-bs-dismiss="modal") Cerrar
 
@@ -359,6 +374,7 @@ block contenido
       document.getElementById('editTurnoId').value = turno.id;
       document.getElementById('editEstado').value = turno.estado;
       document.getElementById('editObservaciones').value = turno.observaciones || '';
+      document.getElementById('returnUrlEdit').value = window.location.href;
       modal.show();
     }
 
@@ -366,6 +382,7 @@ block contenido
       const modal = new bootstrap.Modal(document.getElementById('modalTrasladoIndividual'));
       document.getElementById('trasladoTurnoId').value = id;
       document.getElementById('nombrePacienteTraslado').innerText = nombre;
+      document.getElementById('returnUrlTraslado').value = window.location.href;
       const fechaFiltro = document.querySelector('input[name="fecha"]').value;
       if(fechaFiltro) document.getElementById('trasladoFecha').value = fechaFiltro;
       modal.show();

@@ -1,0 +1,64 @@
+.d-flex.align-items-center.mb-3
+  .bg-primary.rounded-circle.p-2.me-2(style="width:35px; height:35px; display:flex; align-items:center; justify-content:center")
+    i.fa-solid.fa-pen-to-square.text-white.small
+  h4.fw-bold.m-0 Datos del Turno
+
+.card-custom.p-4.shadow-sm.bg-white.border-top.border-primary.border-4
+  form#formReserva(method="POST" action="/secretaria/agendar" enctype="multipart/form-data")
+    input#agendaIdHidden(type="hidden" name="id_agenda")
+    input#turnoIdHidden(type="hidden" name="id_turno")
+    
+    .mb-3.position-relative
+      label.form-label.small.fw-bold.text-uppercase.text-muted Profesional
+      .input-group
+        span.input-group-text.bg-light: i.fa-solid.fa-user-doctor.text-primary
+        input#buscarMedico.form-control.bg-light(type="text" placeholder="Buscar médico..." autocomplete="off")
+      #sugerenciasMedico.list-group.position-absolute.w-100.shadow-lg.z-3
+      input#medicoId(type="hidden" name="id_medico")
+      
+    .mb-3
+      label.form-label.small.fw-bold.text-uppercase.text-muted Especialidad
+      select#especialidadSelect.form-select.bg-light(name="id_especialidad" required disabled)
+        option(value="" selected disabled) Primero busca un médico
+
+    .mb-3.position-relative
+      label.form-label.small.fw-bold.text-uppercase.text-muted Paciente
+      .input-group
+        span.input-group-text.bg-light: i.fa-solid.fa-hospital-user.text-primary
+        input#buscarPaciente.form-control.bg-light(type="text" placeholder="DNI o Nombre..." autocomplete="off" required)
+      #sugerenciasPaciente.list-group.position-absolute.w-100.shadow-lg.z-3
+      input#pacienteId(type="hidden" name="id_paciente")
+
+    .row
+      .col-6.mb-3
+        label.form-label.small.fw-bold.text-uppercase.text-muted Fecha
+        input#fecha.form-control.bg-light(type="date" name="fecha" required)
+      .col-6.mb-3
+        label.form-label.small.fw-bold.text-uppercase.text-muted Horario
+        input#horaSeleccionadaInput.form-control.bg-white.border-primary.fw-bold(type="text" name="hora_inicio" placeholder="--:--" readonly required)
+
+    .mb-3
+      .form-check.form-switch.p-3.border.rounded-3.bg-light#containerCheckSobreturno
+        input#esSobreturno.form-check-input.ms-0.me-2(type="checkbox" name="es_sobreturno" value="1" disabled)
+        label.form-check-label.fw-bold.text-muted(for="esSobreturno" id="labelSobreturno") 
+          i.fa-solid.fa-circle-plus.me-1
+          | ¿Es un Sobreturno?
+
+    .mb-3
+      label.form-label.small.fw-bold.text-uppercase.text-muted Foto del Documento
+      .input-group
+        span.input-group-text.bg-light: i.fa-solid.fa-camera.text-primary
+        input#fotoDocumento.form-control.bg-light(type="file" name="archivo_dni" accept="image/*")
+      #previewContainer.mt-2.d-none
+        .position-relative.d-inline-block
+          img#imgPreview.img-thumbnail(style="max-height: 150px;")
+          button#removePreview.btn.btn-sm.btn-danger.position-absolute.top-0.end-0(type="button") 
+            i.fa-solid.fa-xmark
+
+    .mb-3
+      label.form-label.small.fw-bold.text-uppercase.text-muted Motivo / Notas
+      textarea.form-control.bg-light(name="motivo" rows="2" style="resize: none;")
+
+    button#btnGuardar.btn.btn-primary.w-100.py-3.fw-bold.text-uppercase.shadow(type="submit" disabled)
+      i.fa-solid.fa-calendar-check.me-2
+      | Confirmar Turno Médico

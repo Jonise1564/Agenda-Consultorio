@@ -1,0 +1,32 @@
+//- mixin accessCard(title, icon, color, link, btnText)
+//-   .col-md
+//-     .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+//-       .card-body.d-flex.flex-column
+//-         .icon-circle.text-white.mb-3.mx-auto.d-flex.align-items-center.justify-content-center(class=`bg-${color}` style="width: 50px; height: 50px; border-radius: 50%;")
+//-           i.fa-solid.fs-4(class=icon)
+//-         h6.fw-bold.mb-3= title
+//-         .mt-auto
+//-           a.btn.btn-sm.w-100.rounded-pill(href=link class=`btn-${color}`)= btnText
+
+//- .row.g-3.mb-5
+//-   +accessCard('Agendas', 'fa-calendar-days', 'primary', '/agendas', 'Ver')
+//-   +accessCard('Turnos', 'fa-rectangle-list', 'success', '/secretaria/turnos', 'Ver')
+//-   +accessCard('Pacientes', 'fa-address-book', 'info', '/pacientes', 'Ver')
+//-   +accessCard('Ausencias', 'fa-user-slash', 'secondary', '/secretaria/ausencias', 'Gestionar')
+//-   +accessCard('Lista Espera', 'fa-hourglass-half', 'warning', '/secretaria/lista-espera', 'Gestionar')
+
+
+
+.row.g-3.mb-5
+  each val, index in [{t:'Agendas', c:'primary', i:'calendar-days', h:'/agendas'}, {t:'Turnos', c:'success', i:'rectangle-list', h:'/secretaria/turnos'}, {t:'Pacientes', c:'info', i:'address-book', h:'/pacientes', o:true}, {t:'Ausencias', c:'secondary', i:'user-slash', h:'/secretaria/ausencias', o:true}, {t:'Lista Espera', c:'warning', i:'hourglass-half', h:'/secretaria/lista-espera'}]
+    .col-md
+      .card.text-center.h-100.shadow-sm.bg-white.p-3.border-0.rounded-4
+        .card-body.d-flex.flex-column
+          div(class=`icon-circle bg-${val.c} ${val.c === 'warning' ? 'text-dark' : 'text-white'} mb-3 mx-auto d-flex align-items-center justify-content-center`, style="width: 50px; height: 50px; border-radius: 50%;")
+            i(class=`fa-solid fa-${val.i} fs-4`)
+          h6.fw-bold.mb-3= val.t
+          .mt-auto
+            a(class=`btn btn-${val.o ? 'outline-' + val.c : val.c} btn-sm w-100 rounded-pill ${val.c === 'warning' ? 'fw-bold' : ''}`, href=val.h)
+              if val.t === 'Ausencias'
+                i.fa-solid.fa-list-ul.me-2
+              | #{val.t === 'Ausencias' || val.t === 'Lista Espera' ? 'Gestionar' : 'Ver'}

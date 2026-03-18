@@ -78,7 +78,7 @@ router.get("/reservar/:id", verificarAcceso([1, 2, 3, 4]), TurnosController.esta
 router.get('/validar-duplicado', verificarAcceso([1, 2, 3, 4]), TurnosController.validarTurnoDia);
 
 // 3. PROCESAR LA RESERVA
-router.post("/reservar/:id?", verificarAcceso([1, 2, 3, 4]), upload.single('archivo_dni'), TurnosController.reservar);
+router.post("/reservar/:id?", verificarAcceso([1, 3, 4]), upload.single('archivo_dni'), TurnosController.reservar);
 
 // 4. ELIMINAR turno (¡PROTEGIDO!)
 // Solo Admin (1) y Secretaria (3) pueden eliminar turnos. 

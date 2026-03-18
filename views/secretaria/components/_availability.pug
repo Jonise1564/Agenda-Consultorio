@@ -1,0 +1,27 @@
+.d-flex.align-items-center.mb-3
+  .bg-info.rounded-circle.p-2.me-2(style="width:35px; height:35px; display:flex; align-items:center; justify-content:center")
+    i.fa-solid.fa-clock.text-white.small
+  h4.fw-bold.m-0 Disponibilidad
+
+#contenedorDisponibilidad.card.border-0.shadow-sm.h-100.rounded-4(style="min-height: 400px; background: #f8f9fa; border: 2px dashed #dee2e6 !important;")
+  .card-body.d-flex.flex-column.justify-content-start.p-4
+    #instruccionInicial.text-center.text-muted.mt-5
+      i.fa-solid.fa-calendar-day.fs-1.mb-3.opacity-25
+      p.px-4 Selecciona un profesional y la fecha para desplegar los horarios.
+    
+    #loader.text-center.d-none.mt-5
+      .spinner-border.text-primary(role="status")
+      p.mt-2.fw-bold Consultando agenda...
+
+    .d-flex.justify-content-between.mb-3.small.fw-bold.text-uppercase.text-muted#legendContainer.d-none
+      span.text-primary ● Libre
+      span.text-danger ● Ocupado (Sobreturno)
+
+    #slotsContainer.d-flex.flex-wrap.gap-2.justify-content-center
+
+    #mensajeVacio.text-center.mt-5.d-none
+      i#iconoVacio.fa-solid.fa-calendar-xmark.text-danger.fs-1.mb-3.d-block
+      p#textoVacio.mb-3 No hay horarios disponibles para esta selección.
+      button#btnAbrirListaEspera.btn.btn-warning.fw-bold.rounded-pill(type="button" onclick="prepararListaEspera()")
+        i.fa-solid.fa-user-clock.me-2
+        | Anotar en Lista de Espera

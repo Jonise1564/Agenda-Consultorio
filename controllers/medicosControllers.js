@@ -6,6 +6,8 @@ const Especialidad = require('../models/especialidadesModels');
 const { validateMedicos } = require('../schemas/validation');
 const { obtenerFechaFormateada } = require('../utils/dateFormatter');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 
 class MedicosController {
 
@@ -305,7 +307,7 @@ class MedicosController {
     }
 
     // ================================================================
-    // BUSCADORES Y API
+    // BUSCADORES
     // ================================================================
     async buscar(req, res) {
         try {
@@ -326,6 +328,144 @@ class MedicosController {
             res.status(500).json([]);
         }
     }
+
+    // Verifica si un Email ya existe en la tabla Usuarios
+    async verificarEmail(req, res) {
+        try {
+            const { email } = req.params;
+            // Usamos el método que ya tienes en tu modelo Usuario
+            const usuario = await Usuario.getByEmail(email);
+            res.json({ existe: !!usuario });
+        } catch (error) {
+            console.error("Error al verificar email:", error);
+            res.status(500).json({ error: 'Error del servidor' });
+        }
+    }
+
+
+    // ==============================
+    // DASHBOARD DEL MÉDICO 
+    // ==============================   
+    async getDashboard(req, res, next) {
+        try {
+            const id_usuario = res.locals.usuario.id;
+            const medico = await Medico.obtenerPorUsuario(id_usuario);
+
+            if (!medico) {
+                return res.status(404).render('errors/403', {
+                    mensaje: 'No se encontró un perfil profesional asociado a su cuenta.'
+                });
+            }
+
+            const [pacientesHoy, especialidades] = await Promise.all([
+                Medico.obtenerTurnosDelDia(medico.id_medico),
+                Medico.obtenerEspecialidades(medico.id_medico)
+            ]);
+
+            res.render('medicos/dashboard', {
+                page: 'dashboard-medico',
+                // PASAMOS EL DNI AQUÍ
+                persona: {
+                    nombre: res.locals.usuario.nombre || medico.nombre,
+                    apellido: res.locals.usuario.apellido || medico.apellido,
+                    dni: medico.dni || medico.paciente_dni, // Aseguramos que viaje el DNI del médico
+                    nacimiento: medico.nacimiento
+                },
+                medico: {
+                    id_medico: medico.id_medico,
+                    matricula: medico.matricula,
+                    especialidades: especialidades // Estas son las especialidades del médico
+                },
+                pacientesHoy: pacientesHoy, // Aquí deben venir: paciente_dni y especialidad_nombre
+                usuario: res.locals.usuario
+            });
+
+        } catch (err) {
+            console.error("Error en MedicosController.getDashboard:", err);
+            next(err);
+        }
+    }
+
+
+
+    // ================================================================
+    // ACTUALIZAR PERFIL DESDE EL DASHBOARD (MÉDICO)
+    // ================================================================
+    async updatePerfil(req, res, next) {
+        try {
+            const id_usuario = res.locals.usuario.id;
+            const id_persona_sesion = res.locals.usuario.id_persona;
+            const { nombre, apellido, email, password, nacimiento } = req.body;
+
+            const medico = await Medico.obtenerPorUsuario(id_usuario);
+            if (!medico) return res.status(404).send('Perfil no encontrado');
+
+            // 1. FORMATEAR FECHA PARA MYSQL
+            let fechaFormateada = null;
+            if (nacimiento) {
+                fechaFormateada = nacimiento.toString().split('T')[0];
+            }
+
+            // 2. ACTUALIZAR BASE DE DATOS
+            await Persona.updatePersona(id_persona_sesion, {
+                nombre: nombre.trim(),
+                apellido: apellido.trim(),
+                nacimiento: fechaFormateada
+            });
+
+            const userUpdates = { email: email.trim() };
+            if (password && password.trim() !== '') {
+                const bcrypt = require('bcrypt');
+                userUpdates.password = await bcrypt.hash(password.trim(), 10);
+            }
+            await Usuario.updateUsuario(id_usuario, userUpdates);
+
+            // 3. ACTUALIZAR SESIÓN (LIMPIANDO EL PAYLOAD)
+            // Extraemos iat y exp para que no viajen al nuevo token
+            const { iat, exp, ...datosLimpios } = res.locals.usuario;
+
+            const nuevoPayload = {
+                ...datosLimpios,
+                nombre: nombre.trim(),
+                apellido: apellido.trim(),
+                email: email.trim()
+            };
+
+            const nuevoToken = jwt.sign(
+                nuevoPayload,
+                process.env.JWT_SECRET || 'tu_palabra_secreta',
+                { expiresIn: '1d' } // Ahora sí funcionará sin chocar con 'exp'
+            );
+
+            // 4. GUARDAR COOKIE
+            res.cookie('token_acceso', nuevoToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 24 * 60 * 60 * 1000
+            });
+
+            // 5. REDIRIGIR CON ÉXITO
+            return res.redirect('/medicos/dashboard?status=success');
+
+        } catch (error) {
+            console.error('Error al actualizar perfil:', error);
+            return res.redirect('/medicos/dashboard?status=error');
+        }
+    }
+
+    // Verifica si una Matrícula ya existe en la tabla medicos
+    async verificarMatricula(req, res) {
+        try {
+            const { matricula } = req.params;
+            const medico = await Medico.buscarPorMatricula(matricula);
+            res.json({ existe: !!medico });
+        } catch (error) {
+            console.error("Error al verificar matrícula:", error);
+            res.status(500).json({ error: 'Error del servidor' });
+        }
+    }
+
 }
 
 module.exports = new MedicosController();

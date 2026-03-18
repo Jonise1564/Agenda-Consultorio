@@ -1,3 +1,706 @@
+//- extends ../layout
+
+//- block contenido
+//-   link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
+  
+//-   style.
+//-     /* EFECTO DE AGRANDADO AL PASAR EL MOUSE */
+//-     .hover-expand { 
+//-       transition: all 0.3s ease-in-out; 
+//-       position: relative;
+//-       z-index: 1;
+//-     }
+//-     .hover-expand:hover { 
+//-       transform: scale(1.05);
+//-       z-index: 10; 
+//-       box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+//-     }
+    
+//-     .bg-soft-primary { background-color: rgba(13, 110, 253, 0.08); color: #0d6efd; font-size: 0.65rem; }
+//-     .border-absence { border-left: 4px solid #fd7e14 !important; }
+//-     .bg-soft-warning { background-color: rgba(253, 126, 20, 0.15); color: #fd7e14; font-size: 0.65rem; font-weight: bold; }
+//-     .bg-light-orange { background-color: #fffaf5; }
+//-     .small-text { font-size: 0.75rem; }
+//-     .tiny-text { font-size: 0.65rem; }
+
+//-   .container-fluid
+//-     .row.mb-3.align-items-center
+//-       .col-md-6
+//-         h4.fw-bold.text-primary.mb-0
+//-           i.bi.bi-calendar-week.me-2
+//-           | Gestión de Agendas
+      
+//-       .col-md-6.text-md-end
+//-         a.btn.btn-success.btn-sm.shadow-sm(href="/agendas/create")
+//-           i.bi.bi-plus-lg.me-1
+//-           | Nueva
+//-         a.btn.btn-outline-secondary.btn-sm.shadow-sm.ms-2(href="/secretaria")
+//-           i.fa-solid.fa-house-user.me-1
+//-           | Volver Panel
+
+//-     //- Barra de Filtros Compacta
+//-     .card.border-0.shadow-sm.mb-3
+//-       .card-body.bg-light.rounded.py-2
+//-         .row.g-2
+//-           .col-md-3
+//-             select.form-select.form-select-sm(id="f-especialidad" onchange="applyFilters()")
+//-               option(value="") Especialidad: Todas
+//-               if especialidades
+//-                 each esp in especialidades
+//-                   option(value=esp.nombre)= esp.nombre
+//-           .col-md-3
+//-             select.form-select.form-select-sm(id="f-medico" onchange="applyFilters()")
+//-               option(value="") Médico: Todos
+//-               if medicos
+//-                 each med in medicos
+//-                   option(value=`${med.apellido} ${med.nombre}`)= `${med.apellido} ${med.nombre}`
+//-           .col-md-3
+//-             select.form-select.form-select-sm(id="f-dia" onchange="applyFilters()")
+//-               option(value="") Día: Todos
+//-               each d in ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
+//-                 option(value=d)= d
+//-           .col-md-3
+//-             select.form-select.form-select-sm(id="f-sucursal" onchange="applyFilters()")
+//-               option(value="") Sucursal: Todas
+//-               option(value="Clínica Argentina") Clínica Argentina
+//-               option(value="Clínica España") Clínica España
+
+//-     //- Grilla de Cards
+//-     .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.row-cols-xl-5.g-3#agendas-list
+//-       if agendas && agendas.length > 0
+//-         each agenda in agendas
+//-           .col.agenda-card(
+//-             data-especialidad=agenda.especialidad
+//-             data-medico=`${agenda.apellido} ${agenda.nombre}`
+//-             data-dia=agenda.dias
+//-             data-sucursal=agenda.sucursal
+//-           )
+//-             .card.h-100.border-0.shadow-sm.hover-expand.border-start.border-4(class=agenda.ausente ? 'border-absence bg-light-orange' : 'border-primary')
+//-               .card-header.bg-transparent.pt-2.pb-1.border-0
+//-                 .d-flex.justify-content-between.align-items-start
+//-                   div
+//-                     p.fw-bold.mb-0.small-text #{agenda.apellido}, #{agenda.nombre}
+//-                     span.badge.tiny-text(class=agenda.ausente ? 'bg-soft-warning text-warning' : 'bg-soft-primary')= agenda.especialidad
+                  
+//-                   if agenda.ausente
+//-                     i.bi.bi-exclamation-triangle-fill.text-warning.fs-6
+
+//-               .card-body.py-1
+//-                 if agenda.ausente
+//-                   p.text-danger.tiny-text.mb-1.fw-bold
+//-                     i.bi.bi-person-slash.me-1
+//-                     | Profesional Ausente
+
+//-                 .d-flex.flex-column.gap-1.small-text
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-clock.text-primary.me-2.tiny-text
+//-                     span.fw-bold.tiny-text #{agenda.hora_inicio}-#{agenda.hora_fin} hs
+                  
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-calendar-check.text-muted.me-2.tiny-text
+//-                     span.tiny-text= agenda.dias
+
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-geo-alt.text-danger.me-2.tiny-text
+//-                     span.tiny-text= agenda.sucursal
+
+//-                   hr.my-1.opacity-10
+
+//-                   .d-flex.justify-content-between.tiny-text
+//-                     span.text-muted Dur: #{agenda.duracion_turnos}m
+//-                     span.text-muted Sob: #{agenda.limite_sobreturnos}
+
+//-               .card-footer.bg-transparent.border-0.pt-0.pb-2
+//-                 .d-grid.gap-1
+//-                   //- a.btn.btn-xs.py-0(href=`/turnos/${agenda.id}` class=agenda.ausente ? 'btn-warning' : 'btn-primary' style="font-size: 0.7rem")
+//-                   //-   | Gestionar Turnos
+//-                   .d-flex.gap-1
+//-                     a.btn.btn-outline-primary.btn-sm.flex-fill.py-0(href=`/agendas/edit/${agenda.id}` style="font-size: 0.65rem") Editar
+//-                     button.btn.btn-outline-danger.btn-sm.flex-fill.py-0(onclick=`confirmDelete(${agenda.id})` style="font-size: 0.65rem") Eliminar
+                
+//-                 .text-center.mt-1
+//-                   span.text-muted.tiny-text
+//-                     | Vigencia: #{agenda.fecha_creacion} / #{agenda.fecha_fin}
+//-       else
+//-         .col-12.text-center.py-5
+//-           i.bi.bi-search.display-4.text-muted
+//-           h5.text-muted.mt-3 No hay agendas cargadas
+
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const params = new URLSearchParams(window.location.search);
+//-       if (params.get('nombreStore')) Swal.fire({ icon: 'success', title: '¡Creada!', text: 'Agenda cargada correctamente', timer: 2000, showConfirmButton: false });
+//-       if (params.get('nombreUpdate')) Swal.fire({ icon: 'success', title: '¡Actualizada!', text: 'Cambios guardados con éxito', timer: 2000, showConfirmButton: false });
+//-       if (params.get('deleted')) Swal.fire({ icon: 'success', title: 'Desactivada', text: 'La agenda ya no recibirá nuevos turnos', timer: 2000, showConfirmButton: false });
+//-       if (params.get('error') === 'no_encontrada') Swal.fire({ icon: 'error', title: 'Error', text: 'La agenda no existe o no está activa' });
+
+//-       const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+//-       window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+//-     });
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Desactivar Agenda?',
+//-         text: 'La agenda ya no aparecerá en la lista de turnos.',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#dc3545',
+//-         confirmButtonText: 'Sí, eliminar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           fetch(`/agendas/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+//-           .then(res => res.json())
+//-           .then(data => {
+//-             if (data.success) window.location.href = '/agendas?deleted=true';
+//-             else Swal.fire('Error', data.message, 'error');
+//-           });
+//-         }
+//-       });
+//-     }
+
+//-     function applyFilters() {
+//-       // Capturamos valores y pasamos a minúsculas para comparar seguro
+//-       const fEsp = document.getElementById('f-especialidad').value.toLowerCase();
+//-       const fMed = document.getElementById('f-medico').value.toLowerCase();
+//-       const fDia = document.getElementById('f-dia').value.toLowerCase();
+//-       const fSuc = document.getElementById('f-sucursal').value.toLowerCase();
+
+//-       document.querySelectorAll('.agenda-card').forEach(card => {
+//-         const cEsp = (card.dataset.especialidad || "").toLowerCase();
+//-         const cMed = (card.dataset.medico || "").toLowerCase();
+//-         const cDia = (card.dataset.dia || "").toLowerCase();
+//-         const cSuc = (card.dataset.sucursal || "").toLowerCase();
+
+//-         const match = 
+//-           (fEsp === "" || cEsp === fEsp) &&
+//-           (fMed === "" || cMed === fMed) &&
+//-           (fDia === "" || cDia.includes(fDia)) &&
+//-           (fSuc === "" || cSuc === fSuc);
+
+//-         card.style.display = match ? "block" : "none";
+//-       });
+//-     }
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
+  
+//-   style.
+//-     /* EFECTO DE AGRANDADO AL PASAR EL MOUSE */
+//-     .hover-expand { 
+//-       transition: all 0.3s ease-in-out; 
+//-       position: relative;
+//-       z-index: 1;
+//-     }
+//-     .hover-expand:hover { 
+//-       transform: scale(1.05);
+//-       z-index: 10; 
+//-       box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+//-     }
+    
+//-     .bg-soft-primary { background-color: rgba(13, 110, 253, 0.08); color: #0d6efd; font-size: 0.65rem; }
+//-     .border-absence { border-left: 4px solid #fd7e14 !important; }
+//-     .bg-soft-warning { background-color: rgba(253, 126, 20, 0.15); color: #fd7e14; font-size: 0.65rem; font-weight: bold; }
+//-     .bg-light-orange { background-color: #fffaf5; }
+//-     .small-text { font-size: 0.75rem; }
+//-     .tiny-text { font-size: 0.65rem; }
+
+//-     /* MEJORAS PARA CRECIMIENTO MASIVO */
+//-     .sticky-filters { position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+//-     .table-xs td, .table-xs th { padding: 0.4rem; font-size: 0.75rem; vertical-align: middle; }
+//-     .btn-xs { padding: 1px 5px; font-size: 0.65rem; }
+
+//-   .container-fluid
+//-     //- Cabecera Fija
+//-     .sticky-filters.mb-3
+//-       .row.align-items-center
+//-         .col-md-4
+//-           h4.fw-bold.text-primary.mb-0
+//-             i.bi.bi-calendar-week.me-2
+//-             | Gestión de Agendas
+//-             span.badge.bg-secondary.ms-2.fs-6#total-count #{agendas ? agendas.length : 0}
+        
+//-         .col-md-8.text-md-end.d-flex.justify-content-end.gap-2
+//-           .btn-group.shadow-sm
+//-             button.btn.btn-outline-primary.btn-sm#btn-grid(onclick="toggleView('grid')" title="Vista Rejilla")
+//-               i.bi.bi-grid-3x3-gap
+//-             button.btn.btn-outline-primary.btn-sm#btn-list(onclick="toggleView('list')" title="Vista Lista")
+//-               i.bi.bi-list-ul
+//-           a.btn.btn-success.btn-sm.shadow-sm(href="/agendas/create")
+//-             i.bi.bi-plus-lg.me-1
+//-             | Nueva
+//-           a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/secretaria")
+//-             i.fa-solid.fa-house-user.me-1
+
+//-     //- Barra de Filtros
+//-     .card.border-0.shadow-sm.mb-3
+//-       .card-body.bg-light.rounded.py-2
+//-         .row.g-2
+//-           .col-md-3
+//-             .input-group.input-group-sm
+//-               span.input-group-text: i.bi.bi-search
+//-               input.form-control(type="text" id="global-search" placeholder="Buscar médico o especialidad..." onkeyup="applyFilters()")
+//-           .col-md-2
+//-             select.form-select.form-select-sm(id="f-especialidad" onchange="applyFilters()")
+//-               option(value="") Especialidad: Todas
+//-               if especialidades
+//-                 each esp in especialidades
+//-                   option(value=esp.nombre)= esp.nombre
+//-           .col-md-2
+//-             select.form-select.form-select-sm(id="f-medico" onchange="applyFilters()")
+//-               option(value="") Médico: Todos
+//-               if medicos
+//-                 each med in medicos
+//-                   option(value=`${med.apellido} ${med.nombre}`)= `${med.apellido} ${med.nombre}`
+//-           .col-md-2
+//-             select.form-select.form-select-sm(id="f-dia" onchange="applyFilters()")
+//-               option(value="") Día: Todos
+//-               each d in ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
+//-                 option(value=d)= d
+//-           .col-md-3
+//-             select.form-select.form-select-sm(id="f-sucursal" onchange="applyFilters()")
+//-               option(value="") Sucursal: Todas
+//-               option(value="Clínica Argentina") Clínica Argentina
+//-               option(value="Clínica España") Clínica España
+
+//-     //- VISTA 1: LISTA COMPACTA (Para cuando hay muchos médicos)
+//-     .table-responsive.d-none#view-list
+//-       table.table.table-hover.table-xs.bg-white.shadow-sm.rounded
+//-         thead.table-light
+//-           tr
+//-             th Médico
+//-             th Especialidad
+//-             th Horario
+//-             th Días
+//-             th Sucursal
+//-             th.text-center Acciones
+//-         tbody
+//-           if agendas && agendas.length > 0
+//-             each agenda in agendas
+//-               tr.agenda-item(
+//-                 data-especialidad=agenda.especialidad
+//-                 data-medico=`${agenda.apellido} ${agenda.nombre}`
+//-                 data-dia=agenda.dias
+//-                 data-sucursal=agenda.sucursal
+//-               )
+//-                 td
+//-                   span.fw-bold #{agenda.apellido}, #{agenda.nombre}
+//-                   if agenda.ausente
+//-                     span.badge.bg-soft-warning.ms-1 AUSENTE
+//-                 td: span.badge.bg-soft-primary= agenda.especialidad
+//-                 td.fw-bold #{agenda.hora_inicio}-#{agenda.hora_fin} hs
+//-                 td.small-text= agenda.dias
+//-                 td.small-text= agenda.sucursal
+//-                 td.text-center
+//-                   .btn-group
+//-                     a.btn.btn-outline-primary.btn-xs(href=`/agendas/edit/${agenda.id}`) Editar
+//-                     button.btn.btn-outline-danger.btn-xs(onclick=`confirmDelete(${agenda.id})`) Eliminar
+
+//-     //- VISTA 2: GRILLA DE CARDS (Original)
+//-     .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.row-cols-xl-5.g-3#view-grid
+//-       if agendas && agendas.length > 0
+//-         each agenda in agendas
+//-           .col.agenda-item(
+//-             data-especialidad=agenda.especialidad
+//-             data-medico=`${agenda.apellido} ${agenda.nombre}`
+//-             data-dia=agenda.dias
+//-             data-sucursal=agenda.sucursal
+//-           )
+//-             .card.h-100.border-0.shadow-sm.hover-expand.border-start.border-4(class=agenda.ausente ? 'border-absence bg-light-orange' : 'border-primary')
+//-               .card-header.bg-transparent.pt-2.pb-1.border-0
+//-                 .d-flex.justify-content-between.align-items-start
+//-                   div
+//-                     p.fw-bold.mb-0.small-text #{agenda.apellido}, #{agenda.nombre}
+//-                     span.badge.tiny-text(class=agenda.ausente ? 'bg-soft-warning text-warning' : 'bg-soft-primary')= agenda.especialidad
+//-                   if agenda.ausente
+//-                     i.bi.bi-exclamation-triangle-fill.text-warning.fs-6
+
+//-               .card-body.py-1
+//-                 if agenda.ausente
+//-                   p.text-danger.tiny-text.mb-1.fw-bold
+//-                     i.bi.bi-person-slash.me-1
+//-                     | Profesional Ausente
+//-                 .d-flex.flex-column.gap-1.small-text
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-clock.text-primary.me-2.tiny-text
+//-                     span.fw-bold.tiny-text #{agenda.hora_inicio}-#{agenda.hora_fin} hs
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-calendar-check.text-muted.me-2.tiny-text
+//-                     span.tiny-text= agenda.dias
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-geo-alt.text-danger.me-2.tiny-text
+//-                     span.tiny-text= agenda.sucursal
+//-                 hr.my-1.opacity-10
+//-                 .d-flex.justify-content-between.tiny-text
+//-                   span.text-muted Dur: #{agenda.duracion_turnos}m
+//-                   span.text-muted Sob: #{agenda.limite_sobreturnos}
+
+//-               .card-footer.bg-transparent.border-0.pt-0.pb-2
+//-                 .d-flex.gap-1
+//-                   a.btn.btn-outline-primary.btn-sm.flex-fill.py-0(href=`/agendas/edit/${agenda.id}` style="font-size: 0.65rem") Editar
+//-                   button.btn.btn-outline-danger.btn-sm.flex-fill.py-0(onclick=`confirmDelete(${agenda.id})` style="font-size: 0.65rem") Eliminar
+    
+//-     #no-results.text-center.py-5.d-none
+//-       i.bi.bi-search.display-4.text-muted
+//-       h5.text-muted.mt-3 No se encontraron agendas con esos filtros
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       // Recuperar preferencia de vista
+//-       const savedView = localStorage.getItem('agenda-view-pref') || 'grid';
+//-       toggleView(savedView);
+
+//-       const params = new URLSearchParams(window.location.search);
+//-       if (params.get('nombreStore')) Swal.fire({ icon: 'success', title: '¡Creada!', text: 'Agenda cargada correctamente', timer: 2000, showConfirmButton: false });
+//-       if (params.get('nombreUpdate')) Swal.fire({ icon: 'success', title: '¡Actualizada!', text: 'Cambios guardados con éxito', timer: 2000, showConfirmButton: false });
+//-       if (params.get('deleted')) Swal.fire({ icon: 'success', title: 'Desactivada', text: 'La agenda ya no recibirá nuevos turnos', timer: 2000, showConfirmButton: false });
+      
+//-       const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+//-       window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+//-     });
+
+//-     function toggleView(type) {
+//-       const grid = document.getElementById('view-grid');
+//-       const list = document.getElementById('view-list');
+//-       if (type === 'list') {
+//-         grid.classList.add('d-none');
+//-         list.classList.remove('d-none');
+//-       } else {
+//-         grid.classList.remove('d-none');
+//-         list.classList.add('d-none');
+//-       }
+//-       localStorage.setItem('agenda-view-pref', type);
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Desactivar Agenda?',
+//-         text: 'La agenda ya no aparecerá en la lista de turnos.',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#dc3545',
+//-         confirmButtonText: 'Sí, eliminar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           fetch(`/agendas/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+//-           .then(res => res.json())
+//-           .then(data => {
+//-             if (data.success) window.location.href = '/agendas?deleted=true';
+//-             else Swal.fire('Error', data.message, 'error');
+//-           });
+//-         }
+//-       });
+//-     }
+
+//-     function applyFilters() {
+//-       const search = document.getElementById('global-search').value.toLowerCase();
+//-       const fEsp = document.getElementById('f-especialidad').value.toLowerCase();
+//-       const fMed = document.getElementById('f-medico').value.toLowerCase();
+//-       const fDia = document.getElementById('f-dia').value.toLowerCase();
+//-       const fSuc = document.getElementById('f-sucursal').value.toLowerCase();
+
+//-       let visibleCount = 0;
+
+//-       document.querySelectorAll('.agenda-item').forEach(item => {
+//-         const cEsp = (item.dataset.especialidad || "").toLowerCase();
+//-         const cMed = (item.dataset.medico || "").toLowerCase();
+//-         const cDia = (item.dataset.dia || "").toLowerCase();
+//-         const cSuc = (item.dataset.sucursal || "").toLowerCase();
+
+//-         // Búsqueda global (médico o especialidad)
+//-         const matchesSearch = search === "" || cMed.includes(search) || cEsp.includes(search);
+        
+//-         const matchesFilters = 
+//-           (fEsp === "" || cEsp === fEsp) &&
+//-           (fMed === "" || cMed === fMed) &&
+//-           (fDia === "" || cDia.includes(fDia)) &&
+//-           (fSuc === "" || cSuc === fSuc);
+
+//-         const isVisible = matchesSearch && matchesFilters;
+        
+//-         // Manejo de visibilidad según el tipo de elemento (TR o DIV)
+//-         if (isVisible) {
+//-           item.style.setProperty('display', item.tagName === 'TR' ? 'table-row' : 'block', 'important');
+//-           visibleCount++;
+//-         } else {
+//-           item.style.setProperty('display', 'none', 'important');
+//-         }
+//-       });
+
+//-       document.getElementById('total-count').innerText = visibleCount;
+//-       document.getElementById('no-results').classList.toggle('d-none', visibleCount > 0);
+//-     }
+
+
+
+
+
+//- extends ../layout
+
+//- block contenido
+//-   link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css")
+  
+//-   style.
+//-     /* EFECTO DE AGRANDADO AL PASAR EL MOUSE */
+//-     .hover-expand { 
+//-       transition: all 0.3s ease-in-out; 
+//-       position: relative;
+//-       z-index: 1;
+//-     }
+//-     .hover-expand:hover { 
+//-       transform: scale(1.05);
+//-       z-index: 10; 
+//-       box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+//-     }
+    
+//-     .bg-soft-primary { background-color: rgba(13, 110, 253, 0.08); color: #0d6efd; font-size: 0.65rem; }
+//-     .border-absence { border-left: 4px solid #fd7e14 !important; }
+//-     .bg-soft-warning { background-color: rgba(253, 126, 20, 0.15); color: #fd7e14; font-size: 0.65rem; font-weight: bold; }
+//-     .bg-light-orange { background-color: #fffaf5; }
+//-     .small-text { font-size: 0.75rem; }
+//-     .tiny-text { font-size: 0.65rem; }
+
+//-     /* MEJORAS PARA CRECIMIENTO MASIVO */
+//-     .sticky-filters { position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+//-     .table-xs td, .table-xs th { padding: 0.4rem; font-size: 0.75rem; vertical-align: middle; }
+//-     .btn-xs { padding: 1px 5px; font-size: 0.65rem; }
+
+//-   .container-fluid
+//-     //- Cabecera Fija
+//-     .sticky-filters.mb-3
+//-       .row.align-items-center
+//-         .col-md-4
+//-           h4.fw-bold.text-primary.mb-0
+//-             i.bi.bi-calendar-week.me-2
+//-             | Gestión de Agendas
+//-             span.badge.bg-secondary.ms-2.fs-6#total-count 0
+        
+//-         .col-md-8.text-md-end.d-flex.justify-content-end.gap-2
+//-           .btn-group.shadow-sm
+//-             button.btn.btn-outline-primary.btn-sm#btn-grid(onclick="toggleView('grid')" title="Vista Rejilla")
+//-               i.bi.bi-grid-3x3-gap
+//-             button.btn.btn-outline-primary.btn-sm#btn-list(onclick="toggleView('list')" title="Vista Lista")
+//-               i.bi.bi-list-ul
+//-           a.btn.btn-success.btn-sm.shadow-sm(href="/agendas/create")
+//-             i.bi.bi-plus-lg.me-1
+//-             | Nueva
+//-           a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/secretaria")
+//-             i.fa-solid.fa-house-user.me-1
+
+//-     //- Barra de Filtros
+//-     .card.border-0.shadow-sm.mb-3
+//-       .card-body.bg-light.rounded.py-2
+//-         .row.g-2
+//-           .col-md-3
+//-             .input-group.input-group-sm
+//-               span.input-group-text: i.bi.bi-search
+//-               input.form-control(type="text" id="global-search" placeholder="Buscar médico o especialidad..." onkeyup="applyFilters()")
+//-           .col-md-2
+//-             select.form-select.form-select-sm(id="f-especialidad" onchange="applyFilters()")
+//-               option(value="") Especialidad: Todas
+//-               if especialidades
+//-                 each esp in especialidades
+//-                   option(value=esp.nombre)= esp.nombre
+//-           .col-md-2
+//-             select.form-select.form-select-sm(id="f-medico" onchange="applyFilters()")
+//-               option(value="") Médico: Todos
+//-               if medicos
+//-                 each med in medicos
+//-                   option(value=`${med.apellido} ${med.nombre}`)= `${med.apellido} ${med.nombre}`
+//-           .col-md-2
+//-             select.form-select.form-select-sm(id="f-dia" onchange="applyFilters()")
+//-               option(value="") Día: Todos
+//-               each d in ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
+//-                 option(value=d)= d
+//-           .col-md-3
+//-             select.form-select.form-select-sm(id="f-sucursal" onchange="applyFilters()")
+//-               option(value="") Sucursal: Todas
+//-               option(value="Clínica Argentina") Clínica Argentina
+//-               option(value="Clínica España") Clínica España
+
+//-     //- VISTA 1: LISTA COMPACTA
+//-     .table-responsive.d-none#view-list
+//-       table.table.table-hover.table-xs.bg-white.shadow-sm.rounded
+//-         thead.table-light
+//-           tr
+//-             th Médico
+//-             th Especialidad
+//-             th Horario
+//-             th Días
+//-             th Sucursal
+//-             th.text-center Acciones
+//-         tbody
+//-           if agendas && agendas.length > 0
+//-             each agenda in agendas
+//-               tr.agenda-item(
+//-                 data-especialidad=agenda.especialidad
+//-                 data-medico=`${agenda.apellido} ${agenda.nombre}`
+//-                 data-dia=agenda.dias
+//-                 data-sucursal=agenda.sucursal
+//-               )
+//-                 td
+//-                   span.fw-bold #{agenda.apellido}, #{agenda.nombre}
+//-                   if agenda.ausente
+//-                     span.badge.bg-soft-warning.ms-1 AUSENTE
+//-                 td: span.badge.bg-soft-primary= agenda.especialidad
+//-                 td.fw-bold #{agenda.hora_inicio}-#{agenda.hora_fin} hs
+//-                 td.small-text= agenda.dias
+//-                 td.small-text= agenda.sucursal
+//-                 td.text-center
+//-                   .btn-group
+//-                     a.btn.btn-outline-primary.btn-xs(href=`/agendas/edit/${agenda.id}`) Editar
+//-                     button.btn.btn-outline-danger.btn-xs(onclick=`confirmDelete(${agenda.id})`) Eliminar
+
+//-     //- VISTA 2: GRILLA DE CARDS
+//-     .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.row-cols-xl-5.g-3#view-grid
+//-       if agendas && agendas.length > 0
+//-         each agenda in agendas
+//-           .col.agenda-item(
+//-             data-especialidad=agenda.especialidad
+//-             data-medico=`${agenda.apellido} ${agenda.nombre}`
+//-             data-dia=agenda.dias
+//-             data-sucursal=agenda.sucursal
+//-           )
+//-             .card.h-100.border-0.shadow-sm.hover-expand.border-start.border-4(class=agenda.ausente ? 'border-absence bg-light-orange' : 'border-primary')
+//-               .card-header.bg-transparent.pt-2.pb-1.border-0
+//-                 .d-flex.justify-content-between.align-items-start
+//-                   div
+//-                     p.fw-bold.mb-0.small-text #{agenda.apellido}, #{agenda.nombre}
+//-                     span.badge.tiny-text(class=agenda.ausente ? 'bg-soft-warning text-warning' : 'bg-soft-primary')= agenda.especialidad
+//-                   if agenda.ausente
+//-                     i.bi.bi-exclamation-triangle-fill.text-warning.fs-6
+
+//-               .card-body.py-1
+//-                 if agenda.ausente
+//-                   p.text-danger.tiny-text.mb-1.fw-bold
+//-                     i.bi.bi-person-slash.me-1
+//-                     | Profesional Ausente
+//-                 .d-flex.flex-column.gap-1.small-text
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-clock.text-primary.me-2.tiny-text
+//-                     span.fw-bold.tiny-text #{agenda.hora_inicio}-#{agenda.hora_fin} hs
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-calendar-check.text-muted.me-2.tiny-text
+//-                     span.tiny-text= agenda.dias
+//-                   .d-flex.align-items-center
+//-                     i.bi.bi-geo-alt.text-danger.me-2.tiny-text
+//-                     span.tiny-text= agenda.sucursal
+//-                 hr.my-1.opacity-10
+//-                 .d-flex.justify-content-between.tiny-text
+//-                   span.text-muted Dur: #{agenda.duracion_turnos}m
+//-                   span.text-muted Sob: #{agenda.limite_sobreturnos}
+
+//-               .card-footer.bg-transparent.border-0.pt-0.pb-2
+//-                 .d-flex.gap-1
+//-                   a.btn.btn-outline-primary.btn-sm.flex-fill.py-0(href=`/agendas/edit/${agenda.id}` style="font-size: 0.65rem") Editar
+//-                   button.btn.btn-outline-danger.btn-sm.flex-fill.py-0(onclick=`confirmDelete(${agenda.id})` style="font-size: 0.65rem") Eliminar
+    
+//-     #no-results.text-center.py-5.d-none
+//-       i.bi.bi-search.display-4.text-muted
+//-       h5.text-muted.mt-3 No se encontraron agendas con esos filtros
+
+//-   script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
+//-   script.
+//-     document.addEventListener('DOMContentLoaded', () => {
+//-       const savedView = localStorage.getItem('agenda-view-pref') || 'grid';
+//-       toggleView(savedView); // toggleView ya llama a applyFilters() internamente
+
+//-       const params = new URLSearchParams(window.location.search);
+//-       if (params.get('nombreStore')) Swal.fire({ icon: 'success', title: '¡Creada!', text: 'Agenda cargada correctamente', timer: 2000, showConfirmButton: false });
+//-       if (params.get('nombreUpdate')) Swal.fire({ icon: 'success', title: '¡Actualizada!', text: 'Cambios guardados con éxito', timer: 2000, showConfirmButton: false });
+//-       if (params.get('deleted')) Swal.fire({ icon: 'success', title: 'Desactivada', text: 'La agenda ya no recibirá nuevos turnos', timer: 2000, showConfirmButton: false });
+      
+//-       const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+//-       window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+//-     });
+
+//-     function toggleView(type) {
+//-       const grid = document.getElementById('view-grid');
+//-       const list = document.getElementById('view-list');
+//-       if (type === 'list') {
+//-         grid.classList.add('d-none');
+//-         list.classList.remove('d-none');
+//-       } else {
+//-         grid.classList.remove('d-none');
+//-         list.classList.add('d-none');
+//-       }
+//-       localStorage.setItem('agenda-view-pref', type);
+//-       applyFilters(); // Recalcular filtros y contador al cambiar de vista
+//-     }
+
+//-     function confirmDelete(id) {
+//-       Swal.fire({
+//-         title: '¿Desactivar Agenda?',
+//-         text: 'La agenda ya no aparecerá en la lista de turnos.',
+//-         icon: 'warning',
+//-         showCancelButton: true,
+//-         confirmButtonColor: '#dc3545',
+//-         confirmButtonText: 'Sí, eliminar'
+//-       }).then((result) => {
+//-         if (result.isConfirmed) {
+//-           fetch(`/agendas/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+//-           .then(res => res.json())
+//-           .then(data => {
+//-             if (data.success) window.location.href = '/agendas?deleted=true';
+//-             else Swal.fire('Error', data.message, 'error');
+//-           });
+//-         }
+//-       });
+//-     }
+
+//-     function applyFilters() {
+//-       const search = document.getElementById('global-search').value.toLowerCase();
+//-       const fEsp = document.getElementById('f-especialidad').value.toLowerCase();
+//-       const fMed = document.getElementById('f-medico').value.toLowerCase();
+//-       const fDia = document.getElementById('f-dia').value.toLowerCase();
+//-       const fSuc = document.getElementById('f-sucursal').value.toLowerCase();
+      
+//-       // Detectar vista activa para contar correctamente
+//-       const activeView = localStorage.getItem('agenda-view-pref') || 'grid';
+//-       const activeContainerId = activeView === 'list' ? 'view-list' : 'view-grid';
+      
+//-       let visibleCount = 0;
+
+//-       // Filtrar todos los items
+//-       document.querySelectorAll('.agenda-item').forEach(item => {
+//-         const cEsp = (item.dataset.especialidad || "").toLowerCase();
+//-         const cMed = (item.dataset.medico || "").toLowerCase();
+//-         const cDia = (item.dataset.dia || "").toLowerCase();
+//-         const cSuc = (item.dataset.sucursal || "").toLowerCase();
+
+//-         const matchesSearch = search === "" || cMed.includes(search) || cEsp.includes(search);
+//-         const matchesFilters = 
+//-           (fEsp === "" || cEsp === fEsp) &&
+//-           (fMed === "" || cMed === fMed) &&
+//-           (fDia === "" || cDia.includes(fDia)) &&
+//-           (fSuc === "" || cSuc === fSuc);
+
+//-         const isVisible = matchesSearch && matchesFilters;
+        
+//-         if (isVisible) {
+//-           item.style.setProperty('display', item.tagName === 'TR' ? 'table-row' : 'block', 'important');
+          
+//-           // Solo sumamos al contador si el item pertenece al contenedor que el usuario está viendo actualmente
+//-           if (item.closest(`#${activeContainerId}`)) {
+//-             visibleCount++;
+//-           }
+//-         } else {
+//-           item.style.setProperty('display', 'none', 'important');
+//-         }
+//-       });
+
+//-       document.getElementById('total-count').innerText = visibleCount;
+//-       document.getElementById('no-results').classList.toggle('d-none', visibleCount > 0);
+//-     }
+
+
+
+
+
 extends ../layout
 
 block contenido
@@ -23,38 +726,54 @@ block contenido
     .small-text { font-size: 0.75rem; }
     .tiny-text { font-size: 0.65rem; }
 
-  .container-fluid
-    .row.mb-3.align-items-center
-      .col-md-6
-        h4.fw-bold.text-primary.mb-0
-          i.bi.bi-calendar-week.me-2
-          | Gestión de Agendas
-      
-      .col-md-6.text-md-end
-        a.btn.btn-success.btn-sm.shadow-sm(href="/agendas/create")
-          i.bi.bi-plus-lg.me-1
-          | Nueva
-        a.btn.btn-outline-secondary.btn-sm.shadow-sm.ms-2(href="/secretaria")
-          i.fa-solid.fa-house-user.me-1
-          | Volver Panel
+    /* MEJORAS PARA CRECIMIENTO MASIVO */
+    .sticky-filters { position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+    .table-xs td, .table-xs th { padding: 0.4rem; font-size: 0.75rem; vertical-align: middle; }
+    .btn-xs { padding: 1px 5px; font-size: 0.65rem; }
 
-    //- Barra de Filtros Compacta
+  .container-fluid
+    //- Cabecera Fija
+    .sticky-filters.mb-3
+      .row.align-items-center
+        .col-md-4
+          h4.fw-bold.text-primary.mb-0
+            i.bi.bi-calendar-week.me-2
+            | Gestión de Agendas
+            span.badge.bg-secondary.ms-2.fs-6#total-count 0
+        
+        .col-md-8.text-md-end.d-flex.justify-content-end.gap-2
+          .btn-group.shadow-sm
+            button.btn.btn-outline-primary.btn-sm#btn-grid(onclick="toggleView('grid')" title="Vista Rejilla")
+              i.bi.bi-grid-3x3-gap
+            button.btn.btn-outline-primary.btn-sm#btn-list(onclick="toggleView('list')" title="Vista Lista")
+              i.bi.bi-list-ul
+          a.btn.btn-success.btn-sm.shadow-sm(href="/agendas/create")
+            i.bi.bi-plus-lg.me-1
+            | Nueva
+          a.btn.btn-outline-secondary.btn-sm.shadow-sm(href="/secretaria")
+            i.fa-solid.fa-house-user.me-1
+
+    //- Barra de Filtros
     .card.border-0.shadow-sm.mb-3
       .card-body.bg-light.rounded.py-2
         .row.g-2
           .col-md-3
+            .input-group.input-group-sm
+              span.input-group-text: i.bi.bi-search
+              input.form-control(type="text" id="global-search" placeholder="Buscar médico o especialidad..." onkeyup="applyFilters()")
+          .col-md-2
             select.form-select.form-select-sm(id="f-especialidad" onchange="applyFilters()")
               option(value="") Especialidad: Todas
               if especialidades
                 each esp in especialidades
                   option(value=esp.nombre)= esp.nombre
-          .col-md-3
+          .col-md-2
             select.form-select.form-select-sm(id="f-medico" onchange="applyFilters()")
               option(value="") Médico: Todos
               if medicos
                 each med in medicos
                   option(value=`${med.apellido} ${med.nombre}`)= `${med.apellido} ${med.nombre}`
-          .col-md-3
+          .col-md-2
             select.form-select.form-select-sm(id="f-dia" onchange="applyFilters()")
               option(value="") Día: Todos
               each d in ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
@@ -65,11 +784,48 @@ block contenido
               option(value="Clínica Argentina") Clínica Argentina
               option(value="Clínica España") Clínica España
 
-    //- Grilla de Cards
-    .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.row-cols-xl-5.g-3#agendas-list
+    //- VISTA 1: LISTA COMPACTA (Con columnas adicionales)
+    .table-responsive.d-none#view-list
+      table.table.table-hover.table-xs.bg-white.shadow-sm.rounded
+        thead.table-light
+          tr
+            th Médico
+            th Especialidad
+            th Horario
+            th Días
+            th Sucursal
+            th.text-center Dur.
+            th.text-center Sob.
+            th.text-center Acciones
+        tbody
+          if agendas && agendas.length > 0
+            each agenda in agendas
+              tr.agenda-item(
+                data-especialidad=agenda.especialidad
+                data-medico=`${agenda.apellido} ${agenda.nombre}`
+                data-dia=agenda.dias
+                data-sucursal=agenda.sucursal
+              )
+                td
+                  span.fw-bold #{agenda.apellido}, #{agenda.nombre}
+                  if agenda.ausente
+                    span.badge.bg-soft-warning.ms-1 AUSENTE
+                td: span.badge.bg-soft-primary= agenda.especialidad
+                td.fw-bold #{agenda.hora_inicio}-#{agenda.hora_fin} hs
+                td.small-text= agenda.dias
+                td.small-text= agenda.sucursal
+                td.text-center: span.text-muted #{agenda.duracion_turnos}m
+                td.text-center: span.text-muted #{agenda.limite_sobreturnos}
+                td.text-center
+                  .btn-group
+                    a.btn.btn-outline-primary.btn-xs(href=`/agendas/edit/${agenda.id}`) Editar
+                    button.btn.btn-outline-danger.btn-xs(onclick=`confirmDelete(${agenda.id})`) Eliminar
+
+    //- VISTA 2: GRILLA DE CARDS
+    .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.row-cols-xl-5.g-3#view-grid
       if agendas && agendas.length > 0
         each agenda in agendas
-          .col.agenda-card(
+          .col.agenda-item(
             data-especialidad=agenda.especialidad
             data-medico=`${agenda.apellido} ${agenda.nombre}`
             data-dia=agenda.dias
@@ -81,7 +837,6 @@ block contenido
                   div
                     p.fw-bold.mb-0.small-text #{agenda.apellido}, #{agenda.nombre}
                     span.badge.tiny-text(class=agenda.ausente ? 'bg-soft-warning text-warning' : 'bg-soft-primary')= agenda.especialidad
-                  
                   if agenda.ausente
                     i.bi.bi-exclamation-triangle-fill.text-warning.fs-6
 
@@ -90,53 +845,58 @@ block contenido
                   p.text-danger.tiny-text.mb-1.fw-bold
                     i.bi.bi-person-slash.me-1
                     | Profesional Ausente
-
                 .d-flex.flex-column.gap-1.small-text
                   .d-flex.align-items-center
                     i.bi.bi-clock.text-primary.me-2.tiny-text
                     span.fw-bold.tiny-text #{agenda.hora_inicio}-#{agenda.hora_fin} hs
-                  
                   .d-flex.align-items-center
                     i.bi.bi-calendar-check.text-muted.me-2.tiny-text
                     span.tiny-text= agenda.dias
-
                   .d-flex.align-items-center
                     i.bi.bi-geo-alt.text-danger.me-2.tiny-text
                     span.tiny-text= agenda.sucursal
-
-                  hr.my-1.opacity-10
-
-                  .d-flex.justify-content-between.tiny-text
-                    span.text-muted Dur: #{agenda.duracion_turnos}m
-                    span.text-muted Sob: #{agenda.limite_sobreturnos}
+                hr.my-1.opacity-10
+                .d-flex.justify-content-between.tiny-text
+                  span.text-muted Dur: #{agenda.duracion_turnos}m
+                  span.text-muted Sob: #{agenda.limite_sobreturnos}
 
               .card-footer.bg-transparent.border-0.pt-0.pb-2
-                .d-grid.gap-1
-                  a.btn.btn-xs.py-0(href=`/turnos/${agenda.id}` class=agenda.ausente ? 'btn-warning' : 'btn-primary' style="font-size: 0.7rem")
-                    | Gestionar Turnos
-                  .d-flex.gap-1
-                    a.btn.btn-outline-primary.btn-sm.flex-fill.py-0(href=`/agendas/edit/${agenda.id}` style="font-size: 0.65rem") Editar
-                    button.btn.btn-outline-danger.btn-sm.flex-fill.py-0(onclick=`confirmDelete(${agenda.id})` style="font-size: 0.65rem") Eliminar
-                
-                .text-center.mt-1
-                  span.text-muted.tiny-text
-                    | Vigencia: #{agenda.fecha_creacion} / #{agenda.fecha_fin}
-      else
-        .col-12.text-center.py-5
-          i.bi.bi-search.display-4.text-muted
-          h5.text-muted.mt-3 No hay agendas cargadas
+                .d-flex.gap-1
+                  a.btn.btn-outline-primary.btn-sm.flex-fill.py-0(href=`/agendas/edit/${agenda.id}` style="font-size: 0.65rem") Editar
+                  button.btn.btn-outline-danger.btn-sm.flex-fill.py-0(onclick=`confirmDelete(${agenda.id})` style="font-size: 0.65rem") Eliminar
+    
+    #no-results.text-center.py-5.d-none
+      i.bi.bi-search.display-4.text-muted
+      h5.text-muted.mt-3 No se encontraron agendas con esos filtros
 
+  script(src="https://cdn.jsdelivr.net/npm/sweetalert2@11")
   script.
     document.addEventListener('DOMContentLoaded', () => {
+      const savedView = localStorage.getItem('agenda-view-pref') || 'grid';
+      toggleView(savedView);
+
       const params = new URLSearchParams(window.location.search);
       if (params.get('nombreStore')) Swal.fire({ icon: 'success', title: '¡Creada!', text: 'Agenda cargada correctamente', timer: 2000, showConfirmButton: false });
       if (params.get('nombreUpdate')) Swal.fire({ icon: 'success', title: '¡Actualizada!', text: 'Cambios guardados con éxito', timer: 2000, showConfirmButton: false });
       if (params.get('deleted')) Swal.fire({ icon: 'success', title: 'Desactivada', text: 'La agenda ya no recibirá nuevos turnos', timer: 2000, showConfirmButton: false });
-      if (params.get('error') === 'no_encontrada') Swal.fire({ icon: 'error', title: 'Error', text: 'La agenda no existe o no está activa' });
-
+      
       const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
       window.history.replaceState({path: cleanUrl}, '', cleanUrl);
     });
+
+    function toggleView(type) {
+      const grid = document.getElementById('view-grid');
+      const list = document.getElementById('view-list');
+      if (type === 'list') {
+        grid.classList.add('d-none');
+        list.classList.remove('d-none');
+      } else {
+        grid.classList.remove('d-none');
+        list.classList.add('d-none');
+      }
+      localStorage.setItem('agenda-view-pref', type);
+      applyFilters(); 
+    }
 
     function confirmDelete(id) {
       Swal.fire({
@@ -159,24 +919,42 @@ block contenido
     }
 
     function applyFilters() {
-      // Capturamos valores y pasamos a minúsculas para comparar seguro
+      const search = document.getElementById('global-search').value.toLowerCase();
       const fEsp = document.getElementById('f-especialidad').value.toLowerCase();
       const fMed = document.getElementById('f-medico').value.toLowerCase();
       const fDia = document.getElementById('f-dia').value.toLowerCase();
       const fSuc = document.getElementById('f-sucursal').value.toLowerCase();
+      
+      const activeView = localStorage.getItem('agenda-view-pref') || 'grid';
+      const activeContainerId = activeView === 'list' ? 'view-list' : 'view-grid';
+      
+      let visibleCount = 0;
 
-      document.querySelectorAll('.agenda-card').forEach(card => {
-        const cEsp = (card.dataset.especialidad || "").toLowerCase();
-        const cMed = (card.dataset.medico || "").toLowerCase();
-        const cDia = (card.dataset.dia || "").toLowerCase();
-        const cSuc = (card.dataset.sucursal || "").toLowerCase();
+      document.querySelectorAll('.agenda-item').forEach(item => {
+        const cEsp = (item.dataset.especialidad || "").toLowerCase();
+        const cMed = (item.dataset.medico || "").toLowerCase();
+        const cDia = (item.dataset.dia || "").toLowerCase();
+        const cSuc = (item.dataset.sucursal || "").toLowerCase();
 
-        const match = 
+        const matchesSearch = search === "" || cMed.includes(search) || cEsp.includes(search);
+        const matchesFilters = 
           (fEsp === "" || cEsp === fEsp) &&
           (fMed === "" || cMed === fMed) &&
           (fDia === "" || cDia.includes(fDia)) &&
           (fSuc === "" || cSuc === fSuc);
 
-        card.style.display = match ? "block" : "none";
+        const isVisible = matchesSearch && matchesFilters;
+        
+        if (isVisible) {
+          item.style.setProperty('display', item.tagName === 'TR' ? 'table-row' : 'block', 'important');
+          if (item.closest(`#${activeContainerId}`)) {
+            visibleCount++;
+          }
+        } else {
+          item.style.setProperty('display', 'none', 'important');
+        }
       });
+
+      document.getElementById('total-count').innerText = visibleCount;
+      document.getElementById('no-results').classList.toggle('d-none', visibleCount > 0);
     }
